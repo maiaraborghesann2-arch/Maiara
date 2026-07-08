@@ -1,0 +1,190 @@
+/* ---------- pinned stages ---------- */
+
+.hero-pin {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.hero-stage1 {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-stage1-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-6);
+  text-align: center;
+  will-change: transform;
+}
+
+.hero-headline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  color: var(--color-cream);
+}
+
+.hero-line {
+  display: block;
+}
+
+.hero-line-gold {
+  color: var(--color-champagne-gold);
+}
+
+.hero-subline {
+  max-width: 480px;
+  font-size: 0.9375rem; /* 15px */
+  color: var(--color-cream);
+  opacity: 0.65;
+}
+
+.hero-rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  height: 1px;
+  background: var(--color-brushed-gold);
+  opacity: 0.55;
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.hero-stage2 {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  pointer-events: none;
+}
+
+.hero-stage2-figure {
+  width: min(58vmin, 480px);
+  height: min(58vmin, 480px);
+  will-change: transform, opacity;
+}
+
+.hero-caption {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  letter-spacing: var(--tracking-display);
+  color: var(--color-cream);
+}
+
+/* ---------- stage 3: pillars ---------- */
+
+.hero-pillars {
+  padding: var(--space-32) var(--space-8);
+}
+
+.hero-pillars-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.pillar-card {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-12) var(--space-8) var(--space-8);
+  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 15%, transparent);
+  background: color-mix(in srgb, var(--color-obsidian) 40%, transparent);
+}
+
+.pillar-numeral {
+  position: absolute;
+  top: -0.18em;
+  right: 0.05em;
+  font-family: var(--font-display);
+  font-size: 7.5rem;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--color-brushed-gold) 30%, transparent);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.pillar-title {
+  font-size: 1.75rem;
+  color: var(--color-champagne-gold);
+  margin-bottom: var(--space-4);
+}
+
+.pillar-text {
+  font-size: 0.9375rem;
+  color: var(--color-cream);
+  opacity: 0.7;
+  max-width: 30ch;
+}
+
+/* ---------- final CTA ---------- */
+
+.hero-final {
+  padding: var(--space-32) var(--space-6) var(--space-32);
+  display: flex;
+  justify-content: center;
+}
+
+.hero-final-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-12);
+  text-align: center;
+}
+
+.hero-final-headline {
+  font-size: clamp(2rem, 4.5vw, 3.75rem);
+  color: var(--color-cream);
+  max-width: 18ch;
+}
+
+/* ---------- reduced motion: unpinned, stacked stages ---------- */
+
+.hero-reduced .hero-pin {
+  height: auto;
+  overflow: visible;
+}
+
+.hero-reduced .hero-stage1,
+.hero-reduced .hero-stage2 {
+  position: relative;
+  inset: auto;
+  min-height: 100dvh;
+}
+
+/* ---------- mobile: horizontal scroll-snap pillars ---------- */
+
+@media (max-width: 767px) {
+  .hero-pillars {
+    padding: var(--space-24) var(--space-4);
+  }
+  .hero-pillars-row {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: var(--space-4);
+    padding-bottom: var(--space-4);
+    -webkit-overflow-scrolling: touch;
+  }
+  .pillar-card {
+    flex: 0 0 80vw;
+    scroll-snap-align: center;
+  }
+}

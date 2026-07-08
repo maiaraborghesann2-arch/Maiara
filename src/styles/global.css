@@ -83,6 +83,45 @@ em,
   opacity: 0.7;
 }
 
+/* Ghost CTA — thin gold border, slow left-to-right gradient wash on hover */
+.btn-ghost {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  padding: 18px 48px;
+  border: 1px solid var(--color-brushed-gold);
+  background: transparent;
+  color: var(--color-champagne-gold);
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-micro);
+  text-decoration: none;
+  transition: color 0.6s var(--ease-lux);
+}
+
+.btn-ghost::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--color-brushed-gold), var(--color-champagne-gold));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.6s var(--ease-lux);
+  z-index: -1;
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  color: var(--color-emerald-noir);
+}
+
+.btn-ghost:hover::before,
+.btn-ghost:focus-visible::before {
+  transform: scaleX(1);
+}
+
 .u-visually-hidden {
   position: absolute;
   width: 1px;

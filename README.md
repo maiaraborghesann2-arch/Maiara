@@ -33,4 +33,12 @@ green shade. No raw hex values outside `tokens.css`.
       `<LiquidText />` (proximity ripple headlines), `<LoadingScreen />`
       (monogram draw + synced progress, once per session, reduced-motion
       aware), Lenis + Router shell.
-- [ ] **Phase 2 — Home hero & navigation** (About, Projects, Insights, Contact)
+- [x] **Phase 2 — Navigation & Home hero**: `<NavBar />` (blur-on-scroll,
+      magnetic liquid links with gradient underline draw, active-route dot,
+      mobile full-screen overlay menu), `<HeroSection />` (180vh pinned
+      GSAP ScrollTrigger sequence: headline parallax + rule-line draw +
+      particle energise → lazy-loaded low-poly Lykos figure with
+      spring-damped mouse tilt → pillar cards + final CTA), `<Footer />`,
+      particle caps (80 desktop / 35 mobile), reduced-motion unpinned
+      fallback, placeholder routes for Phase 3 pages.
+- [ ] **Phase 3 — About, Projects, Insights, Contact pages**

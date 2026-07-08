@@ -1,0 +1,160 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-nav);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-8);
+  background: transparent;
+  transition:
+    background-color var(--duration-slow) var(--ease-out-soft),
+    backdrop-filter var(--duration-slow) var(--ease-out-soft);
+}
+
+.navbar-scrolled {
+  background: color-mix(in srgb, var(--color-emerald-noir) 40%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.navbar-home {
+  display: inline-flex;
+  padding: var(--space-2);
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  text-decoration: none;
+  color: var(--color-cream);
+  opacity: 0.7;
+  transition:
+    color var(--duration-base) var(--ease-out-soft),
+    opacity var(--duration-base) var(--ease-out-soft);
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: var(--color-champagne-gold);
+  opacity: 1;
+}
+
+.nav-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-champagne-gold);
+  opacity: 0;
+  transform: scale(0);
+  transition:
+    opacity var(--duration-base) var(--ease-out-soft),
+    transform var(--duration-base) var(--ease-out-soft);
+}
+
+.nav-dot[data-active='true'] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.nav-underline {
+  position: absolute;
+  left: var(--space-2);
+  right: var(--space-2);
+  bottom: 4px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-brushed-gold), var(--color-champagne-gold));
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* Mobile burger — three thin gold lines, 16px wide, 44px touch target */
+.navbar-burger {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 44px;
+  height: 44px;
+}
+
+.navbar-burger span {
+  display: block;
+  width: 16px;
+  height: 1px;
+  background: var(--color-brushed-gold);
+}
+
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* semi-opaque so the particle field stays visible behind */
+  background: color-mix(in srgb, var(--color-emerald-noir) 93%, transparent);
+}
+
+.nav-overlay-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.nav-overlay-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: var(--color-cream);
+  padding: var(--space-2) var(--space-4);
+}
+
+.nav-overlay-link:hover {
+  color: var(--color-champagne-gold);
+}
+
+.nav-overlay-close {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-3);
+  color: var(--color-champagne-gold);
+  opacity: 0.85;
+}
+
+@media (max-width: 767px) {
+  .navbar {
+    padding: var(--space-3) var(--space-4);
+  }
+  .navbar-links {
+    display: none;
+  }
+  .navbar-burger {
+    display: flex;
+  }
+}

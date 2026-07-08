@@ -9,12 +9,20 @@ import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
  * so it runs seamlessly from the loading screen into every page.
  */
 
-const MAX_PARTICLES = 170;
+const MAX_PARTICLES = 80; // hard cap for mid-range hardware (desktop)
+const MOBILE_MAX_PARTICLES = 35; // hard cap under 768px viewports
 const LINK_DIST = 130; // px — link particles closer than this
 const MOUSE_RADIUS = 150; // px — particles inside are pushed away
 const MOUSE_PUSH = 46; // px — max displacement of pushed particles
 const MAX_LINKS = 2200;
 const LINE_MAX_ALPHA = 0.14; // spec: 0.06–0.15 — ambient texture, not a visual
+
+/**
+ * Scroll-scrubbed tuning channel. The hero timeline tweens `energy` 0→1
+ * while pinned, which subtly raises link reach and brightness without
+ * re-allocating particles.
+ */
+export const particleTuning = { energy: 0 };
 
 function tokenColor(name: string): THREE.Color {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -30,8 +38,9 @@ function Particles({ density }: ParticlesProps) {
   const reduced = useMemo(() => prefersReducedMotion(), []);
 
   const count = useMemo(() => {
-    const byArea = Math.floor((size.width * size.height) / 22000);
-    return Math.max(40, Math.min(MAX_PARTICLES, Math.round(byArea * density)));
+    const cap = size.width < 768 ? MOBILE_MAX_PARTICLES : MAX_PARTICLES;
+    const byArea = Math.floor((size.width * size.height) / 26000);
+    return Math.max(24, Math.min(cap, Math.round(byArea * density)));
   }, [size.width, size.height, density]);
 
   const pointsRef = useRef<THREE.Points>(null);
@@ -136,6 +145,9 @@ function Particles({ density }: ParticlesProps) {
     }
 
     // connect neighbours; brightness encodes proximity (additive blend fades to invisible)
+    const energy = particleTuning.energy;
+    const linkDist = LINK_DIST * (1 + 0.2 * energy);
+    const lineAlpha = LINE_MAX_ALPHA * (1 + 0.35 * energy);
     let seg = 0;
     for (let i = 0; i < count && seg < MAX_LINKS; i++) {
       const ax = pointPositions[i * 3];
@@ -145,10 +157,10 @@ function Particles({ density }: ParticlesProps) {
         const by = pointPositions[j * 3 + 1];
         const dx = ax - bx;
         const dy = ay - by;
-        if (Math.abs(dx) > LINK_DIST || Math.abs(dy) > LINK_DIST) continue;
+        if (Math.abs(dx) > linkDist || Math.abs(dy) > linkDist) continue;
         const d = Math.hypot(dx, dy);
-        if (d > LINK_DIST) continue;
-        const alpha = (1 - d / LINK_DIST) * LINE_MAX_ALPHA;
+        if (d > linkDist) continue;
+        const alpha = (1 - d / linkDist) * lineAlpha;
         const v = seg * 6;
         linePositions[v] = ax;
         linePositions[v + 1] = ay;

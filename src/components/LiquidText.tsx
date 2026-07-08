@@ -15,6 +15,10 @@ interface LiquidTextProps {
   className?: string;
   /** render emphasised words in italic (display serif convention) */
   italic?: boolean;
+  /** 0–1 multiplier on the distortion — small UI text should use ~0.3 */
+  intensity?: number;
+  /** px — cursor proximity that wakes a character (default 130) */
+  radius?: number;
 }
 
 interface CharState {
@@ -28,7 +32,14 @@ interface CharState {
  * Headline text with a gentle per-character "liquid" ripple that follows
  * cursor proximity and settles back with elastic easing.
  */
-export function LiquidText({ as = 'h1', children, className = '', italic = false }: LiquidTextProps) {
+export function LiquidText({
+  as = 'h1',
+  children,
+  className = '',
+  italic = false,
+  intensity = 1,
+  radius = RADIUS,
+}: LiquidTextProps) {
   const rootRef = useRef<HTMLElement>(null);
   const reduced = useMemo(() => prefersReducedMotion(), []);
 
@@ -67,13 +78,13 @@ export function LiquidText({ as = 'h1', children, className = '', italic = false
         const dx = mx - c.cx;
         const dy = my - c.cy;
         const d = Math.hypot(dx, dy);
-        if (d < RADIUS) {
-          const t = 1 - d / RADIUS;
+        if (d < radius) {
+          const t = 1 - d / radius;
           c.active = true;
           gsap.to(c.el, {
-            y: -t * MAX_LIFT,
-            skewX: (dx / (d || 1)) * t * -MAX_SKEW,
-            scale: 1 + t * (MAX_SCALE - 1),
+            y: -t * MAX_LIFT * intensity,
+            skewX: (dx / (d || 1)) * t * -MAX_SKEW * intensity,
+            scale: 1 + t * (MAX_SCALE - 1) * intensity,
             duration: 0.4,
             ease: 'power3.out',
             overwrite: 'auto',
@@ -112,7 +123,7 @@ export function LiquidText({ as = 'h1', children, className = '', italic = false
       if (raf) cancelAnimationFrame(raf);
       chars.forEach((c) => gsap.killTweensOf(c.el));
     };
-  }, [reduced, children]);
+  }, [reduced, children, intensity, radius]);
 
   const content: ReactNode = useMemo(() => {
     if (reduced) return children;
