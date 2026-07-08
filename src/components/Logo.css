@@ -1,0 +1,44 @@
+.lyken-logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--color-brushed-gold);
+  user-select: none;
+}
+
+.lyken-monogram {
+  display: block;
+}
+
+.lyken-wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35em;
+  margin-top: 0.5em;
+}
+
+.lyken-wordmark-name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: var(--tracking-wordmark);
+  /* nudge right so the tracking after the final N reads centered */
+  margin-right: calc(-1 * var(--tracking-wordmark));
+  line-height: 1;
+}
+
+.lyken-wordmark-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9em;
+  color: var(--color-champagne-gold);
+  margin-right: calc(-1 * var(--tracking-micro));
+}
+
+.lyken-wordmark-dash {
+  display: inline-block;
+  width: 2.2em;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}

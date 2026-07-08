@@ -1,0 +1,58 @@
+/* ============================================================
+   LYKEN AGENCY — Design Tokens
+   Single source of truth. No raw hex values outside this file.
+   ============================================================ */
+
+:root {
+  /* ---- Color ----
+     CRITICAL: emerald-noir is the ONLY green on the entire site.
+     Never introduce #10362E, #164C3F, or any other green. */
+  --color-emerald-noir: #0b1f1a; /* the ONLY green — dominant background, ~54% visual weight */
+  --color-obsidian: #1a1a1a; /* near-black, secondary background/text, ~4% */
+  --color-brushed-gold: #b8924f; /* accent, sparingly used, ~8% */
+  --color-champagne-gold: #d4b47a; /* highlight/detail accent, ~6% */
+  --color-cream: #f5f0e8; /* primary light text on dark backgrounds */
+  --color-pure-black: #050805; /* deepest background layer, behind emerald-noir */
+
+  /* ---- Typography ---- */
+  --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
+  --font-body: 'Satoshi', 'Inter', system-ui, sans-serif;
+
+  --tracking-display: -0.02em;
+  --tracking-wordmark: 0.24em;
+  --tracking-micro: 0.3em;
+
+  --text-micro: 0.6875rem; /* 11px labels */
+  --text-body: 1rem;
+  --text-lg: 1.25rem;
+  --text-display-sm: clamp(1.75rem, 3vw, 2.5rem);
+  --text-display: clamp(2.5rem, 6vw, 5rem);
+  --text-display-xl: clamp(3.5rem, 9vw, 8rem);
+
+  /* ---- Spacing (4/8 rhythm) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* ---- Z scale ---- */
+  --z-background: -1;
+  --z-base: 0;
+  --z-nav: 40;
+  --z-overlay: 90;
+  --z-cursor: 100;
+
+  /* ---- Motion ---- */
+  --ease-lux: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 200ms;
+  --duration-base: 300ms;
+  --duration-slow: 800ms;
+  --duration-reveal: 1200ms;
+}

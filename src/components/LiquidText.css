@@ -1,0 +1,13 @@
+.liquid-text {
+  display: inline-block;
+}
+
+.liquid-word {
+  display: inline-block;
+  white-space: pre;
+}
+
+.liquid-char {
+  display: inline-block;
+  will-change: transform;
+}

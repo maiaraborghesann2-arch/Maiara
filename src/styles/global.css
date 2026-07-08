@@ -1,0 +1,145 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+body {
+  background: var(--color-pure-black);
+  color: var(--color-cream);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Hide the native cursor only when the custom cursor is running (fine pointers) */
+body.has-custom-cursor,
+body.has-custom-cursor a,
+body.has-custom-cursor button,
+body.has-custom-cursor [data-magnetic] {
+  cursor: none;
+}
+
+a,
+button {
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  background: none;
+  border: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-champagne-gold);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--color-brushed-gold);
+  color: var(--color-pure-black);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.05;
+}
+
+em,
+.u-italic {
+  font-style: italic;
+}
+
+/* Micro label — uppercase, wide tracking */
+.u-label {
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-micro);
+  opacity: 0.7;
+}
+
+.u-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- App background layers ---- */
+.app-bg {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-background) - 1);
+  background:
+    radial-gradient(
+      120% 90% at 50% 40%,
+      var(--color-emerald-noir) 0%,
+      var(--color-pure-black) 100%
+    );
+  animation: bg-breathe 14s var(--ease-lux) infinite alternate;
+}
+
+@keyframes bg-breathe {
+  from {
+    background-size: 100% 100%;
+  }
+  to {
+    background-size: 135% 125%;
+  }
+}
+
+/* Boot veil: pure black revealed away during the loading sequence */
+.app-bg-boot {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-background) - 1);
+  background: var(--color-pure-black);
+  pointer-events: none;
+}
+
+.particle-field {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-background);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-bg {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,53 @@
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* transparent: the emerald pulse + particle field show through from below */
+  background: transparent;
+}
+
+.loading-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.loading-progress {
+  width: 120px;
+  height: 1px;
+  background: color-mix(in srgb, var(--color-brushed-gold) 20%, transparent);
+  overflow: hidden;
+}
+
+.loading-progress-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--color-champagne-gold);
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+.loading-wordmark {
+  font-size: 1.75rem;
+  margin-top: 0;
+}
+
+.loading-skip {
+  position: absolute;
+  bottom: var(--space-8);
+  right: var(--space-8);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-champagne-gold);
+  opacity: 0;
+  animation: skip-in var(--duration-slow) var(--ease-out-soft) forwards;
+}
+
+@keyframes skip-in {
+  to {
+    opacity: 0.75;
+  }
+}

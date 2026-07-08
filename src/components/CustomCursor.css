@@ -1,0 +1,29 @@
+.cursor-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-cursor);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-out-soft);
+}
+
+.cursor-root[data-visible='true'] {
+  opacity: 1;
+}
+
+.cursor-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background: var(--color-champagne-gold);
+}
+
+.cursor-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  border: 1px solid var(--color-brushed-gold);
+  opacity: 0.4;
+}
