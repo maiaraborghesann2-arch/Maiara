@@ -40,6 +40,7 @@
   --space-16: 4rem;
   --space-24: 6rem;
   --space-32: 8rem;
+  --space-section: clamp(80px, 12vw, 160px); /* vertical rhythm between major sections */
 
   /* ---- Z scale ---- */
   --z-background: -1;

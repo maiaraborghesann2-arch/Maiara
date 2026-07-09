@@ -1,9 +1,10 @@
 import { HeroSection } from '../components/HeroSection';
+import { PageShell } from '../components/PageShell';
 
 export function Home() {
   return (
-    <main>
+    <PageShell className="home">
       <HeroSection />
-    </main>
+    </PageShell>
   );
 }

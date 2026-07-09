@@ -41,4 +41,14 @@ green shade. No raw hex values outside `tokens.css`.
       spring-damped mouse tilt → pillar cards + final CTA), `<Footer />`,
       particle caps (80 desktop / 35 mobile), reduced-motion unpinned
       fallback, placeholder routes for Phase 3 pages.
-- [ ] **Phase 3 — About, Projects, Insights, Contact pages**
+- [x] **Phase 3 — Inner pages**: About (intro + alternating philosophy
+      pillars with watermark numerals + scroll-snap milestone cards + CTA),
+      Projects (filterable asymmetric grid with Framer Motion layout reflow,
+      `/projects/:slug` detail), Insights (editorial row list,
+      `/insights/:slug` reading layout with pull-quotes), Contact
+      (floating-label underline form logging to console + decorative Lykos
+      figure). Shared: `<PageShell />` route transitions (AnimatePresence
+      fade+scale), `<Reveal />` scroll entrances, route-aware particle
+      density, `--space-section` rhythm token. Body copy is Lorem Ipsum —
+      labels/headings/microcopy are final English.
+- [ ] **Phase 4 — real content, imagery, form backend, deploy**
