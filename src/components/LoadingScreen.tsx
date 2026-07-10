@@ -64,12 +64,14 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
       };
     }
 
+    // the monogram is a filled glyph: draw its outline first, fill fades in after
     const paths = lockup.querySelectorAll<SVGPathElement>('.lyken-monogram-path');
     paths.forEach((p) => {
       const len = p.getTotalLength();
       p.style.strokeDasharray = `${len}`;
       p.style.strokeDashoffset = `${len}`;
     });
+    gsap.set(paths, { fillOpacity: 0, stroke: 'currentColor', strokeWidth: 1.4 });
     gsap.set(wordmark, { autoAlpha: 0, y: 8 });
     gsap.set(fill, { scaleX: 0 });
 
@@ -124,6 +126,10 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
       if (cancelled) return;
       await tweenAsync({ value: 1, duration: 0.3, ease: 'power2.out', onUpdate: applyProgress }, progress);
       if (cancelled) return;
+      // outline hands over to the solid glyph (concurrent with the wordmark)
+      track(
+        gsap.to(paths, { fillOpacity: 1, strokeOpacity: 0, duration: 0.9, ease: 'power2.out' }),
+      );
       // 5. wordmark reveal
       await tweenAsync({ autoAlpha: 1, y: 0, duration: 0.8, ease: 'power2.out' }, wordmark);
       if (cancelled) return;

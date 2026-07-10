@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { PageShell } from '../components/PageShell';
+import { Seo } from '../components/Seo';
 import { Reveal } from '../components/Reveal';
 import { LiquidText } from '../components/LiquidText';
 import { ARTICLES, LOREM } from '../content/placeholder';
@@ -21,6 +22,7 @@ export function ArticleDetail() {
 
   return (
     <PageShell className="page article-detail">
+      <Seo title={`${article.title} — Lyken Agency`} path={`/insights/${article.slug}`} />
       <Link to="/insights" className="article-back u-label" data-magnetic>
         ← Back to Insights
       </Link>

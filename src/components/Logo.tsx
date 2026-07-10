@@ -1,19 +1,20 @@
 import { forwardRef } from 'react';
-import { LOGO_STROKES, LOGO_VIEWBOX } from '../assets/logoPath';
+import { LOGO_HEIGHT, LOGO_PATH, LOGO_VIEWBOX, LOGO_WIDTH } from '../assets/logoPath';
 import './Logo.css';
 
 interface LogoProps {
-  /** Width of the monogram in px; the wordmark scales proportionally */
+  /** Width of the monogram in px; height follows the mark's true aspect ratio */
   size?: number;
   monogramOnly?: boolean;
   className?: string;
 }
 
 /**
- * Lyken "LK" ligature monogram + wordmark. Stroke geometry lives in
- * src/assets/logoPath.ts (shared with the loading screen draw animation
- * and the ParticleSphere logo-reveal morph). The .lyken-monogram-path
- * class is the loading screen's stroke-draw hook.
+ * Lyken "LK" ligature monogram + wordmark. The filled glyph geometry is
+ * extracted from the official brand asset and lives in
+ * src/assets/logoPath.ts (shared with the loading screen draw and the
+ * ParticleSphere logo-reveal morph). The .lyken-monogram-path class is
+ * the loading screen's stroke-draw hook.
  */
 export const Logo = forwardRef<HTMLDivElement, LogoProps>(function Logo(
   { size = 96, monogramOnly = false, className = '' },
@@ -24,21 +25,11 @@ export const Logo = forwardRef<HTMLDivElement, LogoProps>(function Logo(
       <svg
         className="lyken-monogram"
         width={size}
-        height={size}
+        height={size * (LOGO_HEIGHT / LOGO_WIDTH)}
         viewBox={LOGO_VIEWBOX}
-        fill="none"
         aria-hidden="true"
       >
-        {LOGO_STROKES.map((s, i) => (
-          <path
-            key={i}
-            className="lyken-monogram-path"
-            d={s.d}
-            stroke="currentColor"
-            strokeWidth={s.width}
-            strokeLinecap="round"
-          />
-        ))}
+        <path className="lyken-monogram-path" d={LOGO_PATH} fill="currentColor" />
       </svg>
 
       {!monogramOnly && (

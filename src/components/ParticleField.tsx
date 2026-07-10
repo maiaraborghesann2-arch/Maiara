@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { useCanvasActive } from '../hooks/useCanvasActive';
 
 /**
  * Ambient constellation of gold dots linked by faint lines.
@@ -252,9 +253,14 @@ interface ParticleFieldProps {
 }
 
 export function ParticleField({ density = 1 }: ParticleFieldProps) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  // pause the render loop when the tab is hidden (the field is fixed, so
+  // viewport intersection only matters for the tab-visibility half)
+  const frameloop = useCanvasActive(wrapRef);
   return (
-    <div className="particle-field" aria-hidden="true">
+    <div ref={wrapRef} className="particle-field" aria-hidden="true">
       <Canvas
+        frameloop={frameloop}
         orthographic
         camera={{ position: [0, 0, 10], zoom: 1 }}
         dpr={[1, 2]}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PageShell } from '../components/PageShell';
+import { Seo } from '../components/Seo';
 import { Reveal } from '../components/Reveal';
 import { LiquidText } from '../components/LiquidText';
 import { LOREM, MILESTONES } from '../content/placeholder';
@@ -14,6 +15,7 @@ const PHILOSOPHY = [
 export function About() {
   return (
     <PageShell className="page about">
+      <Seo title="About — Lyken Agency" path="/about" />
       {/* Stage 1 — intro */}
       <header className="page-head about-intro">
         <span className="section-label">About Lyken</span>

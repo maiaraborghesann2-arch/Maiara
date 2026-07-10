@@ -59,4 +59,13 @@ green shade. No raw hex values outside `tokens.css`.
       by Logo, loader draw, and sphere sampling). Global brightness pass:
       larger/brighter field particles with glow sprites + bloom, brighter
       links, raised text opacities (background color unchanged).
-- [ ] **Phase 4 — real content, imagery, form backend, deploy**
+- [x] **Phase 4 — production polish**: official LK mark (vector geometry
+      extracted from the brand PDF into `src/assets/logoPath.ts`; filled
+      glyph shared by Logo, loader outline-draw + fill-in, and sphere
+      fill-area sampling), per-route SEO via react-helmet-async (+ OG/
+      Twitter tags, sitemap.xml, robots.txt), favicon/PWA icon set + OG
+      image generated from the real mark, lazy-loaded routes with branded
+      fallback, canvases pause when tab hidden / out of view, manual chunk
+      splitting (three/gsap/motion/react), <480px static-orb sphere,
+      aria-live form feedback.
+- [ ] **Phase 5 — real content, imagery, form backend, deploy**

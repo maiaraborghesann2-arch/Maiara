@@ -1,113 +1,57 @@
 /**
  * Lyken "LK" ligature monogram — single source of truth.
  *
- * Consumed by:
- *  - <Logo />                (renders the strokes)
- *  - <LoadingScreen />       (stroke-dasharray draw animation)
- *  - <ParticleSphere />      (samples points along the strokes for the
- *                             hover "logo reveal" morph state)
+ * Geometry extracted directly from the official brand vector asset
+ * (SEM_FUNDO.pdf), normalized to a 130.8 × 150 viewBox with the original
+ * aspect ratio preserved. This is a FILLED glyph (high-contrast serif),
+ * not a set of strokes — three subpaths: the L, the K, and the small
+ * calligraphic flick at the bottom centre.
  *
- * The mark: a tall serif L on the left — flared bracketed serif at the
- * top, bottom curving into a calligraphic flourish sweeping right — and
- * a K on the right whose two curved diagonals radiate from mid-height,
- * the upper ending in a serif flick at the top-right, the lower in a
- * pointed tail at the bottom-right (mirroring the L's flourish). A small
- * gap of negative space separates the L stem from the K strokes so the
- * ligature interlocks without merging. Near-square bounding box,
- * high-contrast strokes: thicker vertical, thin curved diagonals.
+ * Consumed by:
+ *  - <Logo />           (fills the path with currentColor)
+ *  - <LoadingScreen />  (outline stroke-draw, then the fill fades in)
+ *  - <ParticleSphere /> (samples points INSIDE the filled glyph for the
+ *                        hover "logo reveal" morph state)
  */
 
-export const LOGO_VIEWBOX = '0 0 150 150';
-export const LOGO_VIEWBOX_SIZE = 150;
+export const LOGO_VIEWBOX = '0 0 130.8 150';
+export const LOGO_WIDTH = 130.8;
+export const LOGO_HEIGHT = 150;
 
-export interface LogoStroke {
-  d: string;
-  width: number;
-}
-
-export const LOGO_STROKES: LogoStroke[] = [
-  // L — flared top serif, bracketing the stem apex from both sides
-  {
-    d: 'M38 38 C40 26 50 21 57 25 C64 21 74 26 76 38',
-    width: 4.5,
-  },
-  // L — vertical stem flowing into the bottom flourish sweeping right
-  {
-    d: 'M57 27 L57 100 C57 117 67 126 84 122 C92 120 97 113 97.5 106',
-    width: 8,
-  },
-  // K — upper diagonal: curves up-right from mid-height, serif flick at the top
-  {
-    d: 'M68 74 C84 64 98 48 106 29 C108 24.5 113.5 23 117 26.5',
-    width: 4.5,
-  },
-  // K — lower diagonal: curves down-right, pointed calligraphic tail
-  {
-    d: 'M68 81 C82 93 95 107 105 120 C108.5 124.5 115 125 118 120',
-    width: 4.5,
-  },
-];
+export const LOGO_PATH =
+  'M59.13 125.28 C50.19 131.9 41.25 138.79 34.51 147.74 L66.9 147.89 C67.82 147.09 63.19 146.59 62.77 146.48 C51.06 143.3 58.05 132.84 62.45 126.5 C63.04 125.65 67.4 120.55 66.9 120 L59.13 125.28 Z ' +
+  'M73.8 34.8 L73.8 35.7 C87.82 36.94 88.02 44.43 80.39 54.14 C72.28 64.46 61.96 73.84 53.7 84.15 L53.14 85.58 C62.93 98.2 71.82 111.49 81.35 124.29 C86.11 130.67 93.28 141.73 100.23 145.31 C109.35 150 120.91 147.59 130.8 148.19 L130.79 147.3 C122.92 146.71 116.16 143.49 110.84 137.7 L64.23 74.29 C70.31 68.08 76.53 61.95 83.09 56.24 C95.06 45.85 108.24 36.29 124.8 35.7 L124.8 34.8 L73.8 34.8 Z ' +
+  'M45.6 0 L45.6 0.9 C39.63 1.41 33.7 4.41 31.94 10.49 C31.78 11.05 31.2 13.56 31.2 13.95 L31.2 108.9 L32.24 108.58 L48.75 89.7 L49.72 91.04 L49.33 91.77 C42.66 99.1 36.75 107.58 30.15 114.9 C21.69 124.29 11.98 122.65 0.3 122.69 C0.16 121.79 0.52 122.21 1.03 122.09 C11.68 119.46 14.73 115.09 15.32 103.96 C16.84 74.93 14.13 44.6 15.32 15.43 C15.02 11.95 14.43 8.25 12.01 5.54 C9.13 2.31 4.21 1.09 0 0.9 L0 0 L45.6 0 Z';
 
 /**
- * Sample `count` points evenly along the monogram strokes (proportional to
- * each stroke's length), jittered within the stroke width so the glyph has
- * body. Returns centered coordinates normalized to [-0.5, 0.5] on the
- * longest axis (aspect preserved, y up).
+ * Sample `count` points uniformly INSIDE the filled glyph (rejection
+ * sampling against the path fill). Returns centered coordinates normalized
+ * to [-0.5, 0.5] on the longest axis (aspect preserved, y up).
  */
 export function sampleLogoPoints(count: number): Float32Array {
-  const ns = 'http://www.w3.org/2000/svg';
-  const paths = LOGO_STROKES.map((s) => {
-    const el = document.createElementNS(ns, 'path');
-    el.setAttribute('d', s.d);
-    return { el, width: s.width, length: 0 };
-  });
-
-  let totalLength = 0;
-  for (const p of paths) {
-    p.length = p.el.getTotalLength();
-    totalLength += p.length;
-  }
-
-  // measure bounds first so we can center + normalize
-  const raw: number[] = [];
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
-
-  let emitted = 0;
-  paths.forEach((p, pi) => {
-    const share =
-      pi === paths.length - 1
-        ? count - emitted
-        : Math.max(1, Math.round((p.length / totalLength) * count));
-    for (let i = 0; i < share && emitted < count; i++) {
-      const t = (i + Math.random() * 0.8) / share;
-      const pt = p.el.getPointAtLength(t * p.length);
-      // jitter within the stroke body
-      const r = (Math.random() - 0.5) * p.width;
-      const a = Math.random() * Math.PI * 2;
-      const x = pt.x + Math.cos(a) * r * 0.5;
-      const y = pt.y + Math.sin(a) * r * 0.5;
-      raw.push(x, y);
-      if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
-      if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
-      emitted++;
-    }
-  });
-
-  const cx = (minX + maxX) / 2;
-  const cy = (minY + maxY) / 2;
-  const extent = Math.max(maxX - minX, maxY - minY) || 1;
+  const path = new Path2D(LOGO_PATH);
+  const ctx = document.createElement('canvas').getContext('2d')!;
+  const extent = Math.max(LOGO_WIDTH, LOGO_HEIGHT);
 
   const out = new Float32Array(count * 2);
-  for (let i = 0; i < count; i++) {
-    const sx = raw[(i % (raw.length / 2)) * 2];
-    const sy = raw[(i % (raw.length / 2)) * 2 + 1];
-    out[i * 2] = (sx - cx) / extent;
-    out[i * 2 + 1] = -(sy - cy) / extent; // flip: SVG y-down → world y-up
+  let placed = 0;
+  let guard = 0;
+  const maxTries = count * 80;
+  while (placed < count && guard < maxTries) {
+    guard++;
+    const x = Math.random() * LOGO_WIDTH;
+    const y = Math.random() * LOGO_HEIGHT;
+    if (ctx.isPointInPath(path, x, y, 'nonzero')) {
+      out[placed * 2] = (x - LOGO_WIDTH / 2) / extent;
+      out[placed * 2 + 1] = -(y - LOGO_HEIGHT / 2) / extent; // SVG y-down → world y-up
+      placed++;
+    }
+  }
+  // pathological fallback: duplicate earlier hits
+  for (; placed < count; placed++) {
+    const src = Math.floor(Math.random() * Math.max(1, placed));
+    out[placed * 2] = out[src * 2];
+    out[placed * 2 + 1] = out[src * 2 + 1];
   }
   return out;
 }

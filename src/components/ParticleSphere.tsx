@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import { sampleLogoPoints } from '../assets/logoPath';
 import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { useCanvasActive } from '../hooks/useCanvasActive';
 
 /**
  * Glowing gold particle sphere — the Home hero centerpiece.
@@ -90,13 +91,22 @@ interface SphereProps {
   interactive: boolean;
   offsetX: number; // horizontal placement as fraction of viewport width (0 = center)
   expand: { value: number } | null; // scrubbed 0→1 by the hero ScrollTrigger timeline
+  /** render as a simple static glowing orb (no rotation/shimmer) */
+  forceStatic?: boolean;
 }
 
-function SphereParticles({ count, radius, interactive, offsetX, expand }: SphereProps) {
+function SphereParticles({
+  count,
+  radius,
+  interactive,
+  offsetX,
+  expand,
+  forceStatic = false,
+}: SphereProps) {
   const { size, camera, viewport } = useThree();
   const groupRef = useRef<THREE.Group>(null);
   const matRef = useRef<THREE.ShaderMaterial>(null);
-  const reduced = useMemo(() => prefersReducedMotion(), []);
+  const reduced = useMemo(() => prefersReducedMotion() || forceStatic, [forceStatic]);
   const narrow = size.width < 768;
   const morph = useMemo(() => ({ value: 0 }), []);
   const hovered = useRef(false);
@@ -274,32 +284,40 @@ export default function ParticleSphere({
   expand = null,
   bloom = 1.1,
 }: ParticleSphereProps) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const frameloop = useCanvasActive(wrapRef);
+  // small screens (<480px): simpler static glowing orb — no morph states,
+  // fewer particles (State C scroll expansion still applies via uniforms)
+  const tiny = typeof window !== 'undefined' && window.innerWidth < 480;
   const resolvedCount =
-    count ?? (typeof window !== 'undefined' && window.innerWidth < 768 ? 1800 : 3200);
+    count ?? (tiny ? 900 : typeof window !== 'undefined' && window.innerWidth < 768 ? 1800 : 3200);
 
   return (
-    <Canvas
-      camera={{ position: [0, 0, CAMERA_Z], fov: FOV }}
-      dpr={[1, 1.75]}
-      gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
-      aria-hidden="true"
-    >
-      <SphereParticles
-        count={resolvedCount}
-        radius={radius}
-        interactive={interactive}
-        offsetX={offsetX}
-        expand={expand}
-      />
-      <EffectComposer>
-        <Bloom
-          intensity={bloom}
-          luminanceThreshold={0.12}
-          luminanceSmoothing={0.25}
-          mipmapBlur
-          radius={0.72}
+    <div ref={wrapRef} style={{ width: '100%', height: '100%' }} aria-hidden="true">
+      <Canvas
+        frameloop={frameloop}
+        camera={{ position: [0, 0, CAMERA_Z], fov: FOV }}
+        dpr={[1, 1.75]}
+        gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
+      >
+        <SphereParticles
+          count={resolvedCount}
+          radius={radius}
+          interactive={interactive && !tiny}
+          offsetX={offsetX}
+          expand={expand}
+          forceStatic={tiny}
         />
-      </EffectComposer>
-    </Canvas>
+        <EffectComposer>
+          <Bloom
+            intensity={bloom}
+            luminanceThreshold={0.12}
+            luminanceSmoothing={0.25}
+            mipmapBlur
+            radius={0.72}
+          />
+        </EffectComposer>
+      </Canvas>
+    </div>
   );
 }

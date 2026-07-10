@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { PageShell } from '../components/PageShell';
+import { Seo } from '../components/Seo';
 import { Reveal } from '../components/Reveal';
 import { LiquidText } from '../components/LiquidText';
 import { LOREM, PROJECTS } from '../content/placeholder';
@@ -13,6 +14,7 @@ export function ProjectDetail() {
 
   return (
     <PageShell className="page project-detail">
+      <Seo title={`${project.title} — Lyken Agency`} path={`/projects/${project.slug}`} />
       <Link to="/projects" className="project-detail-back u-label" data-magnetic>
         ← Back to Projects
       </Link>

@@ -2,6 +2,7 @@ import { Suspense, lazy, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PageShell } from '../components/PageShell';
+import { Seo } from '../components/Seo';
 import { LiquidText } from '../components/LiquidText';
 import './Contact.css';
 
@@ -69,6 +70,7 @@ export function Contact() {
 
   return (
     <PageShell className="page contact">
+      <Seo title="Get in Touch — Lyken Agency" path="/contact" />
       <header className="page-head contact-head">
         <span className="section-label">Get in Touch</span>
         <LiquidText as="h1" className="page-headline contact-headline">
@@ -83,7 +85,7 @@ export function Contact() {
           <Field label="Company (optional)" name="company" value={form.company} onChange={update} />
           <Field label="Message" name="message" textarea required value={form.message} onChange={update} />
 
-          <div className="contact-submit-row">
+          <div className="contact-submit-row" aria-live="polite">
             <AnimatePresence mode="wait">
               {sent ? (
                 <motion.p

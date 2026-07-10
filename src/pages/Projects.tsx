@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PageShell } from '../components/PageShell';
+import { Seo } from '../components/Seo';
 import { LiquidText } from '../components/LiquidText';
 import { PROJECTS } from '../content/placeholder';
 import './Projects.css';
@@ -15,6 +16,7 @@ export function Projects() {
 
   return (
     <PageShell className="page projects">
+      <Seo title="Selected Work — Lyken Agency" path="/projects" />
       <header className="page-head projects-head">
         <span className="section-label">Selected Work</span>
         <LiquidText as="h1" className="page-headline projects-headline">
