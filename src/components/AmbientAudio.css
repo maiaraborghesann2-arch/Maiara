@@ -1,0 +1,36 @@
+.ambient-audio-toggle {
+  position: fixed;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 35%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-pure-black) 55%, transparent);
+  color: var(--color-champagne-gold);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    border-color var(--duration-base) var(--ease-out-soft),
+    opacity var(--duration-base) var(--ease-out-soft);
+  opacity: 0.75;
+}
+
+.ambient-audio-toggle:hover,
+.ambient-audio-toggle:focus-visible {
+  opacity: 1;
+  border-color: var(--color-champagne-gold);
+}
+
+@media (max-width: 767px) {
+  .ambient-audio-toggle {
+    right: var(--space-4);
+    bottom: var(--space-4);
+    width: 38px;
+    height: 38px;
+  }
+}

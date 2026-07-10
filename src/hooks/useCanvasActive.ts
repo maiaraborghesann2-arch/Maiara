@@ -20,9 +20,21 @@ export function useCanvasActive(ref: RefObject<HTMLElement>): 'always' | 'never'
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === 'undefined') return;
-    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
-      rootMargin: '200px',
-    });
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        // A callback can fire with a zero-size boundingClientRect during the
+        // instant an element is first observed (before layout has settled,
+        // e.g. right as a lazy/Suspense-loaded canvas mounts). That's a
+        // measurement glitch, not a real viewport exit — ignore it so the
+        // canvas doesn't get stuck paused at 'never'.
+        const { width, height } = entry.boundingClientRect;
+        if (!entry.isIntersecting && width === 0 && height === 0) return;
+        setInView(entry.isIntersecting);
+      },
+      {
+        rootMargin: '200px',
+      },
+    );
     io.observe(el);
     return () => io.disconnect();
   }, [ref]);

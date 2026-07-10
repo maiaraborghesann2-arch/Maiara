@@ -8,6 +8,8 @@ import { SmoothScroll } from './components/SmoothScroll';
 import { NavBar } from './components/NavBar';
 import { Footer } from './components/Footer';
 import { Logo } from './components/Logo';
+import { RouteCameraTransition } from './components/RouteCameraTransition';
+import { AmbientAudio } from './components/AmbientAudio';
 
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })));
@@ -66,20 +68,23 @@ function AppInner() {
       {booted && (
         <>
           <NavBar />
-          <Suspense fallback={<RouteFallback />}>
-            <AnimatePresence mode="wait">
-              <Routes location={location} key={location.pathname}>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/projects/:slug" element={<ProjectDetail />} />
-                <Route path="/insights" element={<Insights />} />
-                <Route path="/insights/:slug" element={<ArticleDetail />} />
-                <Route path="/contact" element={<Contact />} />
-              </Routes>
-            </AnimatePresence>
-          </Suspense>
+          <RouteCameraTransition>
+            <Suspense fallback={<RouteFallback />}>
+              <AnimatePresence mode="wait">
+                <Routes location={location} key={location.pathname}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/projects" element={<Projects />} />
+                  <Route path="/projects/:slug" element={<ProjectDetail />} />
+                  <Route path="/insights" element={<Insights />} />
+                  <Route path="/insights/:slug" element={<ArticleDetail />} />
+                  <Route path="/contact" element={<Contact />} />
+                </Routes>
+              </AnimatePresence>
+            </Suspense>
+          </RouteCameraTransition>
           <Footer />
+          <AmbientAudio />
         </>
       )}
     </SmoothScroll>

@@ -124,40 +124,49 @@ export function HeroSection() {
   return (
     <section ref={sectionRef} className={`hero ${reduced ? 'hero-reduced' : ''}`}>
       <div className="hero-pin">
-        {/* Particle sphere — hero centerpiece. Rests right of the text
-            (State A), morphs into the LK monogram on hover (State B),
-            and expands fullscreen on scroll (State C). */}
+        <div className="hero-grid">
+          {/* -------- Stage 1: text column -------- */}
+          <div className="hero-stage1" data-fade>
+            <div className="hero-stage1-inner">
+              <h1 className="hero-headline">
+                <span className="hero-line">
+                  <LiquidText as="span">Intelligent Strategy.</LiquidText>
+                </span>
+                <span className="hero-line">
+                  <LiquidText as="span" italic className="hero-line-gold">
+                    Unforgettable
+                  </LiquidText>{' '}
+                  <LiquidText as="span">Brands.</LiquidText>
+                </span>
+              </h1>
+              <p className="hero-subline">
+                Brand identity, digital experience, and AI-integrated design for ambitious
+                companies.
+              </p>
+              <Link to="/projects" className="btn-ghost" data-magnetic>
+                View Our Work
+              </Link>
+            </div>
+            <div className="hero-rule" aria-hidden="true" />
+          </div>
+
+          {/* -------- Sphere column — reserves the layout space; the canvas
+              itself is a full-bleed layer above so it can expand fullscreen
+              on scroll (State C) without being clipped by this column. -------- */}
+          <div className="hero-sphere-col" aria-hidden="true" />
+        </div>
+
+        {/* Particle sphere — hero centerpiece. Rests inside the right
+            column / top half on mobile (State A), reveals the LK monogram
+            locally on hover (State B), and expands fullscreen on scroll
+            (State C). offsetX/offsetY keep it clear of the text column at
+            every width from 1280px to 2560px+; SphereParticles switches to
+            a centered top-half placement below 768px. */}
         <div className="hero-sphere" aria-hidden="true">
           <Suspense fallback={null}>
-            <ParticleSphere offsetX={0.24} expand={expandProgress} />
+            <ParticleSphere offsetX={0.27} offsetY={0.03} expand={expandProgress} />
           </Suspense>
         </div>
-
-        {/* -------- Stage 1 -------- */}
-        <div className="hero-stage1" data-fade>
-          <div className="hero-stage1-inner">
-            <h1 className="hero-headline">
-              <span className="hero-line">
-                <LiquidText as="span">Intelligent Strategy.</LiquidText>
-              </span>
-              <span className="hero-line">
-                <LiquidText as="span" italic className="hero-line-gold">
-                  Unforgettable
-                </LiquidText>{' '}
-                <LiquidText as="span">Brands.</LiquidText>
-              </span>
-            </h1>
-            <p className="hero-subline">
-              Brand identity, digital experience, and AI-integrated design for ambitious
-              companies.
-            </p>
-            <Link to="/projects" className="btn-ghost" data-magnetic>
-              View Our Work
-            </Link>
-          </div>
-          <div className="hero-rule" aria-hidden="true" />
-        </div>
-
       </div>
 
       {/* -------- Stage 3 -------- */}
