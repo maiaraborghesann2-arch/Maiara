@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
@@ -15,7 +16,7 @@ const LINK_DIST = 130; // px — link particles closer than this
 const MOUSE_RADIUS = 150; // px — particles inside are pushed away
 const MOUSE_PUSH = 46; // px — max displacement of pushed particles
 const MAX_LINKS = 2200;
-const LINE_MAX_ALPHA = 0.14; // spec: 0.06–0.15 — ambient texture, not a visual
+const LINE_MAX_ALPHA = 0.2; // brightness pass: 0.12–0.22 — clearer constellation, still ambient
 
 /**
  * Scroll-scrubbed tuning channel. The hero timeline tweens `energy` 0→1
@@ -27,6 +28,23 @@ export const particleTuning = { energy: 0 };
 function tokenColor(name: string): THREE.Color {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return new THREE.Color(raw || '#ffffff');
+}
+
+/** soft radial-gradient sprite so each dot has a luminous falloff */
+function makeGlowTexture(): THREE.Texture {
+  const c = document.createElement('canvas');
+  c.width = 64;
+  c.height = 64;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+  const tex = new THREE.CanvasTexture(c);
+  tex.needsUpdate = true;
+  return tex;
 }
 
 interface ParticlesProps {
@@ -78,6 +96,7 @@ function Particles({ density }: ParticlesProps) {
     }),
     [],
   );
+  const glowMap = useMemo(() => makeGlowTexture(), []);
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -202,10 +221,11 @@ function Particles({ density }: ParticlesProps) {
         </bufferGeometry>
         <pointsMaterial
           color={colors.dot}
-          size={2.2}
+          map={glowMap}
+          size={3.4}
           sizeAttenuation={false}
           transparent
-          opacity={0.75}
+          opacity={0.85}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
@@ -241,6 +261,15 @@ export function ParticleField({ density = 1 }: ParticleFieldProps) {
         gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
       >
         <Particles density={density} />
+        <EffectComposer>
+          <Bloom
+            intensity={0.55}
+            luminanceThreshold={0.1}
+            luminanceSmoothing={0.3}
+            mipmapBlur
+            radius={0.6}
+          />
+        </EffectComposer>
       </Canvas>
     </div>
   );

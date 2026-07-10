@@ -51,4 +51,12 @@ green shade. No raw hex values outside `tokens.css`.
       fade+scale), `<Reveal />` scroll entrances, route-aware particle
       density, `--space-section` rhythm token. Body copy is Lorem Ipsum —
       labels/headings/microcopy are final English.
+- [x] **Phase 2.5 — hero refinement**: Lykos gem removed; `<ParticleSphere />`
+      centerpiece (3200 glowing instanced particles + bloom) with three
+      states — resting sphere right of the headline, hover morph into the
+      LK monogram, scroll-scrubbed fullscreen expansion handing off to the
+      particle field. Monogram rebuilt in `src/assets/logoPath.ts` (shared
+      by Logo, loader draw, and sphere sampling). Global brightness pass:
+      larger/brighter field particles with glow sprites + bloom, brighter
+      links, raised text opacities (background color unchanged).
 - [ ] **Phase 4 — real content, imagery, form backend, deploy**

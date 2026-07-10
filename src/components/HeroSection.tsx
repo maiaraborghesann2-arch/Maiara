@@ -1,4 +1,4 @@
-import { Suspense, lazy, useLayoutEffect, useMemo, useRef } from 'react';
+import { Suspense, lazy, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -9,7 +9,7 @@ import './HeroSection.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const LykosFigure = lazy(() => import('./LykosFigure'));
+const ParticleSphere = lazy(() => import('./ParticleSphere'));
 
 const PILLARS = [
   {
@@ -31,14 +31,18 @@ const PILLARS = [
 
 /**
  * Cinematic pinned scroll sequence (~250vh):
- *   Stage 1 (0–100vh)   — headline parallax-shrinks, rule line draws, particles energise
- *   Stage 2 (100–180vh) — hero exits up, Lykos figure emerges with its caption
+ *   Stage 1 (0–100vh)   — headline parallax-shrinks, rule line draws, particles energise;
+ *                         the ParticleSphere rests to the right of the text (hover → LK morph)
+ *   Stage 2 (100–180vh) — hero exits up while the sphere expands to a fullscreen
+ *                         volumetric cloud, crossfading into the pillars section
  *   Stage 3 (180vh+)    — pillar cards + final CTA in normal flow
- * Reduced motion: no pinning — stages stack and simply fade in on scroll.
+ * Reduced motion: no pinning — static sphere, simple fade-ins on scroll.
  */
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const reduced = useMemo(() => prefersReducedMotion(), []);
+  // scrubbed by the pinned timeline; read by ParticleSphere each frame
+  const [expandProgress] = useState(() => ({ value: 0 }));
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -79,20 +83,11 @@ export function HeroSection() {
       tl.to('.hero-stage1-inner', { scale: 0.85, y: -70, duration: 1 }, 0)
         .to('.hero-rule', { scaleX: 1, duration: 0.9 }, 0.08)
         .to(particleTuning, { energy: 1, duration: 1 }, 0)
-        // Stage 2: 1 → 1.8
+        // Stage 2: 1 → 1.8 — hero exits while the sphere expands to fill the
+        // viewport, then crossfades into the pillars section behind it
         .to('.hero-stage1', { autoAlpha: 0, scale: 0.82, y: -140, duration: 0.45 }, 1)
-        .fromTo(
-          '.hero-stage2-figure',
-          { autoAlpha: 0, scale: 0.7 },
-          { autoAlpha: 1, scale: 1, duration: 0.55 },
-          1.1,
-        )
-        .fromTo(
-          '.hero-caption',
-          { autoAlpha: 0, y: 28 },
-          { autoAlpha: 1, y: 0, duration: 0.35 },
-          1.4,
-        );
+        .to(expandProgress, { value: 1, duration: 0.65 }, 1.05)
+        .to('.hero-sphere', { autoAlpha: 0, duration: 0.25 }, 1.55);
 
       // ---- stage 3: pillar cards + final CTA, individually triggered ----
       gsap.utils.toArray<HTMLElement>('.pillar-card').forEach((card, i) => {
@@ -129,6 +124,15 @@ export function HeroSection() {
   return (
     <section ref={sectionRef} className={`hero ${reduced ? 'hero-reduced' : ''}`}>
       <div className="hero-pin">
+        {/* Particle sphere — hero centerpiece. Rests right of the text
+            (State A), morphs into the LK monogram on hover (State B),
+            and expands fullscreen on scroll (State C). */}
+        <div className="hero-sphere" aria-hidden="true">
+          <Suspense fallback={null}>
+            <ParticleSphere offsetX={0.24} expand={expandProgress} />
+          </Suspense>
+        </div>
+
         {/* -------- Stage 1 -------- */}
         <div className="hero-stage1" data-fade>
           <div className="hero-stage1-inner">
@@ -154,15 +158,6 @@ export function HeroSection() {
           <div className="hero-rule" aria-hidden="true" />
         </div>
 
-        {/* -------- Stage 2 -------- */}
-        <div className="hero-stage2" data-fade>
-          <div className="hero-stage2-figure" aria-hidden="true">
-            <Suspense fallback={null}>
-              <LykosFigure />
-            </Suspense>
-          </div>
-          <p className="hero-caption">Where strategy becomes shape.</p>
-        </div>
       </div>
 
       {/* -------- Stage 3 -------- */}

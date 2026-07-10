@@ -2,7 +2,7 @@
   position: relative;
   background: var(--color-pure-black);
   padding: var(--space-16) var(--space-8) var(--space-8);
-  color: color-mix(in srgb, var(--color-cream) 50%, transparent);
+  color: color-mix(in srgb, var(--color-cream) 65%, transparent);
 }
 
 .footer-row {

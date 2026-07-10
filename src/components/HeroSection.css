@@ -45,7 +45,7 @@
   max-width: 480px;
   font-size: 0.9375rem; /* 15px */
   color: var(--color-cream);
-  opacity: 0.65;
+  opacity: 0.78;
 }
 
 .hero-rule {
@@ -60,29 +60,11 @@
   transform-origin: left center;
 }
 
-.hero-stage2 {
+/* Particle sphere canvas layer — fills the pinned viewport, behind stage 1 text */
+.hero-sphere {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-8);
   pointer-events: none;
-}
-
-.hero-stage2-figure {
-  width: min(58vmin, 480px);
-  height: min(58vmin, 480px);
-  will-change: transform, opacity;
-}
-
-.hero-caption {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: clamp(1.5rem, 3vw, 2.25rem);
-  letter-spacing: var(--tracking-display);
-  color: var(--color-cream);
 }
 
 /* ---------- stage 3: pillars ---------- */
@@ -129,7 +111,7 @@
 .pillar-text {
   font-size: 0.9375rem;
   color: var(--color-cream);
-  opacity: 0.7;
+  opacity: 0.78;
   max-width: 30ch;
 }
 
@@ -155,18 +137,10 @@
   max-width: 18ch;
 }
 
-/* ---------- reduced motion: unpinned, stacked stages ---------- */
+/* ---------- reduced motion: no pin, static sphere behind stage 1 ---------- */
 
 .hero-reduced .hero-pin {
-  height: auto;
   overflow: visible;
-}
-
-.hero-reduced .hero-stage1,
-.hero-reduced .hero-stage2 {
-  position: relative;
-  inset: auto;
-  min-height: 100dvh;
 }
 
 /* ---------- mobile: horizontal scroll-snap pillars ---------- */

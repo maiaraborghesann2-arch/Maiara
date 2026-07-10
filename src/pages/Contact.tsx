@@ -5,7 +5,7 @@ import { PageShell } from '../components/PageShell';
 import { LiquidText } from '../components/LiquidText';
 import './Contact.css';
 
-const LykosFigure = lazy(() => import('../components/LykosFigure'));
+const ParticleSphere = lazy(() => import('../components/ParticleSphere'));
 
 interface FieldProps {
   label: string;
@@ -135,10 +135,11 @@ export function Contact() {
             </div>
           </div>
 
-          {/* decorative — smaller, subtler Lykos figure filling the column */}
+          {/* decorative — smaller, subtler particle sphere filling the column
+              (hover still morphs it into the LK monogram) */}
           <div className="contact-figure" aria-hidden="true">
             <Suspense fallback={null}>
-              <LykosFigure />
+              <ParticleSphere count={1600} radius={1.15} bloom={0.8} />
             </Suspense>
           </div>
         </aside>

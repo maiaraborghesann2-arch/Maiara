@@ -18,7 +18,7 @@
   max-width: 420px;
   font-size: 0.9375rem;
   color: var(--color-cream);
-  opacity: 0.7;
+  opacity: 0.78;
 }
 
 .about-portrait {
@@ -76,7 +76,7 @@
 .about-pillar-text {
   font-size: 0.9375rem;
   color: var(--color-cream);
-  opacity: 0.7;
+  opacity: 0.78;
 }
 
 /* ---- milestones ---- */
@@ -128,7 +128,7 @@
 .milestone-text {
   font-size: 0.875rem;
   color: var(--color-cream);
-  opacity: 0.65;
+  opacity: 0.75;
 }
 
 /* ---- CTA ---- */
