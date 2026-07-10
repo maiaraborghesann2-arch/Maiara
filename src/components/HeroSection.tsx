@@ -129,7 +129,7 @@ export function HeroSection() {
             and expands fullscreen on scroll (State C). */}
         <div className="hero-sphere" aria-hidden="true">
           <Suspense fallback={null}>
-            <ParticleSphere offsetX={0.24} expand={expandProgress} />
+            <ParticleSphere offsetX={0.26} expand={expandProgress} mobileLayout="hero" />
           </Suspense>
         </div>
 

@@ -189,7 +189,7 @@ em,
     radial-gradient(
       120% 90% at 50% 40%,
       var(--color-emerald-noir) 0%,
-      var(--color-pure-black) 100%
+      var(--color-emerald-noir-deep) 100%
     );
   animation: bg-breathe 14s var(--ease-lux) infinite alternate;
 }

@@ -17,6 +17,10 @@ export function useCanvasActive(ref: RefObject<HTMLElement>): 'always' | 'never'
     return () => document.removeEventListener('visibilitychange', onVis);
   }, []);
 
+  // NOTE: no dependency array — deliberately re-attaches after every commit.
+  // Suspense reveal/hide (lazy canvases) can swap or display:none the node
+  // after a once-only effect ran, leaving the observer bound to a stale
+  // element that reports non-intersecting forever (frozen canvas).
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === 'undefined') return;
@@ -25,7 +29,7 @@ export function useCanvasActive(ref: RefObject<HTMLElement>): 'always' | 'never'
     });
     io.observe(el);
     return () => io.disconnect();
-  }, [ref]);
+  });
 
   return tabVisible && inView ? 'always' : 'never';
 }

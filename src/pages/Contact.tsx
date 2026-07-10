@@ -141,7 +141,7 @@ export function Contact() {
               (hover still morphs it into the LK monogram) */}
           <div className="contact-figure" aria-hidden="true">
             <Suspense fallback={null}>
-              <ParticleSphere count={1600} radius={1.15} bloom={0.8} />
+              <ParticleSphere count={1600} radius={1.15} />
             </Suspense>
           </div>
         </aside>

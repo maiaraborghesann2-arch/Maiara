@@ -7,21 +7,26 @@
   overflow: hidden;
 }
 
+/* Two-column stage 1: copy owns the left ~52%, the sphere the right ~45%.
+   Explicit max-widths + gutter guarantee the text's line length and the
+   sphere's bounding circle never intersect down to 1024px. */
 .hero-stage1 {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .hero-stage1-inner {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-8);
-  padding: var(--space-6);
-  text-align: center;
+  padding: var(--space-6) var(--space-6) var(--space-6) clamp(2rem, 7vw, 7.5rem);
+  width: 52%;
+  max-width: calc(52vw - 48px); /* min ~48px gutter to the sphere column */
+  text-align: left;
   will-change: transform;
 }
 
@@ -29,7 +34,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  font-size: clamp(2.25rem, 4.6vw, 4.5rem);
   color: var(--color-cream);
 }
 
@@ -143,9 +148,22 @@
   overflow: visible;
 }
 
-/* ---------- mobile: horizontal scroll-snap pillars ---------- */
+/* ---------- mobile: vertical stack — copy first, sphere below ---------- */
 
 @media (max-width: 767px) {
+  .hero-stage1 {
+    align-items: flex-start;
+  }
+  .hero-stage1-inner {
+    width: 100%;
+    max-width: 100%;
+    align-items: center;
+    text-align: center;
+    padding: calc(var(--space-24) + var(--space-4)) var(--space-4) 0;
+    gap: var(--space-6);
+    /* keep the copy block clear of the sphere positioned in the lower half
+       (min 32px vertical separation enforced by the -24%vh sphere offset) */
+  }
   .hero-pillars {
     padding: var(--space-24) var(--space-4);
   }

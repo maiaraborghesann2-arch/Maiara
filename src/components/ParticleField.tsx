@@ -1,28 +1,24 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useCanvasActive } from '../hooks/useCanvasActive';
 
 /**
- * Ambient constellation of gold dots linked by faint lines.
+ * Ambient drift of glowing gold dots — visually "scattered fragments" of the
+ * hero ParticleSphere (same core+halo glow treatment, no connecting lines).
  * Mounted ONCE at the app root (behind everything, z: var(--z-background))
  * so it runs seamlessly from the loading screen into every page.
  */
 
 const MAX_PARTICLES = 80; // hard cap for mid-range hardware (desktop)
 const MOBILE_MAX_PARTICLES = 35; // hard cap under 768px viewports
-const LINK_DIST = 130; // px — link particles closer than this
 const MOUSE_RADIUS = 150; // px — particles inside are pushed away
 const MOUSE_PUSH = 46; // px — max displacement of pushed particles
-const MAX_LINKS = 2200;
-const LINE_MAX_ALPHA = 0.2; // brightness pass: 0.12–0.22 — clearer constellation, still ambient
 
 /**
  * Scroll-scrubbed tuning channel. The hero timeline tweens `energy` 0→1
- * while pinned, which subtly raises link reach and brightness without
- * re-allocating particles.
+ * while pinned, which subtly raises particle brightness.
  */
 export const particleTuning = { energy: 0 };
 
@@ -31,7 +27,7 @@ function tokenColor(name: string): THREE.Color {
   return new THREE.Color(raw || '#ffffff');
 }
 
-/** soft radial-gradient sprite so each dot has a luminous falloff */
+/** soft radial-gradient sprite — same glow language as the ParticleSphere points */
 function makeGlowTexture(): THREE.Texture {
   const c = document.createElement('canvas');
   c.width = 64;
@@ -39,7 +35,7 @@ function makeGlowTexture(): THREE.Texture {
   const ctx = c.getContext('2d')!;
   const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
   g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+  g.addColorStop(0.3, 'rgba(255,255,255,0.5)');
   g.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 64, 64);
@@ -63,7 +59,7 @@ function Particles({ density }: ParticlesProps) {
   }, [size.width, size.height, density]);
 
   const pointsRef = useRef<THREE.Points>(null);
-  const linesRef = useRef<THREE.LineSegments>(null);
+  const materialRef = useRef<THREE.PointsMaterial>(null);
   const mouse = useRef({ x: 1e6, y: 1e6 }); // far away until first move
   const bounds = useRef({ w: size.width, h: size.height });
   bounds.current = { w: size.width, h: size.height };
@@ -87,16 +83,7 @@ function Particles({ density }: ParticlesProps) {
   }, []);
 
   const pointPositions = useMemo(() => new Float32Array(MAX_PARTICLES * 3), []);
-  const linePositions = useMemo(() => new Float32Array(MAX_LINKS * 2 * 3), []);
-  const lineColors = useMemo(() => new Float32Array(MAX_LINKS * 2 * 3), []);
-
-  const colors = useMemo(
-    () => ({
-      dot: tokenColor('--color-champagne-gold'),
-      line: tokenColor('--color-brushed-gold'),
-    }),
-    [],
-  );
+  const dotColor = useMemo(() => tokenColor('--color-champagne-gold'), []);
   const glowMap = useMemo(() => makeGlowTexture(), []);
 
   useEffect(() => {
@@ -164,91 +151,39 @@ function Particles({ density }: ParticlesProps) {
       pointPositions[i * 3 + 2] = 0;
     }
 
-    // connect neighbours; brightness encodes proximity (additive blend fades to invisible)
-    const energy = particleTuning.energy;
-    const linkDist = LINK_DIST * (1 + 0.2 * energy);
-    const lineAlpha = LINE_MAX_ALPHA * (1 + 0.35 * energy);
-    let seg = 0;
-    for (let i = 0; i < count && seg < MAX_LINKS; i++) {
-      const ax = pointPositions[i * 3];
-      const ay = pointPositions[i * 3 + 1];
-      for (let j = i + 1; j < count && seg < MAX_LINKS; j++) {
-        const bx = pointPositions[j * 3];
-        const by = pointPositions[j * 3 + 1];
-        const dx = ax - bx;
-        const dy = ay - by;
-        if (Math.abs(dx) > linkDist || Math.abs(dy) > linkDist) continue;
-        const d = Math.hypot(dx, dy);
-        if (d > linkDist) continue;
-        const alpha = (1 - d / linkDist) * lineAlpha;
-        const v = seg * 6;
-        linePositions[v] = ax;
-        linePositions[v + 1] = ay;
-        linePositions[v + 2] = 0;
-        linePositions[v + 3] = bx;
-        linePositions[v + 4] = by;
-        linePositions[v + 5] = 0;
-        lineColors[v] = colors.line.r * alpha;
-        lineColors[v + 1] = colors.line.g * alpha;
-        lineColors[v + 2] = colors.line.b * alpha;
-        lineColors[v + 3] = lineColors[v];
-        lineColors[v + 4] = lineColors[v + 1];
-        lineColors[v + 5] = lineColors[v + 2];
-        seg++;
-      }
-    }
-
     const points = pointsRef.current;
-    const lines = linesRef.current;
     if (points) {
       const attr = points.geometry.getAttribute('position') as THREE.BufferAttribute;
       attr.needsUpdate = true;
       points.geometry.setDrawRange(0, count);
     }
-    if (lines) {
-      const pos = lines.geometry.getAttribute('position') as THREE.BufferAttribute;
-      const col = lines.geometry.getAttribute('color') as THREE.BufferAttribute;
-      pos.needsUpdate = true;
-      col.needsUpdate = true;
-      lines.geometry.setDrawRange(0, seg * 2);
-    }
+    // hero scroll energy gently brightens the field
+    const mat = materialRef.current;
+    if (mat) mat.opacity = 0.85 * (1 + 0.15 * particleTuning.energy);
   });
 
   return (
-    <>
-      <points ref={pointsRef} frustumCulled={false}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[pointPositions, 3]} />
-        </bufferGeometry>
-        <pointsMaterial
-          color={colors.dot}
-          map={glowMap}
-          size={3.4}
-          sizeAttenuation={false}
-          transparent
-          opacity={0.85}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
-      </points>
-      <lineSegments ref={linesRef} frustumCulled={false}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[linePositions, 3]} />
-          <bufferAttribute attach="attributes-color" args={[lineColors, 3]} />
-        </bufferGeometry>
-        <lineBasicMaterial
-          vertexColors
-          transparent
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
-      </lineSegments>
-    </>
+    <points ref={pointsRef} frustumCulled={false}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[pointPositions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
+        ref={materialRef}
+        color={dotColor}
+        map={glowMap}
+        size={3.8}
+        sizeAttenuation={false}
+        transparent
+        opacity={0.85}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </points>
   );
 }
 
 interface ParticleFieldProps {
-  /** 1 = default density; the loading screen uses the same instance, so this rarely changes */
+  /** 1 = default density; the Home hero raises it slightly */
   density?: number;
 }
 
@@ -266,16 +201,9 @@ export function ParticleField({ density = 1 }: ParticleFieldProps) {
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
       >
+        {/* glow lives in the sprite texture (core + halo), matching the
+            ParticleSphere's per-particle treatment — no composer pass */}
         <Particles density={density} />
-        <EffectComposer>
-          <Bloom
-            intensity={0.55}
-            luminanceThreshold={0.1}
-            luminanceSmoothing={0.3}
-            mipmapBlur
-            radius={0.6}
-          />
-        </EffectComposer>
       </Canvas>
     </div>
   );

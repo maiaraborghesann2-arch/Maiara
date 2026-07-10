@@ -68,4 +68,18 @@ green shade. No raw hex values outside `tokens.css`.
       fallback, canvases pause when tab hidden / out of view, manual chunk
       splitting (three/gsap/motion/react), <480px static-orb sphere,
       aria-live form feedback.
+- [x] **Phase 4.5 — hero & global refinement**: two-column hero (copy left,
+      sphere right, 48px+ gutter; mobile stacks copy-then-sphere), sphere
+      radius +23%, halo/blob removed (per-particle shader glow only — the
+      composer Bloom pass zeroed canvas alpha and aggregated into a blob,
+      removed deliberately), peek-through reveal (dual point layers: cursor
+      repels sphere particles while hidden monogram particles brighten
+      through the gaps — no full morph), monogram fitted inside the sphere
+      (90% of diameter), noise-driven idle drift, ParticleField lines
+      removed (glow dots only, matching the sphere), lighter
+      --color-emerald-noir-deep bottom gradient, 3D camera-pivot page
+      transitions (rotateY ±8° / translateZ -100px, overlap via popLayout),
+      ambient audio loop (generated placeholder — swap licensed track at
+      public/audio/ambient-loop.wav) with nav mute toggle + localStorage
+      preference, and a stale-IntersectionObserver fix in useCanvasActive.
 - [ ] **Phase 5 — real content, imagery, form backend, deploy**

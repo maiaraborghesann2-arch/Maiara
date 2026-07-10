@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useState } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ParticleField } from './components/ParticleField';
 import { CustomCursor } from './components/CustomCursor';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -67,16 +67,20 @@ function AppInner() {
         <>
           <NavBar />
           <Suspense fallback={<RouteFallback />}>
-            <AnimatePresence mode="wait">
-              <Routes location={location} key={location.pathname}>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/projects/:slug" element={<ProjectDetail />} />
-                <Route path="/insights" element={<Insights />} />
-                <Route path="/insights/:slug" element={<ArticleDetail />} />
-                <Route path="/contact" element={<Contact />} />
-              </Routes>
+            {/* popLayout: exiting page pops out of flow so the entering page
+                overlaps it briefly — the "camera swing" between two angles */}
+            <AnimatePresence mode="popLayout">
+              <motion.div key={location.pathname} style={{ width: '100%' }}>
+                <Routes location={location}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/projects" element={<Projects />} />
+                  <Route path="/projects/:slug" element={<ProjectDetail />} />
+                  <Route path="/insights" element={<Insights />} />
+                  <Route path="/insights/:slug" element={<ArticleDetail />} />
+                  <Route path="/contact" element={<Contact />} />
+                </Routes>
+              </motion.div>
             </AnimatePresence>
           </Suspense>
           <Footer />
