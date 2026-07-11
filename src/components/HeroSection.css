@@ -7,15 +7,27 @@
   overflow: hidden;
 }
 
-/* Two-column stage 1: copy owns the left ~52%, the sphere the right ~45%.
-   Explicit max-widths + gutter guarantee the text's line length and the
-   sphere's bounding circle never intersect down to 1024px. */
-.hero-stage1 {
+/* Two-column layout: text left, sphere reserved right. The sphere canvas
+   itself is a separate full-bleed layer (below) so it can expand fullscreen
+   on scroll without being clipped by this grid — offsetX/offsetY on
+   <ParticleSphere> keep its resting position inside the right column. */
+.hero-grid {
   position: absolute;
   inset: 0;
-  display: flex;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 32rem) 1fr;
   align-items: center;
-  justify-content: flex-start;
+  gap: clamp(2rem, 5vw, 5rem);
+  max-width: 84rem;
+  margin: 0 auto;
+  padding: 0 var(--space-16);
+  pointer-events: none;
+}
+
+.hero-stage1 {
+  position: relative;
+  pointer-events: auto;
 }
 
 .hero-stage1-inner {
@@ -23,11 +35,13 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-8);
-  padding: var(--space-6) var(--space-6) var(--space-6) clamp(2rem, 7vw, 7.5rem);
-  width: 52%;
-  max-width: calc(52vw - 48px); /* min ~48px gutter to the sphere column */
   text-align: left;
   will-change: transform;
+}
+
+/* empty grid cell — reserves the column width the sphere rests within */
+.hero-sphere-col {
+  min-height: 1px;
 }
 
 .hero-headline {
@@ -65,10 +79,14 @@
   transform-origin: left center;
 }
 
-/* Particle sphere canvas layer — fills the pinned viewport, behind stage 1 text */
+/* Particle sphere canvas layer — full-bleed so it can expand fullscreen on
+   scroll (State C); at rest it renders inside the .hero-sphere-col bounds
+   via offsetX/offsetY on <ParticleSphere>, so it never visually reaches
+   the text column. */
 .hero-sphere {
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
 }
 
@@ -148,7 +166,38 @@
   overflow: visible;
 }
 
-/* ---------- mobile: vertical stack — copy first, sphere below ---------- */
+/* ---------- mobile: sphere stacked above text, never behind it ---------- */
+
+@media (max-width: 767px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: 48% 52%;
+    padding: 0 var(--space-6);
+    gap: 0;
+  }
+
+  .hero-sphere-col {
+    grid-row: 1;
+  }
+
+  .hero-stage1 {
+    grid-row: 2;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: var(--space-8);
+  }
+
+  .hero-stage1-inner {
+    align-items: flex-start;
+    gap: var(--space-6);
+  }
+
+  .hero-rule {
+    display: none;
+  }
+}
+
+/* ---------- mobile: horizontal scroll-snap pillars ---------- */
 
 @media (max-width: 767px) {
   .hero-stage1 {

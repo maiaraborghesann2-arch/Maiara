@@ -21,7 +21,7 @@ npm run build    # typecheck + production build
 
 ## Design system
 
-All tokens live in `src/styles/tokens.css`. **Emerald Noir `#0B1F1A` is the
+All tokens live in `src/styles/tokens.css`. **Emerald Noir `#10281F` is the
 only green permitted anywhere on the site** — do not introduce any other
 green shade. No raw hex values outside `tokens.css`.
 

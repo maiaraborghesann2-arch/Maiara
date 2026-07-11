@@ -85,6 +85,7 @@ function Particles({ density }: ParticlesProps) {
   const pointPositions = useMemo(() => new Float32Array(MAX_PARTICLES * 3), []);
   const dotColor = useMemo(() => tokenColor('--color-champagne-gold'), []);
   const glowMap = useMemo(() => makeGlowTexture(), []);
+  const matRef = useRef<THREE.PointsMaterial>(null);
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {

@@ -7,7 +7,7 @@
   /* ---- Color ----
      CRITICAL: emerald-noir is the ONLY green on the entire site.
      Never introduce #10362E, #164C3F, or any other green. */
-  --color-emerald-noir: #0b1f1a; /* the ONLY green — dominant background, ~54% visual weight */
+  --color-emerald-noir: #10281f; /* the ONLY green — dominant background, ~54% visual weight (lightened from #0b1f1a, brand identity preserved) */
   --color-obsidian: #1a1a1a; /* near-black, secondary background/text, ~4% */
   --color-brushed-gold: #b8924f; /* accent, sparingly used, ~8% */
   --color-champagne-gold: #d4b47a; /* highlight/detail accent, ~6% */
