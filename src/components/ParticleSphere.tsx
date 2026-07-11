@@ -69,8 +69,11 @@ const SPHERE_VERTEX = /* glsl */ `
   varying float vShimmer;
   ${DRIFT}
 
-  ${NOISE_GLSL}
-  ${ROTY_GLSL}
+  vec3 rotY(vec3 p, float a) {
+    float c = cos(a);
+    float s = sin(a);
+    return vec3(p.x * c + p.z * s, p.y, -p.x * s + p.z * c);
+  }
 
   void main() {
     vec3 sph = rotY(aSphere, uRot);
@@ -138,61 +141,11 @@ const FRAGMENT = /* glsl */ `
   }
 `;
 
-// ---------------- logo (hidden reveal layer) shader ----------------
-
-const LOGO_VERTEX = /* glsl */ `
-  attribute vec3 aLogo;
-  attribute vec3 aAnchor;
-  attribute float aPhase;
-  attribute float aSize;
-  uniform float uRot;
-  uniform float uExpand;
-  uniform float uScaleFactor;
-  uniform float uHoverActive;
-  uniform vec3 uHoverLocal;
-  uniform float uHoverRadius;
-  varying float vReveal;
-
-  ${ROTY_GLSL}
-
-  void main() {
-    vec3 pos = rotY(aLogo, uRot);
-    vec3 anchor = rotY(aAnchor, 0.0); // anchor stays in aSphere-local space for the distance test
-
-    float d = length(aAnchor - uHoverLocal);
-    float reveal = uHoverActive * (1.0 - smoothstep(0.0, uHoverRadius, d));
-    vReveal = reveal * (1.0 - uExpand);
-
-    vec4 mv = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = aSize * uScaleFactor / -mv.z;
-    gl_Position = projectionMatrix * mv;
-  }
-`;
-
-const LOGO_FRAGMENT = /* glsl */ `
-  uniform vec3 uCore;
-  uniform vec3 uOuter;
-  varying float vReveal;
-
-  void main() {
-    if (vReveal < 0.01) discard;
-    vec2 uv = gl_PointCoord - 0.5;
-    float d = length(uv);
-    float core = smoothstep(0.22, 0.0, d);
-    float halo = smoothstep(0.5, 0.08, d);
-    float a = (core + halo * 0.45) * vReveal * 0.95;
-    if (a < 0.01) discard;
-    vec3 col = uCore * core + uOuter * halo * 0.6;
-    gl_FragColor = vec4(col * a, a);
-  }
-`;
-
 interface SphereProps {
   count: number;
   radius: number;
   interactive: boolean;
   offsetX: number; // horizontal placement as fraction of viewport width (0 = center)
-  offsetY: number; // vertical placement as fraction of viewport height (0 = center)
   expand: { value: number } | null; // scrubbed 0→1 by the hero ScrollTrigger timeline
   mobileLayout: 'hero' | 'center';
   forceStatic: boolean;
@@ -203,7 +156,6 @@ function SphereParticles({
   radius,
   interactive,
   offsetX,
-  offsetY,
   expand,
   mobileLayout,
   forceStatic,
@@ -220,14 +172,6 @@ function SphereParticles({
   const pointer = useRef({ x: 1e6, y: 1e6, active: false });
   const presence = useRef(0);
   const smooth = useRef(new THREE.Vector3(1e6, 1e6, 0));
-
-  // hover state: target (from raycasting) + eased current values
-  const hoverOn = useRef(false);
-  const hoverActive = useMemo(() => ({ value: 0 }), []);
-  const hoverTargetLocal = useRef(new THREE.Vector3(1e6, 1e6, 1e6));
-  const hoverCurrentLocal = useRef(new THREE.Vector3(1e6, 1e6, 1e6));
-
-  const logoCount = useMemo(() => Math.round(count * 0.55), [count]);
 
   const attrs = useMemo(() => {
     const sphere = new Float32Array(count * 3);
@@ -327,10 +271,6 @@ function SphereParticles({
       time.current += dt;
     }
 
-    // smooth chase toward the raycast hit point (the "hole" following the cursor)
-    const chase = 1 - Math.exp(-10 * dt);
-    hoverCurrentLocal.current.lerp(hoverTargetLocal.current, chase);
-
     const exp = expand?.value ?? 0;
     const visH = 2 * CAMERA_Z * Math.tan((FOV * Math.PI) / 360);
     const visW = visH * viewport.aspect;
@@ -423,7 +363,6 @@ export interface ParticleSphereProps {
   radius?: number;
   interactive?: boolean;
   offsetX?: number;
-  offsetY?: number;
   expand?: { value: number } | null;
   /** 'hero': below-copy placement + 60% scale on mobile; 'center': centered */
   mobileLayout?: 'hero' | 'center';
@@ -435,7 +374,6 @@ export default function ParticleSphere({
   radius = 1.6,
   interactive = true,
   offsetX = 0,
-  offsetY = 0,
   expand = null,
   mobileLayout = 'center',
 }: ParticleSphereProps) {
@@ -459,7 +397,6 @@ export default function ParticleSphere({
           radius={radius}
           interactive={interactive && !tiny}
           offsetX={offsetX}
-          offsetY={offsetY}
           expand={expand}
           mobileLayout={mobileLayout}
           forceStatic={tiny}
