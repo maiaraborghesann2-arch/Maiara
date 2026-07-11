@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useState } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { ParticleField } from './components/ParticleField';
 import { CustomCursor } from './components/CustomCursor';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -9,7 +9,6 @@ import { NavBar } from './components/NavBar';
 import { Footer } from './components/Footer';
 import { Logo } from './components/Logo';
 import { RouteCameraTransition } from './components/RouteCameraTransition';
-import { AmbientAudio } from './components/AmbientAudio';
 
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })));
@@ -84,7 +83,6 @@ function AppInner() {
             </Suspense>
           </RouteCameraTransition>
           <Footer />
-          <AmbientAudio />
         </>
       )}
     </SmoothScroll>

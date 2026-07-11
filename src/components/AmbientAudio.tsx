@@ -1,78 +1,121 @@
-import { useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
+import gsap from 'gsap';
 import './AmbientAudio.css';
 
 /**
- * Ambient loop + mute toggle, autoplay-policy safe:
- *  - starts muted (browsers always allow muted autoplay)
- *  - the first user interaction anywhere on the page unmutes and starts
- *    playback with sound
- *  - the toggle button can mute/unmute at any time afterwards
+ * Global looping ambient pad. Muted by default (browser autoplay policy);
+ * the user's FIRST interaction anywhere starts playback with a gentle
+ * fade-in — unless they previously muted it (preference in localStorage).
  *
- * To swap the track later: replace public/audio/ambient.mp3 — no
- * component logic needs to change.
+ * PLACEHOLDER TRACK: /public/audio/ambient-loop.wav is a generated,
+ * royalty-free seamless drone. Leonardo: swap in the final licensed track
+ * at the same path (or update AUDIO_SRC below).
  */
-const TRACK_SRC = '/audio/ambient.mp3';
+const AUDIO_SRC = '/audio/ambient-loop.wav';
+const PREF_KEY = 'lyken:audio'; // 'on' | 'muted'
+const TARGET_VOLUME = 0.22;
 
-export function AmbientAudio() {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [muted, setMuted] = useState(true);
+interface AudioCtx {
+  muted: boolean;
+  toggle: () => void;
+}
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.volume = 0.35;
-    audio.play().catch(() => {}); // muted autoplay is always permitted
+const Ctx = createContext<AudioCtx>({ muted: true, toggle: () => {} });
+
+export function useAmbientAudio() {
+  return useContext(Ctx);
+}
+
+export function AmbientAudioProvider({ children }: { children: ReactNode }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [muted, setMuted] = useState(() => localStorage.getItem(PREF_KEY) === 'muted');
+  const startedRef = useRef(false);
+
+  const fadeTo = useCallback((vol: number) => {
+    const el = audioRef.current;
+    if (!el) return;
+    gsap.killTweensOf(el);
+    gsap.to(el, { volume: vol, duration: 1.6, ease: 'power1.inOut' });
   }, []);
 
+  // first user interaction anywhere starts the loop (fading in unless muted)
   useEffect(() => {
-    const audio = audioRef.current;
-    if (audio && !muted) {
-      audio.play().catch(() => {});
-    }
-  }, [muted]);
-
-  useEffect(() => {
-    const unmuteOnFirstInteraction = () => setMuted(false);
-    window.addEventListener('pointerdown', unmuteOnFirstInteraction, { once: true });
-    window.addEventListener('keydown', unmuteOnFirstInteraction, { once: true });
-    return () => {
-      window.removeEventListener('pointerdown', unmuteOnFirstInteraction);
-      window.removeEventListener('keydown', unmuteOnFirstInteraction);
+    const start = () => {
+      if (startedRef.current) return;
+      startedRef.current = true;
+      const el = audioRef.current;
+      if (!el) return;
+      el.volume = 0;
+      el.play()
+        .then(() => {
+          if (localStorage.getItem(PREF_KEY) !== 'muted') fadeTo(TARGET_VOLUME);
+        })
+        .catch(() => {
+          startedRef.current = false; // retry on the next gesture
+        });
     };
-  }, []);
+    window.addEventListener('pointerdown', start, { passive: true });
+    window.addEventListener('keydown', start);
+    return () => {
+      window.removeEventListener('pointerdown', start);
+      window.removeEventListener('keydown', start);
+    };
+  }, [fadeTo]);
+
+  const toggle = useCallback(() => {
+    const next = !muted;
+    setMuted(next);
+    localStorage.setItem(PREF_KEY, next ? 'muted' : 'on');
+    const el = audioRef.current;
+    if (!el) return;
+    if (next) {
+      fadeTo(0);
+    } else {
+      if (el.paused) {
+        startedRef.current = true;
+        el.volume = 0;
+        el.play().catch(() => {});
+      }
+      fadeTo(TARGET_VOLUME);
+    }
+  }, [muted, fadeTo]);
 
   return (
-    <>
-      <audio ref={audioRef} src={TRACK_SRC} loop muted={muted} playsInline preload="auto" />
-      <button
-        type="button"
-        className="ambient-audio-toggle"
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={() => setMuted((m) => !m)}
-        aria-pressed={!muted}
-        aria-label={muted ? 'Unmute ambient sound' : 'Mute ambient sound'}
-        data-magnetic
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 9v6h4l5 4V5L8 9H4Z" fill="currentColor" />
-          {muted ? (
-            <path
-              d="M17 8.5 22 15.5M22 8.5 17 15.5"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          ) : (
-            <path
-              d="M16.5 8.5c1.1 1.1 1.1 5.9 0 7M19 6c2.4 2.4 2.4 9.6 0 12"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              fill="none"
-            />
-          )}
-        </svg>
-      </button>
-    </>
+    <Ctx.Provider value={{ muted, toggle }}>
+      <audio ref={audioRef} src={AUDIO_SRC} loop preload="auto" />
+      {children}
+    </Ctx.Provider>
+  );
+}
+
+/** Minimal speaker toggle — lives in the NavBar, persists across routes. */
+export function AudioToggle() {
+  const { muted, toggle } = useAmbientAudio();
+  return (
+    <button
+      className="audio-toggle"
+      onClick={toggle}
+      aria-label={muted ? 'Unmute ambient sound' : 'Mute ambient sound'}
+      aria-pressed={!muted}
+      data-magnetic
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M4 9.5v5h3.5L13 19V5L7.5 9.5H4Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        {muted ? (
+          <path d="M16.5 9.5 21 14.5M21 9.5l-4.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        ) : (
+          <>
+            <path d="M16 9.4a4 4 0 0 1 0 5.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M18.6 7a7.5 7.5 0 0 1 0 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </>
+        )}
+      </svg>
+    </button>
   );
 }
