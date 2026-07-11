@@ -1,17 +1,14 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useCanvasActive } from '../hooks/useCanvasActive';
 
 /**
- * Ambient field of glowing gold dots — fragments that read as if they'd
- * drifted off the hero ParticleSphere. Mounted ONCE at the app root
- * (behind everything, z: var(--z-background)) so it runs seamlessly from
- * the loading screen into every page. No connecting lines: same glow
- * language as the sphere (radial sprite + additive blending), scattered
- * and unconnected.
+ * Ambient drift of glowing gold dots — visually "scattered fragments" of the
+ * hero ParticleSphere (same core+halo glow treatment, no connecting lines).
+ * Mounted ONCE at the app root (behind everything, z: var(--z-background))
+ * so it runs seamlessly from the loading screen into every page.
  */
 
 const MAX_PARTICLES = 80; // hard cap for mid-range hardware (desktop)
@@ -21,8 +18,7 @@ const MOUSE_PUSH = 46; // px — max displacement of pushed particles
 
 /**
  * Scroll-scrubbed tuning channel. The hero timeline tweens `energy` 0→1
- * while pinned, which subtly raises dot brightness/size without
- * re-allocating particles.
+ * while pinned, which subtly raises particle brightness.
  */
 export const particleTuning = { energy: 0 };
 
@@ -31,7 +27,7 @@ function tokenColor(name: string): THREE.Color {
   return new THREE.Color(raw || '#ffffff');
 }
 
-/** soft radial-gradient sprite so each dot has a luminous falloff */
+/** soft radial-gradient sprite — same glow language as the ParticleSphere points */
 function makeGlowTexture(): THREE.Texture {
   const c = document.createElement('canvas');
   c.width = 64;
@@ -39,7 +35,7 @@ function makeGlowTexture(): THREE.Texture {
   const ctx = c.getContext('2d')!;
   const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
   g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+  g.addColorStop(0.3, 'rgba(255,255,255,0.5)');
   g.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 64, 64);
@@ -63,6 +59,7 @@ function Particles({ density }: ParticlesProps) {
   }, [size.width, size.height, density]);
 
   const pointsRef = useRef<THREE.Points>(null);
+  const materialRef = useRef<THREE.PointsMaterial>(null);
   const mouse = useRef({ x: 1e6, y: 1e6 }); // far away until first move
   const bounds = useRef({ w: size.width, h: size.height });
   bounds.current = { w: size.width, h: size.height };
@@ -86,8 +83,7 @@ function Particles({ density }: ParticlesProps) {
   }, []);
 
   const pointPositions = useMemo(() => new Float32Array(MAX_PARTICLES * 3), []);
-
-  const colors = useMemo(() => tokenColor('--color-champagne-gold'), []);
+  const dotColor = useMemo(() => tokenColor('--color-champagne-gold'), []);
   const glowMap = useMemo(() => makeGlowTexture(), []);
   const matRef = useRef<THREE.PointsMaterial>(null);
 
@@ -162,14 +158,9 @@ function Particles({ density }: ParticlesProps) {
       attr.needsUpdate = true;
       points.geometry.setDrawRange(0, count);
     }
-
-    // scroll-scrubbed energy nudges glow — same visual language as the sphere
-    const mat = matRef.current;
-    if (mat) {
-      const energy = particleTuning.energy;
-      mat.opacity = 0.82 + 0.15 * energy;
-      mat.size = 4.2 * (1 + 0.25 * energy);
-    }
+    // hero scroll energy gently brightens the field
+    const mat = materialRef.current;
+    if (mat) mat.opacity = 0.85 * (1 + 0.15 * particleTuning.energy);
   });
 
   return (
@@ -178,13 +169,13 @@ function Particles({ density }: ParticlesProps) {
         <bufferAttribute attach="attributes-position" args={[pointPositions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        ref={matRef}
-        color={colors}
+        ref={materialRef}
+        color={dotColor}
         map={glowMap}
-        size={4.2}
+        size={3.8}
         sizeAttenuation={false}
         transparent
-        opacity={0.82}
+        opacity={0.85}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -193,7 +184,7 @@ function Particles({ density }: ParticlesProps) {
 }
 
 interface ParticleFieldProps {
-  /** 1 = default density; the loading screen uses the same instance, so this rarely changes */
+  /** 1 = default density; the Home hero raises it slightly */
   density?: number;
 }
 
@@ -211,16 +202,9 @@ export function ParticleField({ density = 1 }: ParticleFieldProps) {
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
       >
+        {/* glow lives in the sprite texture (core + halo), matching the
+            ParticleSphere's per-particle treatment — no composer pass */}
         <Particles density={density} />
-        <EffectComposer>
-          <Bloom
-            intensity={0.55}
-            luminanceThreshold={0.1}
-            luminanceSmoothing={0.3}
-            mipmapBlur={false}
-            radius={0.3}
-          />
-        </EffectComposer>
       </Canvas>
     </div>
   );

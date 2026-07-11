@@ -1,6 +1,6 @@
 .footer {
   position: relative;
-  background: var(--color-pure-black);
+  background: var(--color-emerald-noir-deep);
   padding: var(--space-16) var(--space-8) var(--space-8);
   color: color-mix(in srgb, var(--color-cream) 65%, transparent);
 }

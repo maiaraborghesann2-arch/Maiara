@@ -164,7 +164,7 @@ export function HeroSection() {
             a centered top-half placement below 768px. */}
         <div className="hero-sphere" aria-hidden="true">
           <Suspense fallback={null}>
-            <ParticleSphere offsetX={0.27} offsetY={0.03} expand={expandProgress} />
+            <ParticleSphere offsetX={0.26} expand={expandProgress} mobileLayout="hero" />
           </Suspense>
         </div>
       </div>

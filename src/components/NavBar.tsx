@@ -4,6 +4,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import { Logo } from './Logo';
 import { LiquidText } from './LiquidText';
+import { AudioToggle } from './AmbientAudio';
 import './NavBar.css';
 
 const LINKS = [
@@ -132,23 +133,26 @@ export function NavBar() {
         <Logo size={28} monogramOnly />
       </Link>
 
-      <nav className="navbar-links" aria-label="Primary">
-        {LINKS.map((l) => (
-          <NavItem key={l.to} {...l} />
-        ))}
-      </nav>
+      <div className="navbar-right">
+        <nav className="navbar-links" aria-label="Primary">
+          {LINKS.map((l) => (
+            <NavItem key={l.to} {...l} />
+          ))}
+        </nav>
+        <AudioToggle />
 
-      <button
-        className="navbar-burger"
-        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-        aria-expanded={menuOpen}
-        data-magnetic
-        onClick={() => (menuOpen ? closeMenu() : setMenuOpen(true))}
-      >
-        <span />
-        <span />
-        <span />
-      </button>
+        <button
+          className="navbar-burger"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+          data-magnetic
+          onClick={() => (menuOpen ? closeMenu() : setMenuOpen(true))}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      </div>
 
       {menuOpen &&
         createPortal(

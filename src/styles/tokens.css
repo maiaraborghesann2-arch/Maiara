@@ -12,7 +12,8 @@
   --color-brushed-gold: #b8924f; /* accent, sparingly used, ~8% */
   --color-champagne-gold: #d4b47a; /* highlight/detail accent, ~6% */
   --color-cream: #f5f0e8; /* primary light text on dark backgrounds */
-  --color-pure-black: #0a0f0a; /* deepest background layer, behind emerald-noir (lightened from #050805) */
+  --color-pure-black: #050805; /* deepest background layer, behind emerald-noir */
+  --color-emerald-noir-deep: #0a1a15; /* lightened deep stop for bottom gradients — same hue family */
 
   /* ---- Typography ---- */
   --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
