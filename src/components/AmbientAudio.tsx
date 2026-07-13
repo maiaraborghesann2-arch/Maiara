@@ -1,78 +1,159 @@
-import { useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import './AmbientAudio.css';
 
 /**
- * Ambient loop + mute toggle, autoplay-policy safe:
- *  - starts muted (browsers always allow muted autoplay)
- *  - the first user interaction anywhere on the page unmutes and starts
- *    playback with sound
- *  - the toggle button can mute/unmute at any time afterwards
+ * Ambient audio engine + mute toggle, autoplay-policy safe.
  *
- * To swap the track later: replace public/audio/ambient.mp3 — no
- * component logic needs to change.
+ * Playback uses the Web Audio API with TWO overlapping buffer sources and a
+ * gain crossfade at every loop boundary, so the restart is inaudible even if
+ * the underlying file's head/tail aren't sample-perfect. Nothing is audible
+ * until the user's first interaction (pointer/key) — browsers require a
+ * gesture before an AudioContext may produce sound, and we only build the
+ * graph inside that first gesture.
+ *
+ * PLACEHOLDER TRACK: public/audio/ambient-loop.wav is a generated royalty-free
+ * lo-fi pad loop (warm e-piano chords + vinyl crackle, pre-rendered as a
+ * seamless loop). Swap in the final licensed track by replacing that file —
+ * any duration works, the crossfade scheduler adapts to the buffer length.
  */
-const TRACK_SRC = '/audio/ambient.mp3';
+const TRACK_SRC = '/audio/ambient-loop.wav';
+const VOLUME = 0.32;
+const CROSSFADE_S = 1.6; // overlap at the loop boundary
+const MUTE_RAMP_S = 0.25;
 
-export function AmbientAudio() {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [muted, setMuted] = useState(true);
+interface AmbientAudioContextValue {
+  muted: boolean;
+  toggle: () => void;
+}
 
+const AmbientAudioContext = createContext<AmbientAudioContextValue>({
+  muted: true,
+  toggle: () => {},
+});
+
+export function AmbientAudioProvider({ children }: { children: ReactNode }) {
+  const [muted, setMuted] = useState(false); // intent; silent until first gesture regardless
+  const mutedRef = useRef(muted);
+  mutedRef.current = muted;
+
+  const engineRef = useRef<{
+    ctx: AudioContext;
+    master: GainNode;
+    timer: number;
+  } | null>(null);
+  const startingRef = useRef(false);
+
+  // Build the audio graph inside the first user gesture (autoplay-safe).
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.volume = 0.35;
-    audio.play().catch(() => {}); // muted autoplay is always permitted
-  }, []);
+    const start = async () => {
+      if (startingRef.current) return;
+      startingRef.current = true;
+      try {
+        const ctx = new AudioContext();
+        await ctx.resume();
+        const master = ctx.createGain();
+        master.gain.value = mutedRef.current ? 0 : VOLUME;
+        master.connect(ctx.destination);
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio && !muted) {
-      audio.play().catch(() => {});
-    }
-  }, [muted]);
+        const res = await fetch(TRACK_SRC);
+        const buffer = await ctx.decodeAudioData(await res.arrayBuffer());
 
-  useEffect(() => {
-    const unmuteOnFirstInteraction = () => setMuted(false);
-    window.addEventListener('pointerdown', unmuteOnFirstInteraction, { once: true });
-    window.addEventListener('keydown', unmuteOnFirstInteraction, { once: true });
+        const engine = { ctx, master, timer: 0 };
+        engineRef.current = engine;
+
+        // Dual-source crossfade loop: each pass fades in over the previous
+        // pass's fade-out, centered on the loop boundary.
+        const period = Math.max(1, buffer.duration - CROSSFADE_S);
+        let nextStart = ctx.currentTime + 0.05;
+
+        const scheduleOne = () => {
+          const src = ctx.createBufferSource();
+          src.buffer = buffer;
+          const fade = ctx.createGain();
+          src.connect(fade);
+          fade.connect(master);
+          const t0 = nextStart;
+          fade.gain.setValueAtTime(0, t0);
+          fade.gain.linearRampToValueAtTime(1, t0 + CROSSFADE_S);
+          fade.gain.setValueAtTime(1, t0 + buffer.duration - CROSSFADE_S);
+          fade.gain.linearRampToValueAtTime(0, t0 + buffer.duration);
+          src.start(t0);
+          src.stop(t0 + buffer.duration + 0.1);
+          nextStart = t0 + period;
+          // wake up ~2s before the next pass is due
+          const delayMs = Math.max(250, (nextStart - ctx.currentTime - 2) * 1000);
+          engine.timer = window.setTimeout(scheduleOne, delayMs);
+        };
+        scheduleOne();
+      } catch {
+        startingRef.current = false; // allow retry on a later gesture
+      }
+    };
+
+    window.addEventListener('pointerdown', start, { once: true });
+    window.addEventListener('keydown', start, { once: true });
     return () => {
-      window.removeEventListener('pointerdown', unmuteOnFirstInteraction);
-      window.removeEventListener('keydown', unmuteOnFirstInteraction);
+      window.removeEventListener('pointerdown', start);
+      window.removeEventListener('keydown', start);
+      const engine = engineRef.current;
+      if (engine) {
+        clearTimeout(engine.timer);
+        engine.ctx.close().catch(() => {});
+        engineRef.current = null;
+      }
     };
   }, []);
 
+  // Apply mute state as a smooth master-gain ramp.
+  useEffect(() => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    const { ctx, master } = engine;
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(muted ? 0 : VOLUME, ctx.currentTime + MUTE_RAMP_S);
+  }, [muted]);
+
   return (
-    <>
-      <audio ref={audioRef} src={TRACK_SRC} loop muted={muted} playsInline preload="auto" />
-      <button
-        type="button"
-        className="ambient-audio-toggle"
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={() => setMuted((m) => !m)}
-        aria-pressed={!muted}
-        aria-label={muted ? 'Unmute ambient sound' : 'Mute ambient sound'}
-        data-magnetic
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 9v6h4l5 4V5L8 9H4Z" fill="currentColor" />
-          {muted ? (
-            <path
-              d="M17 8.5 22 15.5M22 8.5 17 15.5"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          ) : (
-            <path
-              d="M16.5 8.5c1.1 1.1 1.1 5.9 0 7M19 6c2.4 2.4 2.4 9.6 0 12"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              fill="none"
-            />
-          )}
-        </svg>
-      </button>
-    </>
+    <AmbientAudioContext.Provider value={{ muted, toggle: () => setMuted((m) => !m) }}>
+      {children}
+    </AmbientAudioContext.Provider>
+  );
+}
+
+/** Speaker button (rendered inside the NavBar) toggling the ambient loop. */
+export function AudioToggle() {
+  const { muted, toggle } = useContext(AmbientAudioContext);
+
+  return (
+    <button
+      type="button"
+      className="ambient-audio-toggle"
+      onClick={toggle}
+      aria-pressed={!muted}
+      aria-label={muted ? 'Unmute ambient sound' : 'Mute ambient sound'}
+      data-magnetic
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 9v6h4l5 4V5L8 9H4Z" fill="currentColor" />
+        {muted ? (
+          <path
+            d="M17 8.5 22 15.5M22 8.5 17 15.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        ) : (
+          <path
+            d="M16.5 8.5c1.1 1.1 1.1 5.9 0 7M19 6c2.4 2.4 2.4 9.6 0 12"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            fill="none"
+          />
+        )}
+      </svg>
+    </button>
   );
 }

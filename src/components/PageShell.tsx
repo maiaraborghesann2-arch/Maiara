@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -18,9 +18,17 @@ interface PageShellProps {
  * overlapping briefly (AnimatePresence mode="popLayout" in App). Reduced
  * motion falls back to a plain opacity fade. Also resets scroll and
  * re-measures ScrollTriggers once the enter transform settles.
+ *
+ * IMPORTANT: once the enter animation completes, the inline transform is
+ * hard-reset to `none`. Framer Motion otherwise leaves a residual
+ * perspective/matrix3d on this <main>, and ANY resting transform here makes
+ * it the containing block for position:fixed descendants — silently breaking
+ * GSAP ScrollTrigger pinning inside the page (the Home hero's pinned
+ * expansion sequence would collapse into dead scroll space).
  */
 export function PageShell({ children, className = '' }: PageShellProps) {
   const reduced = useMemo(() => prefersReducedMotion(), []);
+  const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -50,6 +58,7 @@ export function PageShell({ children, className = '' }: PageShellProps) {
 
   return (
     <motion.main
+      ref={mainRef}
       className={className}
       style={{
         transformPerspective: 1200,
@@ -60,7 +69,16 @@ export function PageShell({ children, className = '' }: PageShellProps) {
       initial="initial"
       animate="animate"
       exit="exit"
-      onAnimationComplete={() => ScrollTrigger.refresh()}
+      onAnimationComplete={(definition) => {
+        if (definition === 'animate') {
+          const el = mainRef.current;
+          if (el) {
+            el.style.transform = 'none';
+            el.style.willChange = 'auto';
+          }
+        }
+        ScrollTrigger.refresh();
+      }}
     >
       {children}
     </motion.main>

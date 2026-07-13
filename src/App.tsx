@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useState } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { ParticleField } from './components/ParticleField';
 import { CustomCursor } from './components/CustomCursor';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -8,8 +8,6 @@ import { SmoothScroll } from './components/SmoothScroll';
 import { NavBar } from './components/NavBar';
 import { Footer } from './components/Footer';
 import { Logo } from './components/Logo';
-import { RouteCameraTransition } from './components/RouteCameraTransition';
-import { AmbientAudio } from './components/AmbientAudio';
 
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })));
@@ -68,23 +66,24 @@ function AppInner() {
       {booted && (
         <>
           <NavBar />
-          <RouteCameraTransition>
-            <Suspense fallback={<RouteFallback />}>
-              <AnimatePresence mode="wait">
-                <Routes location={location} key={location.pathname}>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/projects" element={<Projects />} />
-                  <Route path="/projects/:slug" element={<ProjectDetail />} />
-                  <Route path="/insights" element={<Insights />} />
-                  <Route path="/insights/:slug" element={<ArticleDetail />} />
-                  <Route path="/contact" element={<Contact />} />
-                </Routes>
-              </AnimatePresence>
-            </Suspense>
-          </RouteCameraTransition>
+          {/* Route "camera pivot" transition lives in <PageShell /> (framer),
+              which each page renders as its root — no extra wrapper here.
+              A persistent transformed wrapper around the routes would break
+              ScrollTrigger pinning (fixed-position containing block). */}
+          <Suspense fallback={<RouteFallback />}>
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/projects/:slug" element={<ProjectDetail />} />
+                <Route path="/insights" element={<Insights />} />
+                <Route path="/insights/:slug" element={<ArticleDetail />} />
+                <Route path="/contact" element={<Contact />} />
+              </Routes>
+            </AnimatePresence>
+          </Suspense>
           <Footer />
-          <AmbientAudio />
         </>
       )}
     </SmoothScroll>

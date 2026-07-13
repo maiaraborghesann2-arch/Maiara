@@ -1,8 +1,0 @@
-.route-viewport {
-  perspective: 1400px;
-}
-
-.route-stage {
-  transform-style: preserve-3d;
-  will-change: transform;
-}

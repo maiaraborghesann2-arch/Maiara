@@ -127,7 +127,7 @@
 
 .pillar-title {
   font-size: 1.75rem;
-  color: var(--color-champagne-gold);
+  color: var(--color-cream); /* was champagne-gold — too dark against the card */
   margin-bottom: var(--space-4);
 }
 
