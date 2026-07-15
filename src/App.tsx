@@ -8,6 +8,7 @@ import { SmoothScroll } from './components/SmoothScroll';
 import { NavBar } from './components/NavBar';
 import { Footer } from './components/Footer';
 import { Logo } from './components/Logo';
+import { LayoutGate } from './components/LayoutGate';
 
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })));
@@ -65,6 +66,9 @@ function AppInner() {
 
       {booted && (
         <>
+          {/* Opaque veil until fonts + layout settle — no flash of
+              mispositioned content on either boot path (see LayoutGate). */}
+          <LayoutGate />
           <NavBar />
           {/* Route "camera pivot" transition lives in <PageShell /> (framer),
               which each page renders as its root — no extra wrapper here.

@@ -5,29 +5,14 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { LiquidText } from './LiquidText';
 import { particleTuning } from './ParticleField';
 import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { useLang } from '../i18n/LanguageContext';
 import './HeroSection.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const ParticleSphere = lazy(() => import('./ParticleSphere'));
 
-const PILLARS = [
-  {
-    numeral: 'I',
-    title: 'Strategic',
-    text: 'Every decision starts with positioning, not decoration.',
-  },
-  {
-    numeral: 'II',
-    title: 'Considered',
-    text: 'Restraint is a design choice. We use it deliberately.',
-  },
-  {
-    numeral: 'III',
-    title: 'Enduring',
-    text: 'Brands built to outlast trends, not chase them.',
-  },
-];
+const PILLAR_NUMERALS = ['I', 'II', 'III'];
 
 /**
  * Cinematic pinned scroll sequence (~250vh):
@@ -41,6 +26,7 @@ const PILLARS = [
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const reduced = useMemo(() => prefersReducedMotion(), []);
+  const { dict } = useLang();
   // scrubbed by the pinned timeline; read by ParticleSphere each frame
   const [expandProgress] = useState(() => ({ value: 0 }));
 
@@ -119,21 +105,24 @@ export function HeroSection() {
             <div className="hero-stage1-inner">
               <h1 className="hero-headline">
                 <span className="hero-line">
-                  <LiquidText as="span">Intelligent Strategy.</LiquidText>
+                  <LiquidText as="span">{dict.hero.line1}</LiquidText>
                 </span>
                 <span className="hero-line">
-                  <LiquidText as="span" italic className="hero-line-gold">
-                    Unforgettable
-                  </LiquidText>{' '}
-                  <LiquidText as="span">Brands.</LiquidText>
+                  {dict.hero.line2.map((seg, i) => (
+                    <LiquidText
+                      key={i}
+                      as="span"
+                      italic={!!seg.gold}
+                      className={seg.gold ? 'hero-line-gold' : ''}
+                    >
+                      {seg.text}
+                    </LiquidText>
+                  ))}
                 </span>
               </h1>
-              <p className="hero-subline">
-                Brand identity, digital experience, and AI-integrated design for ambitious
-                companies.
-              </p>
+              <p className="hero-subline">{dict.hero.subline}</p>
               <Link to="/projects" className="btn-ghost" data-magnetic>
-                View Our Work
+                {dict.hero.cta}
               </Link>
             </div>
             <div className="hero-rule" aria-hidden="true" />
@@ -161,10 +150,10 @@ export function HeroSection() {
       {/* -------- Stage 3 -------- */}
       <div className="hero-pillars">
         <div className="hero-pillars-row">
-          {PILLARS.map((p) => (
-            <article key={p.numeral} className="pillar-card" data-fade>
+          {dict.hero.pillars.map((p, i) => (
+            <article key={PILLAR_NUMERALS[i]} className="pillar-card" data-fade>
               <span className="pillar-numeral" aria-hidden="true">
-                {p.numeral}
+                {PILLAR_NUMERALS[i]}
               </span>
               <h2 className="pillar-title">{p.title}</h2>
               <p className="pillar-text">{p.text}</p>

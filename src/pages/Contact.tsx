@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { PageShell } from '../components/PageShell';
 import { Seo } from '../components/Seo';
 import { LiquidText } from '../components/LiquidText';
+import { useLang } from '../i18n/LanguageContext';
 import './Contact.css';
 
 const ParticleSphere = lazy(() => import('../components/ParticleSphere'));
@@ -41,7 +42,8 @@ function Field({ label, name, type = 'text', textarea, required, value, onChange
         animate={{
           y: floated ? -24 : 0,
           scale: floated ? 0.72 : 1,
-          opacity: floated ? 0.9 : 0.55,
+          // contrast pass: resting labels were 0.55 (illegible in bright light)
+          opacity: floated ? 1 : 0.82,
         }}
         transition={{ type: 'spring', stiffness: 320, damping: 28 }}
       >
@@ -58,6 +60,7 @@ const INITIAL = { name: '', email: '', company: '', message: '' };
 export function Contact() {
   const [form, setForm] = useState(INITIAL);
   const [sent, setSent] = useState(false);
+  const { dict } = useLang();
 
   const update = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
 
@@ -72,7 +75,7 @@ export function Contact() {
     <PageShell className="page contact">
       <Seo title="Get in Touch — Lyken Agency" path="/contact" />
       <header className="page-head contact-head">
-        <span className="section-label">Get in Touch</span>
+        <span className="section-label">{dict.contact.label}</span>
         <LiquidText as="h1" className="page-headline contact-headline">
           Lorem ipsum dolor sit amet.
         </LiquidText>
@@ -80,10 +83,10 @@ export function Contact() {
 
       <div className="contact-cols">
         <form className="contact-form" onSubmit={submit} noValidate={false}>
-          <Field label="Name" name="name" required value={form.name} onChange={update} />
-          <Field label="Email" name="email" type="email" required value={form.email} onChange={update} />
-          <Field label="Company (optional)" name="company" value={form.company} onChange={update} />
-          <Field label="Message" name="message" textarea required value={form.message} onChange={update} />
+          <Field label={dict.contact.name} name="name" required value={form.name} onChange={update} />
+          <Field label={dict.contact.email} name="email" type="email" required value={form.email} onChange={update} />
+          <Field label={dict.contact.company} name="company" value={form.company} onChange={update} />
+          <Field label={dict.contact.message} name="message" textarea required value={form.message} onChange={update} />
 
           <div className="contact-submit-row" aria-live="polite">
             <AnimatePresence mode="wait">
@@ -97,7 +100,7 @@ export function Contact() {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  Thank you — we'll be in touch shortly.
+                  {dict.contact.success}
                 </motion.p>
               ) : (
                 <motion.button
@@ -107,14 +110,14 @@ export function Contact() {
                   data-magnetic
                   exit={{ opacity: 0, transition: { duration: 0.25 } }}
                 >
-                  Send Message
+                  {dict.contact.send}
                 </motion.button>
               )}
             </AnimatePresence>
           </div>
         </form>
 
-        <aside className="contact-aside" aria-label="Contact details">
+        <aside className="contact-aside" aria-label={dict.contact.asideLabel}>
           <div className="contact-details">
             <a href="mailto:hello@lyken.agency" className="contact-email" data-magnetic>
               hello@lyken.agency
@@ -137,11 +140,11 @@ export function Contact() {
             </div>
           </div>
 
-          {/* decorative — smaller, subtler particle sphere filling the column
-              (hover still morphs it into the LK monogram) */}
+          {/* decorative particle sphere — proper visual anchor for the column
+              (radius +43% over the old 1.15 accent size) */}
           <div className="contact-figure" aria-hidden="true">
             <Suspense fallback={null}>
-              <ParticleSphere count={1600} radius={1.15} />
+              <ParticleSphere count={2200} radius={1.65} />
             </Suspense>
           </div>
         </aside>

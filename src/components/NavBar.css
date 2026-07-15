@@ -50,7 +50,7 @@
   letter-spacing: 0.25em;
   text-decoration: none;
   color: var(--color-cream);
-  opacity: 0.7;
+  opacity: 0.85; /* contrast pass: was 0.7 — resting nav items must stay legible */
   transition:
     color var(--duration-base) var(--ease-out-soft),
     opacity var(--duration-base) var(--ease-out-soft);
@@ -60,6 +60,46 @@
 .nav-link:focus-visible {
   color: var(--color-champagne-gold);
   opacity: 1;
+}
+
+/* ---- language toggle (EN / PT) — sits beside the audio toggle ---- */
+
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 0 0 auto;
+}
+
+.lang-toggle-option {
+  padding: var(--space-2) var(--space-1);
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  color: var(--color-cream);
+  opacity: 0.55;
+  transition:
+    color var(--duration-base) var(--ease-out-soft),
+    opacity var(--duration-base) var(--ease-out-soft);
+}
+
+.lang-toggle-option:hover,
+.lang-toggle-option:focus-visible {
+  opacity: 1;
+}
+
+.lang-toggle-option[data-active='true'] {
+  color: var(--color-champagne-gold);
+  opacity: 1;
+}
+
+.lang-toggle-divider {
+  color: var(--color-cream);
+  opacity: 0.35;
+  font-size: var(--text-micro);
 }
 
 .nav-dot {

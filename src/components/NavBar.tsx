@@ -5,14 +5,38 @@ import gsap from 'gsap';
 import { Logo } from './Logo';
 import { LiquidText } from './LiquidText';
 import { AudioToggle } from './AmbientAudio';
+import { useLang } from '../i18n/LanguageContext';
 import './NavBar.css';
 
-const LINKS = [
-  { to: '/about', label: 'About' },
-  { to: '/projects', label: 'Projects' },
-  { to: '/insights', label: 'Insights' },
-  { to: '/contact', label: 'Contact' },
-];
+/** Minimal EN/PT text switch — no flags, sized to sit beside the audio toggle. */
+function LangToggle() {
+  const { lang, dict, setLang } = useLang();
+  return (
+    <div className="lang-toggle" role="group" aria-label={dict.langToggle}>
+      <button
+        type="button"
+        className="lang-toggle-option"
+        data-active={lang === 'en'}
+        aria-pressed={lang === 'en'}
+        onClick={() => setLang('en')}
+      >
+        EN
+      </button>
+      <span className="lang-toggle-divider" aria-hidden="true">
+        /
+      </span>
+      <button
+        type="button"
+        className="lang-toggle-option"
+        data-active={lang === 'pt'}
+        aria-pressed={lang === 'pt'}
+        onClick={() => setLang('pt')}
+      >
+        PT
+      </button>
+    </div>
+  );
+}
 
 function NavItem({ to, label }: { to: string; label: string }) {
   const underlineRef = useRef<HTMLSpanElement>(null);
@@ -61,6 +85,7 @@ export function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const { dict } = useLang();
 
   useEffect(() => {
     let raf = 0;
@@ -127,23 +152,31 @@ export function NavBar() {
     });
   };
 
+  const links = [
+    { to: '/about', label: dict.nav.about },
+    { to: '/projects', label: dict.nav.projects },
+    { to: '/insights', label: dict.nav.insights },
+    { to: '/contact', label: dict.nav.contact },
+  ];
+
   return (
     <header className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`}>
-      <Link to="/" className="navbar-home" aria-label="Lyken Agency — Home" data-magnetic>
+      <Link to="/" className="navbar-home" aria-label={dict.nav.home} data-magnetic>
         <Logo size={28} monogramOnly />
       </Link>
 
       <div className="navbar-right">
-        <nav className="navbar-links" aria-label="Primary">
-          {LINKS.map((l) => (
+        <nav className="navbar-links" aria-label={dict.nav.primary}>
+          {links.map((l) => (
             <NavItem key={l.to} {...l} />
           ))}
         </nav>
+        <LangToggle />
         <AudioToggle />
 
         <button
           className="navbar-burger"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-label={menuOpen ? dict.nav.closeMenu : dict.nav.openMenu}
           aria-expanded={menuOpen}
           data-magnetic
           onClick={() => (menuOpen ? closeMenu() : setMenuOpen(true))}
@@ -156,12 +189,12 @@ export function NavBar() {
 
       {menuOpen &&
         createPortal(
-          <div ref={overlayRef} className="nav-overlay" role="dialog" aria-label="Menu">
+          <div ref={overlayRef} className="nav-overlay" role="dialog" aria-label={dict.nav.menu}>
             <button className="nav-overlay-close u-label" onClick={closeMenu}>
-              Close
+              {dict.nav.closeMenu}
             </button>
-            <nav className="nav-overlay-links" aria-label="Primary mobile">
-              {LINKS.map((l) => (
+            <nav className="nav-overlay-links" aria-label={dict.nav.primary}>
+              {links.map((l) => (
                 <NavLink key={l.to} to={l.to} className="nav-overlay-link" onClick={closeMenu}>
                   {({ isActive }) => (
                     <>

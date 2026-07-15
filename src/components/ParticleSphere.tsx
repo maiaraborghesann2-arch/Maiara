@@ -31,13 +31,15 @@ const CAMERA_Z = 8;
 
 const ROT_SPEED = 0.03; // rad/s
 const EXPAND_SCALE = 2.2; // additional scale at full expansion
-const REVEAL_RADIUS_PX = 95; // cursor proximity that parts the sphere / lights the mark
+const REVEAL_RADIUS_PX = 95; // cursor proximity that parts the sphere shell (repulsion only)
 const PUSH_UNITS = 0.42; // max outward displacement of repelled sphere particles
-const LOGO_BASE_ALPHA = 0.05; // hidden-layer resting opacity
-// Peak reveal opacity. The logo layer renders in CREAM/near-white (vs. the
-// gold sphere shell) so the reveal reads by hue/value contrast, not just
-// brightness — 0.92 keeps the near-white glow legible without flaring.
-const LOGO_REVEAL_ALPHA = 0.92;
+// Whole-shape logo reveal: the ENTIRE hidden monogram fades in/out together
+// (single hover-boundary check against the sphere's screen-space circle) —
+// the per-particle proximity reveal proved too subtle across iterations.
+// The layer renders in CREAM/near-white vs. the gold shell, so it reads by
+// hue/value contrast. 0.85 keeps the near-white glow legible, not flared.
+const LOGO_HOVER_ALPHA = 0.85;
+const LOGO_FADE_RATE = 1 / 0.35; // ≈350ms ease for the uniform fade in/out
 
 function tokenColor(name: string): THREE.Color {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -108,23 +110,17 @@ const LOGO_VERTEX = /* glsl */ `
   uniform float uTime;
   uniform float uStatic;
   uniform float uScaleFactor;
-  uniform vec3 uPointer;
-  uniform float uPointerR;
-  uniform float uPresence;
+  uniform float uLogoAlpha; // whole-shape reveal: uniform fade, no per-particle math
   varying float vShimmer;
   ${DRIFT}
 
   void main() {
     vec3 pos = position + drift(position, aPhase, uTime, 0.012) * (1.0 - uStatic);
 
-    // brighten only where the cursor has parted the sphere above
-    float d = distance(pos, uPointer);
-    float reveal = smoothstep(uPointerR * 1.15, 0.0, d) * uPresence;
-    float alpha = mix(${LOGO_BASE_ALPHA.toFixed(2)}, ${LOGO_REVEAL_ALPHA.toFixed(2)}, reveal);
-    vShimmer = alpha * (1.0 - uExpand); // hidden layer dissolves during expansion
+    vShimmer = uLogoAlpha * (1.0 - uExpand); // hidden layer dissolves during expansion
 
     vec4 mv = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = aSize * (0.9 + 0.5 * reveal) * uScaleFactor / -mv.z;
+    gl_PointSize = aSize * (0.9 + 0.35 * uLogoAlpha) * uScaleFactor / -mv.z;
     gl_Position = projectionMatrix * mv;
   }
 `;
@@ -179,6 +175,7 @@ function SphereParticles({
   const pointer = useRef({ x: 1e6, y: 1e6, active: false });
   const presence = useRef(0);
   const smooth = useRef(new THREE.Vector3(1e6, 1e6, 0));
+  const logoAlpha = useRef(0); // eased whole-shape reveal opacity
   // becomes true once a placement has been computed from a real (non-zero)
   // canvas size — the group stays hidden until then so the sphere never
   // paints a frame at the wrong (centered) position before snapping right
@@ -289,6 +286,7 @@ function SphereParticles({
     uPointer: { value: new THREE.Vector3(1e6, 1e6, 0) },
     uPointerR: { value: 0.4 },
     uPresence: { value: 0 },
+    uLogoAlpha: { value: 0 },
     uCore: { value: tokenColor('--color-champagne-gold') },
     uOuter: { value: tokenColor('--color-brushed-gold') },
   });
@@ -343,6 +341,15 @@ function SphereParticles({
 
     const pointerR = (REVEAL_RADIUS_PX * unitsPerPx) / group.scale.x;
 
+    // whole-shape logo reveal: ONE boundary test — cursor inside the sphere's
+    // screen-space circle fades the entire monogram in; leaving fades it out.
+    const overSphere =
+      p.active &&
+      Math.hypot(wx - group.position.x, wy - group.position.y) <= radius * group.scale.x * 1.08;
+    const logoTarget = overSphere && exp < 0.1 && !reduced ? LOGO_HOVER_ALPHA : 0;
+    logoAlpha.current +=
+      (logoTarget - logoAlpha.current) * Math.min(1, LOGO_FADE_RATE * 2.8 * dt);
+
     const mats = logoMat ? [sphereMat, logoMat] : [sphereMat];
     for (const mat of mats) {
       mat.uniforms.uRot.value = rot.current;
@@ -354,6 +361,7 @@ function SphereParticles({
       mat.uniforms.uScaleFactor.value =
         (size.height * viewport.dpr) / (2 * Math.tan((FOV * Math.PI) / 360));
     }
+    if (logoMat) logoMat.uniforms.uLogoAlpha.value = logoAlpha.current;
   });
 
   return (

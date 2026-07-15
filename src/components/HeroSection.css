@@ -64,7 +64,7 @@
   max-width: 480px;
   font-size: 0.9375rem; /* 15px */
   color: var(--color-cream);
-  opacity: 0.78;
+  opacity: 0.9; /* contrast pass: was 0.78 */
 }
 
 .hero-rule {
@@ -134,7 +134,7 @@
 .pillar-text {
   font-size: 0.9375rem;
   color: var(--color-cream);
-  opacity: 0.78;
+  opacity: 0.88; /* contrast pass: was 0.78 */
   max-width: 30ch;
 }
 
@@ -146,7 +146,9 @@
   overflow: visible;
 }
 
-/* ---------- mobile: sphere stacked above text, never behind it ---------- */
+/* ---------- mobile: copy stacked on TOP, sphere below — never overlapping.
+   Must stay consistent with the sphere's mobile placement in
+   ParticleSphere (mobileLayout="hero" → offsetY -0.24, lower half). ---------- */
 
 @media (max-width: 767px) {
   .hero-grid {
@@ -156,20 +158,14 @@
     gap: 0;
   }
 
-  .hero-sphere-col {
-    grid-row: 1;
-  }
-
   .hero-stage1 {
-    grid-row: 2;
+    grid-row: 1;
     display: flex;
-    align-items: flex-end;
-    padding-bottom: var(--space-8);
+    align-items: flex-start;
   }
 
-  .hero-stage1-inner {
-    align-items: flex-start;
-    gap: var(--space-6);
+  .hero-sphere-col {
+    grid-row: 2;
   }
 
   .hero-rule {

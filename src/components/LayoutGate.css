@@ -1,0 +1,20 @@
+.layout-gate {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-overlay) - 10); /* below the loading screen, above everything else */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(
+      120% 90% at 50% 40%,
+      var(--color-emerald-noir) 0%,
+      var(--color-pure-black) 100%
+    );
+  color: var(--color-brushed-gold);
+}
+
+.layout-gate .lyken-monogram,
+.layout-gate svg {
+  opacity: 0.55;
+}

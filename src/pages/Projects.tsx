@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PageShell } from '../components/PageShell';
 import { Seo } from '../components/Seo';
+import { useLang } from '../i18n/LanguageContext';
 import { LiquidText } from '../components/LiquidText';
 import { PROJECTS } from '../content/placeholder';
 import './Projects.css';
@@ -11,6 +12,7 @@ const FILTERS = ['All', 'Branding', 'UI/UX', 'AI Integration'] as const;
 type Filter = (typeof FILTERS)[number];
 
 export function Projects() {
+  const { dict } = useLang();
   const [filter, setFilter] = useState<Filter>('All');
   const visible = PROJECTS.filter((p) => filter === 'All' || p.category === filter);
 
@@ -18,7 +20,7 @@ export function Projects() {
     <PageShell className="page projects">
       <Seo title="Selected Work — Lyken Agency" path="/projects" />
       <header className="page-head projects-head">
-        <span className="section-label">Selected Work</span>
+        <span className="section-label">{dict.pages.projectsLabel}</span>
         <LiquidText as="h1" className="page-headline projects-headline">
           Lorem ipsum dolor sit amet.
         </LiquidText>

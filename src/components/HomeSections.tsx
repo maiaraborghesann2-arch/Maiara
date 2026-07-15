@@ -4,7 +4,27 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { LiquidText } from './LiquidText';
 import { Reveal } from './Reveal';
 import { PROJECTS } from '../content/placeholder';
+import { useLang } from '../i18n/LanguageContext';
+import type { HeadlineSegment } from '../i18n/translations';
 import './HomeSections.css';
+
+/** Emphasis headline: segments render via LiquidText, gold ones in italic. */
+function Headline({ parts }: { parts: HeadlineSegment[] }) {
+  return (
+    <>
+      {parts.map((seg, i) => (
+        <LiquidText
+          key={i}
+          as="span"
+          italic={!!seg.gold}
+          className={seg.gold ? 'home-headline-gold' : ''}
+        >
+          {seg.text}
+        </LiquidText>
+      ))}
+    </>
+  );
+}
 
 /**
  * Home page sections below the hero — services, featured work, testimonials
@@ -18,46 +38,21 @@ import './HomeSections.css';
 
 /* ---------------------------------------------------------------- services */
 
-const SERVICES = [
-  {
-    numeral: '01',
-    title: 'Brand Identity',
-    text: 'Naming, visual systems, and brand worlds engineered to be recognized — not just seen.',
-  },
-  {
-    numeral: '02',
-    title: 'Digital Experience',
-    text: 'Websites and products where craft, motion, and performance carry the brand story.',
-  },
-  {
-    numeral: '03',
-    title: 'AI-Integrated Design',
-    text: 'Intelligent interfaces and generative workflows woven into the brand, responsibly.',
-  },
-  {
-    numeral: '04',
-    title: 'Strategic Positioning',
-    text: 'Research, narrative, and market positioning that make every design decision defensible.',
-  },
-];
-
 export function ServicesSection() {
+  const { dict } = useLang();
   return (
     <section className="home-section services-section" aria-labelledby="services-heading">
       <Reveal className="home-section-head">
-        <span className="section-label">What We Do</span>
+        <span className="section-label">{dict.services.label}</span>
         <h2 id="services-heading" className="home-section-headline">
-          <LiquidText as="span">Capabilities with</LiquidText>{' '}
-          <LiquidText as="span" italic className="home-headline-gold">
-            intent.
-          </LiquidText>
+          <Headline parts={dict.services.headline} />
         </h2>
       </Reveal>
 
       <div className="services-row">
-        {SERVICES.map((s, i) => (
-          <Reveal key={s.numeral} as="article" className="service-card" delay={i * 0.08}>
-            <span className="service-numeral u-label">{s.numeral}</span>
+        {dict.services.items.map((s, i) => (
+          <Reveal key={i} as="article" className="service-card" delay={i * 0.08}>
+            <span className="service-numeral u-label">{`0${i + 1}`}</span>
             <span className="service-spark" aria-hidden="true" />
             <h3 className="service-title">{s.title}</h3>
             <p className="service-text">{s.text}</p>
@@ -73,20 +68,18 @@ export function ServicesSection() {
 const FEATURED = PROJECTS.slice(0, 4);
 
 export function FeaturedProjects() {
+  const { dict } = useLang();
   return (
     <section className="home-section featured-section" aria-labelledby="featured-heading">
       <Reveal className="home-section-head featured-head">
         <div>
-          <span className="section-label">Selected Work</span>
+          <span className="section-label">{dict.featured.label}</span>
           <h2 id="featured-heading" className="home-section-headline">
-            <LiquidText as="span">Work that</LiquidText>{' '}
-            <LiquidText as="span" italic className="home-headline-gold">
-              endures.
-            </LiquidText>
+            <Headline parts={dict.featured.headline} />
           </h2>
         </div>
         <Link to="/projects" className="btn-ghost featured-all" data-magnetic>
-          View All Work
+          {dict.featured.viewAll}
         </Link>
       </Reveal>
 
@@ -137,17 +130,15 @@ const TESTIMONIALS = [
 
 export function TestimonialsSection() {
   const [index, setIndex] = useState(0);
+  const { dict } = useLang();
   const t = TESTIMONIALS[index];
 
   return (
     <section className="home-section testimonials-section" aria-labelledby="testimonials-heading">
       <Reveal className="home-section-head">
-        <span className="section-label">Client Voices</span>
+        <span className="section-label">{dict.testimonials.label}</span>
         <h2 id="testimonials-heading" className="home-section-headline">
-          <LiquidText as="span">In their</LiquidText>{' '}
-          <LiquidText as="span" italic className="home-headline-gold">
-            words.
-          </LiquidText>
+          <Headline parts={dict.testimonials.headline} />
         </h2>
       </Reveal>
 
@@ -173,14 +164,14 @@ export function TestimonialsSection() {
           </AnimatePresence>
         </div>
 
-        <div className="testimonial-nav" role="group" aria-label="Testimonials navigation">
+        <div className="testimonial-nav" role="group" aria-label={dict.testimonials.navLabel}>
           {TESTIMONIALS.map((_, i) => (
             <button
               key={i}
               type="button"
               className="testimonial-dot"
               data-active={i === index}
-              aria-label={`Testimonial ${i + 1}`}
+              aria-label={`${dict.testimonials.itemLabel} ${i + 1}`}
               aria-pressed={i === index}
               onClick={() => setIndex(i)}
             />
@@ -194,6 +185,7 @@ export function TestimonialsSection() {
 /* ------------------------------------------------------------- contact CTA */
 
 export function ContactCta() {
+  const { dict } = useLang();
   return (
     <section className="home-section cta-section" aria-labelledby="cta-heading">
       {/* soft gold ambient accent bookending the hero's particle motif —
@@ -202,10 +194,10 @@ export function ContactCta() {
       <div className="cta-glow" aria-hidden="true" />
       <Reveal className="cta-inner">
         <h2 id="cta-heading" className="cta-headline">
-          <LiquidText as="span">Let's build something unforgettable.</LiquidText>
+          <LiquidText as="span">{dict.cta.headline}</LiquidText>
         </h2>
         <Link to="/contact" className="btn-ghost" data-magnetic>
-          Start a Conversation
+          {dict.cta.button}
         </Link>
       </Reveal>
     </section>

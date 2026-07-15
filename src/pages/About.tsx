@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PageShell } from '../components/PageShell';
 import { Seo } from '../components/Seo';
+import { useLang } from '../i18n/LanguageContext';
 import { Reveal } from '../components/Reveal';
 import { LiquidText } from '../components/LiquidText';
 import { LOREM, MILESTONES } from '../content/placeholder';
@@ -13,12 +14,13 @@ const PHILOSOPHY = [
 ];
 
 export function About() {
+  const { dict } = useLang();
   return (
     <PageShell className="page about">
       <Seo title="About — Lyken Agency" path="/about" />
       {/* Stage 1 — intro */}
       <header className="page-head about-intro">
-        <span className="section-label">About Lyken</span>
+        <span className="section-label">{dict.pages.aboutLabel}</span>
         <h1 className="page-headline about-headline">
           <LiquidText as="span">Lorem ipsum dolor sit</LiquidText>{' '}
           <LiquidText as="span" italic className="u-gold">
@@ -53,7 +55,7 @@ export function About() {
       {/* Stage 3 — milestones */}
       <section className="about-timeline" aria-label="Milestones">
         <Reveal>
-          <span className="section-label">Milestones</span>
+          <span className="section-label">{dict.pages.milestonesLabel}</span>
         </Reveal>
         <div className="about-timeline-row">
           {MILESTONES.map((m, i) => (

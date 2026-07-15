@@ -80,7 +80,7 @@ em,
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: var(--tracking-micro);
-  opacity: 0.7;
+  opacity: 0.85; /* contrast pass: was 0.7 — micro labels must clear WCAG AA */
 }
 
 /* Ghost CTA — thin gold border, slow left-to-right gradient wash on hover */
@@ -150,7 +150,8 @@ em,
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: var(--tracking-micro);
-  color: var(--color-brushed-gold);
+  /* contrast pass: brushed-gold (~4.9:1) → champagne-gold (~6.9:1) on emerald */
+  color: var(--color-champagne-gold);
   margin-bottom: var(--space-6);
 }
 

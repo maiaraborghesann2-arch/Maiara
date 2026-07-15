@@ -135,10 +135,10 @@
 }
 
 .contact-figure {
-  width: min(100%, 320px);
+  width: min(100%, 460px); /* enlarged with the sphere (radius 1.15 → 1.65) */
   aspect-ratio: 1;
   align-self: center;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 @media (max-width: 767px) {
@@ -147,6 +147,6 @@
     gap: var(--space-16);
   }
   .contact-figure {
-    width: min(100%, 240px);
+    width: min(100%, 320px);
   }
 }

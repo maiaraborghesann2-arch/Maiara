@@ -1,17 +1,19 @@
 import { Link } from 'react-router-dom';
 import { PageShell } from '../components/PageShell';
 import { Seo } from '../components/Seo';
+import { useLang } from '../i18n/LanguageContext';
 import { Reveal } from '../components/Reveal';
 import { LiquidText } from '../components/LiquidText';
 import { ARTICLES } from '../content/placeholder';
 import './Insights.css';
 
 export function Insights() {
+  const { dict } = useLang();
   return (
     <PageShell className="page insights">
       <Seo title="Insights — Lyken Agency" path="/insights" />
       <header className="page-head insights-head">
-        <span className="section-label">Insights</span>
+        <span className="section-label">{dict.pages.insightsLabel}</span>
         <LiquidText as="h1" className="page-headline insights-headline">
           Lorem ipsum dolor sit amet, consectetur adipiscing.
         </LiquidText>

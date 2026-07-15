@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { CustomEase } from 'gsap/CustomEase';
 import { Logo } from './Logo';
 import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { useLang } from '../i18n/LanguageContext';
 import './LoadingScreen.css';
 
 gsap.registerPlugin(CustomEase);
@@ -31,6 +32,7 @@ interface LoadingScreenProps {
  * overlay fades out the field continues seamlessly into the page behind it.
  */
 export function LoadingScreen({ onComplete }: LoadingScreenProps) {
+  const { dict } = useLang();
   const veilRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const lockupRef = useRef<HTMLDivElement>(null);
@@ -172,7 +174,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
         ref={overlayRef}
         className="loading-overlay"
         role="status"
-        aria-label="Lyken Agency is loading"
+        aria-label={dict.loading.label}
         onClick={skip}
       >
         <div ref={lockupRef} className="loading-lockup lyken-logo">
@@ -186,7 +188,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
             <span className="lyken-wordmark-name">LYKEN&nbsp;AGENCY</span>
             <span className="lyken-wordmark-sub u-label">
               <span className="lyken-wordmark-dash" />
-              STRATEGIC&nbsp;DESIGN&nbsp;STUDIO
+              {dict.loading.tagline.replace(/ /g, ' ')}
               <span className="lyken-wordmark-dash" />
             </span>
           </div>
@@ -194,7 +196,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
 
         {skippable && (
           <button className="loading-skip u-label" onClick={skip} data-magnetic>
-            Skip
+            {dict.loading.skip}
           </button>
         )}
       </div>

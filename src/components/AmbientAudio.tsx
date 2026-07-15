@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useLang } from '../i18n/LanguageContext';
 import './AmbientAudio.css';
 
 /**
@@ -91,11 +92,16 @@ export function AmbientAudioProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    window.addEventListener('pointerdown', start, { once: true });
-    window.addEventListener('keydown', start, { once: true });
+    // Browser-recognized activation gestures ONLY (never mousemove — motion
+    // is not a gesture and will not unlock audio in any browser). The set
+    // covers engine differences: Chrome/Firefox honor pointerdown/keydown,
+    // Safari is most reliable on touchend/click. start() is idempotent, so
+    // whichever fires first wins. These can fire as early as the loading
+    // intro — that's fine, it's still a real user gesture.
+    const GESTURES = ['pointerdown', 'touchend', 'keydown', 'click'] as const;
+    GESTURES.forEach((ev) => window.addEventListener(ev, start, { once: true, passive: true }));
     return () => {
-      window.removeEventListener('pointerdown', start);
-      window.removeEventListener('keydown', start);
+      GESTURES.forEach((ev) => window.removeEventListener(ev, start));
       const engine = engineRef.current;
       if (engine) {
         clearTimeout(engine.timer);
@@ -125,6 +131,7 @@ export function AmbientAudioProvider({ children }: { children: ReactNode }) {
 /** Speaker button (rendered inside the NavBar) toggling the ambient loop. */
 export function AudioToggle() {
   const { muted, toggle } = useContext(AmbientAudioContext);
+  const { dict } = useLang();
 
   return (
     <button
@@ -132,7 +139,7 @@ export function AudioToggle() {
       className="ambient-audio-toggle"
       onClick={toggle}
       aria-pressed={!muted}
-      aria-label={muted ? 'Unmute ambient sound' : 'Mute ambient sound'}
+      aria-label={muted ? dict.audio.unmute : dict.audio.mute}
       data-magnetic
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">

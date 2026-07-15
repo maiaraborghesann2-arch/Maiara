@@ -77,7 +77,7 @@
 .service-text {
   font-size: 0.9375rem;
   color: var(--color-cream);
-  opacity: 0.72;
+  opacity: 0.88; /* contrast pass: was 0.72 */
   max-width: 30ch;
 }
 
@@ -165,8 +165,8 @@
 }
 
 .featured-tags {
-  color: var(--color-brushed-gold);
-  opacity: 0.85;
+  color: var(--color-champagne-gold); /* contrast pass: brushed → champagne, full opacity */
+  opacity: 1;
 }
 
 /* ------------------------------------------------------------- testimonials */
@@ -218,7 +218,7 @@
 
 .testimonial-role {
   color: var(--color-cream);
-  opacity: 0.6;
+  opacity: 0.8; /* contrast pass: was 0.6 */
 }
 
 .testimonial-nav {

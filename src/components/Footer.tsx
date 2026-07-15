@@ -1,20 +1,22 @@
 import { Link } from 'react-router-dom';
 import { Logo } from './Logo';
+import { useLang } from '../i18n/LanguageContext';
 import './Footer.css';
 
 export function Footer() {
+  const { dict } = useLang();
   return (
     <footer className="footer">
       <div className="footer-row">
-        <Link to="/" className="footer-mark" aria-label="Lyken Agency — Home" data-magnetic>
+        <Link to="/" className="footer-mark" aria-label={dict.nav.home} data-magnetic>
           <Logo size={30} monogramOnly />
         </Link>
 
-        <p className="footer-tagline u-label">Branding · UI/UX · AI-Integrated Design</p>
+        <p className="footer-tagline u-label">{dict.footer.tagline}</p>
 
-        <nav className="footer-links" aria-label="Contact and social">
+        <nav className="footer-links" aria-label={dict.footer.ariaLabel}>
           <a href="mailto:hello@lyken.agency" data-magnetic>
-            Email
+            {dict.footer.email}
           </a>
           <a href="https://www.instagram.com" target="_blank" rel="noreferrer" data-magnetic>
             Instagram
@@ -25,7 +27,7 @@ export function Footer() {
         </nav>
       </div>
 
-      <p className="footer-copyright u-label">Lyken Agency © 2026</p>
+      <p className="footer-copyright u-label">{dict.footer.copyright}</p>
     </footer>
   );
 }

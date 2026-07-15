@@ -2,7 +2,8 @@
   position: relative;
   background: var(--color-emerald-noir-deep);
   padding: var(--space-16) var(--space-8) var(--space-8);
-  color: color-mix(in srgb, var(--color-cream) 65%, transparent);
+  /* contrast pass: 65% cream → 82% — footer/secondary nav must stay legible */
+  color: color-mix(in srgb, var(--color-cream) 82%, transparent);
 }
 
 .footer-row {
