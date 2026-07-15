@@ -36,6 +36,10 @@ const en = {
     label: 'Lyken Agency is loading',
     tagline: 'STRATEGIC DESIGN STUDIO',
     skip: 'Skip',
+    enter: 'Enter',
+    enterMuted: 'Enter without audio',
+    enterAria: 'Enter the site with ambient audio',
+    enterMutedAria: 'Enter the site without audio',
   },
   hero: {
     line1: 'Intelligent Strategy.',
@@ -133,6 +137,10 @@ const pt: Dict = {
     label: 'Lyken Agency está carregando',
     tagline: 'ESTÚDIO DE DESIGN ESTRATÉGICO',
     skip: 'Pular',
+    enter: 'Entrar',
+    enterMuted: 'Entrar sem áudio',
+    enterAria: 'Entrar no site com áudio ambiente',
+    enterMutedAria: 'Entrar no site sem áudio',
   },
   hero: {
     line1: 'Estratégia Inteligente.',

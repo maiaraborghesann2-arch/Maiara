@@ -25,15 +25,18 @@ export const LOGO_PATH =
 
 /**
  * Sample `count` points uniformly INSIDE the filled glyph (rejection
- * sampling against the path fill). Returns centered coordinates normalized
- * to [-0.5, 0.5] on the longest axis (aspect preserved, y up).
+ * sampling against the path fill). Returns coordinates normalized to
+ * [-0.5, 0.5] on the longest axis (aspect preserved, y up), centered on the
+ * BOUNDING BOX OF THE SAMPLED POINTS — not the raw viewBox. The source
+ * vector has asymmetric padding around the glyph, so viewBox-centering left
+ * the mark visibly off-center inside the sphere; bbox-centering makes it
+ * optically centered regardless of the path's original placement.
  */
 export function sampleLogoPoints(count: number): Float32Array {
   const path = new Path2D(LOGO_PATH);
   const ctx = document.createElement('canvas').getContext('2d')!;
-  const extent = Math.max(LOGO_WIDTH, LOGO_HEIGHT);
 
-  const out = new Float32Array(count * 2);
+  const raw = new Float32Array(count * 2); // SVG-space samples (y down)
   let placed = 0;
   let guard = 0;
   const maxTries = count * 80;
@@ -42,16 +45,39 @@ export function sampleLogoPoints(count: number): Float32Array {
     const x = Math.random() * LOGO_WIDTH;
     const y = Math.random() * LOGO_HEIGHT;
     if (ctx.isPointInPath(path, x, y, 'nonzero')) {
-      out[placed * 2] = (x - LOGO_WIDTH / 2) / extent;
-      out[placed * 2 + 1] = -(y - LOGO_HEIGHT / 2) / extent; // SVG y-down → world y-up
+      raw[placed * 2] = x;
+      raw[placed * 2 + 1] = y;
       placed++;
     }
   }
   // pathological fallback: duplicate earlier hits
   for (; placed < count; placed++) {
     const src = Math.floor(Math.random() * Math.max(1, placed));
-    out[placed * 2] = out[src * 2];
-    out[placed * 2 + 1] = out[src * 2 + 1];
+    raw[placed * 2] = raw[src * 2];
+    raw[placed * 2 + 1] = raw[src * 2 + 1];
+  }
+
+  // measure the actual point cloud, then center + normalize against it
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (let i = 0; i < count; i++) {
+    const x = raw[i * 2];
+    const y = raw[i * 2 + 1];
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const extent = Math.max(maxX - minX, maxY - minY) || 1;
+
+  const out = new Float32Array(count * 2);
+  for (let i = 0; i < count; i++) {
+    out[i * 2] = (raw[i * 2] - cx) / extent;
+    out[i * 2 + 1] = -(raw[i * 2 + 1] - cy) / extent; // SVG y-down → world y-up
   }
   return out;
 }

@@ -36,10 +36,9 @@ const PUSH_UNITS = 0.42; // max outward displacement of repelled sphere particle
 // Whole-shape logo reveal: the ENTIRE hidden monogram fades in/out together
 // (single hover-boundary check against the sphere's screen-space circle) —
 // the per-particle proximity reveal proved too subtle across iterations.
-// The layer renders in DEEP GOLD (--color-deep-gold): darker/more saturated
-// than the shell's champagne/brushed golds, so it reads as a distinct emblem
-// layer rather than white-hot glare. Alpha 0.95 compensates for the darker
-// tone under additive blending.
+// The layer uses the SAME champagne/brushed golds as the shell (the darker
+// deep-gold variant read orange/muddy); separation comes from the emblem's
+// density and its brightness rising against the locally-repelled shell.
 const LOGO_HOVER_ALPHA = 0.95;
 const LOGO_FADE_RATE = 1 / 0.35; // ≈350ms ease for the uniform fade in/out
 // emblem footprint: fraction of the sphere's diameter (spec: 45–55%)
@@ -204,6 +203,26 @@ function SphereParticles({
   useLayoutEffect(() => {
     const group = groupRef.current;
     if (!group) return;
+    if (import.meta.env.DEV) {
+      // dev-only diagnostics for the "wrong initial position" class of bug:
+      // logs exactly which dimensions each (re)measure produced. Root cause
+      // found with this: r3f's default resize measured the canvas wrapper
+      // with getBoundingClientRect(), which returns TRANSFORMED dimensions —
+      // during a route enter the page root still carries the transition's
+      // scale/rotateY/perspective, so the first measures gave a wrong
+      // aspect/width and the sphere placed itself against them, then slid
+      // when the ResizeObserver re-measured after the transform settled.
+      // Fixed via resize={{ offsetSize: true }} on the <Canvas> (layout
+      // dimensions, transform-independent).
+      // eslint-disable-next-line no-console
+      console.log('[ParticleSphere] measure', {
+        sizeW: Math.round(size.width),
+        sizeH: Math.round(size.height),
+        aspect: +viewport.aspect.toFixed(4),
+        offsetX,
+        alreadyPlaced: placed.current,
+      });
+    }
     if (size.width > 0) {
       applyPlacement(group, expand?.value ?? 0);
       placed.current = true;
@@ -298,16 +317,10 @@ function SphereParticles({
   });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const sphereUniforms = useMemo(makeUniforms, [reduced]);
-  // The hidden monogram uses DEEP GOLD instead of the shell's golds: the two
-  // layers must separate by value/saturation, otherwise the revealed mark
-  // blends into the shell regardless of opacity.
-  const logoUniforms = useMemo(() => {
-    const u = makeUniforms();
-    u.uCore.value = tokenColor('--color-deep-gold');
-    u.uOuter.value = tokenColor('--color-deep-gold');
-    return u;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduced]);
+  // Same gold palette as the shell (makeUniforms defaults) — the darker
+  // variant read muddy; QA reverted it.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const logoUniforms = useMemo(makeUniforms, [reduced]);
 
   useFrame((_, rawDelta) => {
     const group = groupRef.current;
@@ -448,6 +461,11 @@ export default function ParticleSphere({
         frameloop={frameloop}
         camera={{ position: [0, 0, CAMERA_Z], fov: FOV }}
         dpr={[1, 1.75]}
+        // offsetSize: measure LAYOUT dimensions, not getBoundingClientRect —
+        // rect sizes are scaled by the route transition's transform on the
+        // page root, which fed a wrong aspect into the first placement
+        // (sphere started mispositioned, then slid once re-measured).
+        resize={{ offsetSize: true }}
         gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
       >
         <SphereParticles

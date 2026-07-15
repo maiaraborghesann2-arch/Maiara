@@ -51,3 +51,48 @@
     opacity: 0.75;
   }
 }
+
+/* ---- entry gate: appears only after the monogram draw completes ---- */
+
+.loading-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-12);
+  opacity: 0;
+  animation: gate-in 0.7s var(--ease-out-soft) 0.1s forwards;
+}
+
+@keyframes gate-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading-gate-enter {
+  min-width: 220px;
+  text-align: center;
+}
+
+.loading-gate-muted {
+  background: none;
+  border: none;
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-cream);
+  opacity: 0.6;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: color-mix(in srgb, var(--color-brushed-gold) 45%, transparent);
+  transition: opacity var(--duration-base) var(--ease-out-soft);
+}
+
+.loading-gate-muted:hover,
+.loading-gate-muted:focus-visible {
+  opacity: 1;
+}

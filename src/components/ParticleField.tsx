@@ -221,6 +221,7 @@ export function ParticleField({ density = 1 }: ParticleFieldProps) {
         orthographic
         camera={{ position: [0, 0, 10], zoom: 1 }}
         dpr={[1, 2]}
+        resize={{ offsetSize: true }}
         gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
       >
         {/* glow lives in the sprite texture (core + halo), matching the
