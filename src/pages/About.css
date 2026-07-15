@@ -98,8 +98,8 @@
   flex: 0 0 300px;
   scroll-snap-align: start;
   padding: var(--space-8);
-  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 15%, transparent);
-  background: color-mix(in srgb, var(--color-obsidian) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 40%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-card) 82%, transparent);
   transition:
     transform var(--duration-base) var(--ease-out-soft),
     box-shadow var(--duration-base) var(--ease-out-soft),

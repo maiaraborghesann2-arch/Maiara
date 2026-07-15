@@ -20,7 +20,7 @@
 
 .insight-row:hover,
 .insight-row:focus-visible {
-  background: color-mix(in srgb, var(--color-obsidian) 20%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-card) 45%, transparent);
 }
 
 .insight-meta {

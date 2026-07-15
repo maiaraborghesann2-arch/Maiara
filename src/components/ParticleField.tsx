@@ -11,10 +11,11 @@ import { useCanvasActive } from '../hooks/useCanvasActive';
  * so it runs seamlessly from the loading screen into every page.
  */
 
-const MAX_PARTICLES = 80; // hard cap for mid-range hardware (desktop)
-const MOBILE_MAX_PARTICLES = 35; // hard cap under 768px viewports
+const MAX_PARTICLES = 120; // hard cap for mid-range hardware (desktop) — QA density pass: was 80
+const MOBILE_MAX_PARTICLES = 52; // hard cap under 768px viewports — was 35
 const MOUSE_RADIUS = 150; // px — particles inside are pushed away
 const MOUSE_PUSH = 46; // px — max displacement of pushed particles
+const BASE_SIZE = 3.8; // px — nominal dot size; per-particle sizes vary 60%–160% of this
 
 /**
  * Scroll-scrubbed tuning channel. The hero timeline tweens `energy` 0→1
@@ -27,22 +28,31 @@ function tokenColor(name: string): THREE.Color {
   return new THREE.Color(raw || '#ffffff');
 }
 
-/** soft radial-gradient sprite — same glow language as the ParticleSphere points */
-function makeGlowTexture(): THREE.Texture {
-  const c = document.createElement('canvas');
-  c.width = 64;
-  c.height = 64;
-  const ctx = c.getContext('2d')!;
-  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.3, 'rgba(255,255,255,0.5)');
-  g.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 64, 64);
-  const tex = new THREE.CanvasTexture(c);
-  tex.needsUpdate = true;
-  return tex;
-}
+/* Per-particle sizes need a tiny custom shader (PointsMaterial is single-size).
+   The fragment reproduces the same soft core+halo glow the sphere uses. */
+const FIELD_VERTEX = /* glsl */ `
+  attribute float aSize;
+  uniform float uDpr;
+  void main() {
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = aSize * uDpr;
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+const FIELD_FRAGMENT = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uOpacity;
+  void main() {
+    vec2 uv = gl_PointCoord - 0.5;
+    float d = length(uv);
+    float core = smoothstep(0.25, 0.0, d);
+    float halo = smoothstep(0.5, 0.05, d);
+    float a = (core + halo * 0.5) * uOpacity;
+    if (a < 0.012) discard;
+    gl_FragColor = vec4(uColor * a, a);
+  }
+`;
 
 interface ParticlesProps {
   density: number;
@@ -54,12 +64,12 @@ function Particles({ density }: ParticlesProps) {
 
   const count = useMemo(() => {
     const cap = size.width < 768 ? MOBILE_MAX_PARTICLES : MAX_PARTICLES;
-    const byArea = Math.floor((size.width * size.height) / 26000);
-    return Math.max(24, Math.min(cap, Math.round(byArea * density)));
+    const byArea = Math.floor((size.width * size.height) / 18000); // was /26000 — denser field
+    return Math.max(30, Math.min(cap, Math.round(byArea * density)));
   }, [size.width, size.height, density]);
 
   const pointsRef = useRef<THREE.Points>(null);
-  const materialRef = useRef<THREE.PointsMaterial>(null);
+  const materialRef = useRef<THREE.ShaderMaterial>(null);
   const mouse = useRef({ x: 1e6, y: 1e6 }); // far away until first move
   const bounds = useRef({ w: size.width, h: size.height });
   bounds.current = { w: size.width, h: size.height };
@@ -83,8 +93,21 @@ function Particles({ density }: ParticlesProps) {
   }, []);
 
   const pointPositions = useMemo(() => new Float32Array(MAX_PARTICLES * 3), []);
-  const dotColor = useMemo(() => tokenColor('--color-champagne-gold'), []);
-  const glowMap = useMemo(() => makeGlowTexture(), []);
+  // per-particle size variation: 60%–160% of the base — a natural mix of
+  // small "distant" dots and larger "closer" ones
+  const pointSizes = useMemo(() => {
+    const s = new Float32Array(MAX_PARTICLES);
+    for (let i = 0; i < MAX_PARTICLES; i++) s[i] = BASE_SIZE * (0.6 + Math.random());
+    return s;
+  }, []);
+  const uniforms = useMemo(
+    () => ({
+      uColor: { value: tokenColor('--color-champagne-gold') },
+      uOpacity: { value: 0.85 },
+      uDpr: { value: Math.min(window.devicePixelRatio || 1, 2) },
+    }),
+    [],
+  );
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -159,22 +182,21 @@ function Particles({ density }: ParticlesProps) {
     }
     // hero scroll energy gently brightens the field
     const mat = materialRef.current;
-    if (mat) mat.opacity = 0.85 * (1 + 0.15 * particleTuning.energy);
+    if (mat) mat.uniforms.uOpacity.value = 0.85 * (1 + 0.15 * particleTuning.energy);
   });
 
   return (
     <points ref={pointsRef} frustumCulled={false}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[pointPositions, 3]} />
+        <bufferAttribute attach="attributes-aSize" args={[pointSizes, 1]} />
       </bufferGeometry>
-      <pointsMaterial
+      <shaderMaterial
         ref={materialRef}
-        color={dotColor}
-        map={glowMap}
-        size={3.8}
-        sizeAttenuation={false}
+        vertexShader={FIELD_VERTEX}
+        fragmentShader={FIELD_FRAGMENT}
+        uniforms={uniforms}
         transparent
-        opacity={0.85}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />

@@ -36,10 +36,14 @@ const PUSH_UNITS = 0.42; // max outward displacement of repelled sphere particle
 // Whole-shape logo reveal: the ENTIRE hidden monogram fades in/out together
 // (single hover-boundary check against the sphere's screen-space circle) —
 // the per-particle proximity reveal proved too subtle across iterations.
-// The layer renders in CREAM/near-white vs. the gold shell, so it reads by
-// hue/value contrast. 0.85 keeps the near-white glow legible, not flared.
-const LOGO_HOVER_ALPHA = 0.85;
+// The layer renders in DEEP GOLD (--color-deep-gold): darker/more saturated
+// than the shell's champagne/brushed golds, so it reads as a distinct emblem
+// layer rather than white-hot glare. Alpha 0.95 compensates for the darker
+// tone under additive blending.
+const LOGO_HOVER_ALPHA = 0.95;
 const LOGO_FADE_RATE = 1 / 0.35; // ≈350ms ease for the uniform fade in/out
+// emblem footprint: fraction of the sphere's diameter (spec: 45–55%)
+const LOGO_DIAMETER_FRACTION = 0.5;
 
 function tokenColor(name: string): THREE.Color {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -258,13 +262,15 @@ function SphereParticles({
       sizes[i] = 0.028 + Math.random() * 0.026;
     }
 
-    // hidden LK monogram layer — fitted INSIDE the sphere (~90% of diameter)
-    const logoCount = Math.floor(count * 0.85);
+    // hidden LK monogram layer — small emblem centered in the sphere's core
+    // (sampleLogoPoints returns glyph-centered coords, so the emblem's center
+    // of mass sits exactly at the group origin = the sphere's center)
+    const logoCount = Math.floor(count * 0.6);
     const pts = sampleLogoPoints(logoCount);
     const logo = new Float32Array(logoCount * 3);
     const logoPhase = new Float32Array(logoCount);
     const logoSizes = new Float32Array(logoCount);
-    const logoScale = radius * 2 * 0.9; // bounding box ≤ sphere diameter
+    const logoScale = radius * 2 * LOGO_DIAMETER_FRACTION;
     for (let i = 0; i < logoCount; i++) {
       logo[i * 3] = pts[i * 2] * logoScale;
       logo[i * 3 + 1] = pts[i * 2 + 1] * logoScale;
@@ -292,13 +298,13 @@ function SphereParticles({
   });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const sphereUniforms = useMemo(makeUniforms, [reduced]);
-  // The hidden monogram uses CREAM (near-white) instead of the shell's golds:
-  // at reveal time the two layers must separate by hue/value, otherwise the
-  // revealed mark blends into the gold shell regardless of opacity.
+  // The hidden monogram uses DEEP GOLD instead of the shell's golds: the two
+  // layers must separate by value/saturation, otherwise the revealed mark
+  // blends into the shell regardless of opacity.
   const logoUniforms = useMemo(() => {
     const u = makeUniforms();
-    u.uCore.value = tokenColor('--color-cream');
-    u.uOuter.value = tokenColor('--color-cream');
+    u.uCore.value = tokenColor('--color-deep-gold');
+    u.uOuter.value = tokenColor('--color-deep-gold');
     return u;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduced]);

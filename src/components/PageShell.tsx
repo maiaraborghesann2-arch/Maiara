@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { lenisInstance } from './SmoothScroll';
 import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 const LUX_EASE = [0.65, 0, 0.35, 1] as const;
@@ -29,8 +30,31 @@ interface PageShellProps {
 export function PageShell({ children, className = '' }: PageShellProps) {
   const reduced = useMemo(() => prefersReducedMotion(), []);
   const mainRef = useRef<HTMLElement>(null);
+  // true once the enter animation has settled — from then on transformTemplate
+  // forces framer to emit `transform: none` on EVERY style write, so later
+  // re-renders (LayoutGate unmount, language switch, etc.) can never re-apply
+  // the residual matrix3d that breaks position:fixed pinning inside the page.
+  const settledRef = useRef(false);
 
-  useEffect(() => {
+  // Scroll reset on route enter — the systemic fix for "elements slide into
+  // place after the transition reveal". Three things must all hold:
+  //  (1) ScrollTrigger.clearScrollMemory(): every ScrollTrigger.refresh()
+  //      RESTORES its remembered scroll position afterwards, and refreshes
+  //      fire throughout a route change (exit teardown, Reveal mounts,
+  //      enter-complete) — without clearing the memory each one resurrects
+  //      the PREVIOUS page's scroll offset over any reset we do here.
+  //      (This was the actual root cause; the reset itself worked and was
+  //      then repeatedly overwritten.)
+  //  (2) reset THROUGH Lenis (immediate) — a bare window.scrollTo leaves
+  //      Lenis lerping from the old offset, i.e. visible sliding.
+  //  (3) useLayoutEffect, so it all happens before the entering page's
+  //      first paint. The enter-complete refresh (below) then re-measures
+  //      pins against the now-correct scroll 0 and "restores" 0.
+  useLayoutEffect(() => {
+    ScrollTrigger.clearScrollMemory();
+    if (lenisInstance) {
+      lenisInstance.scrollTo(0, { immediate: true, force: true });
+    }
     window.scrollTo(0, 0);
   }, []);
 
@@ -69,15 +93,24 @@ export function PageShell({ children, className = '' }: PageShellProps) {
       initial="initial"
       animate="animate"
       exit="exit"
+      transformTemplate={(_, generated) => (settledRef.current ? 'none' : generated)}
+      onAnimationStart={(definition) => {
+        // exit needs real transforms again (the camera pivot away)
+        if (definition === 'exit') settledRef.current = false;
+      }}
       onAnimationComplete={(definition) => {
+        // ENTER only. Refreshing on exit re-measured (and scroll-restored)
+        // against the OUTGOING page — one of the writers that kept
+        // resurrecting the old scroll offset during transitions.
         if (definition === 'animate') {
+          settledRef.current = true;
           const el = mainRef.current;
           if (el) {
-            el.style.transform = 'none';
+            el.style.transform = 'none'; // immediate; template covers future writes
             el.style.willChange = 'auto';
           }
+          ScrollTrigger.refresh();
         }
-        ScrollTrigger.refresh();
       }}
     >
       {children}

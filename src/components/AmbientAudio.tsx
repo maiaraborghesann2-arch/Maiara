@@ -24,17 +24,24 @@ const CROSSFADE_S = 1.6; // overlap at the loop boundary
 const MUTE_RAMP_S = 0.25;
 
 interface AmbientAudioContextValue {
-  muted: boolean;
+  /** true only when sound is genuinely audible: engine running AND not muted */
+  audible: boolean;
   toggle: () => void;
 }
 
 const AmbientAudioContext = createContext<AmbientAudioContextValue>({
-  muted: true,
+  audible: false,
   toggle: () => {},
 });
 
 export function AmbientAudioProvider({ children }: { children: ReactNode }) {
   const [muted, setMuted] = useState(false); // intent; silent until first gesture regardless
+  // `started` flips only after the graph is live and sources are scheduled —
+  // the toggle icon derives from THIS, never from intent alone. (Previous
+  // bug: the icon showed "sound on" from bare React state while no engine
+  // existed yet, and the toggle's own first click started the engine AND
+  // flipped to muted simultaneously — forcing a mute/unmute cycle.)
+  const [started, setStarted] = useState(false);
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
 
@@ -44,6 +51,7 @@ export function AmbientAudioProvider({ children }: { children: ReactNode }) {
     timer: number;
   } | null>(null);
   const startingRef = useRef(false);
+  const startRef = useRef<() => void>(() => {});
 
   // Build the audio graph inside the first user gesture (autoplay-safe).
   useEffect(() => {
@@ -51,6 +59,10 @@ export function AmbientAudioProvider({ children }: { children: ReactNode }) {
       if (startingRef.current) return;
       startingRef.current = true;
       try {
+        // Constructed synchronously inside the gesture handler: the context
+        // is born inside the user-activation window, so resume() resolves
+        // even in Safari. Everything after (fetch/decode) may run past the
+        // gesture window — that's fine for Web Audio once resumed.
         const ctx = new AudioContext();
         await ctx.resume();
         const master = ctx.createGain();
@@ -87,10 +99,16 @@ export function AmbientAudioProvider({ children }: { children: ReactNode }) {
           engine.timer = window.setTimeout(scheduleOne, delayMs);
         };
         scheduleOne();
-      } catch {
+        setStarted(true);
+      } catch (err) {
         startingRef.current = false; // allow retry on a later gesture
+        if (import.meta.env.DEV) {
+          // dev-only: surfaces autoplay/decode failures without debugging by ear
+          console.warn('[AmbientAudio] engine start failed:', err);
+        }
       }
     };
+    startRef.current = start;
 
     // Browser-recognized activation gestures ONLY (never mousemove — motion
     // is not a gesture and will not unlock audio in any browser). The set
@@ -111,7 +129,8 @@ export function AmbientAudioProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Apply mute state as a smooth master-gain ramp.
+  // Apply mute state as a smooth master-gain ramp (never leaves the gain
+  // stranded at 0: the ramp always targets the explicit VOLUME level).
   useEffect(() => {
     const engine = engineRef.current;
     if (!engine) return;
@@ -119,10 +138,25 @@ export function AmbientAudioProvider({ children }: { children: ReactNode }) {
     master.gain.cancelScheduledValues(ctx.currentTime);
     master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
     master.gain.linearRampToValueAtTime(muted ? 0 : VOLUME, ctx.currentTime + MUTE_RAMP_S);
-  }, [muted]);
+    // `started` in deps: when the engine comes up AFTER an early mute click,
+    // this re-syncs the real gain to the latest intent immediately.
+  }, [muted, started]);
+
+  const toggle = () => {
+    if (!engineRef.current) {
+      // First toggle press with no engine yet: this click IS the qualifying
+      // gesture — start the engine and make sure intent is "sound on".
+      // (The window-level gesture listener races us harmlessly; start() is
+      // idempotent.) Never flip to muted before sound has ever played.
+      setMuted(false);
+      startRef.current();
+      return;
+    }
+    setMuted((m) => !m);
+  };
 
   return (
-    <AmbientAudioContext.Provider value={{ muted, toggle: () => setMuted((m) => !m) }}>
+    <AmbientAudioContext.Provider value={{ audible: started && !muted, toggle }}>
       {children}
     </AmbientAudioContext.Provider>
   );
@@ -130,7 +164,7 @@ export function AmbientAudioProvider({ children }: { children: ReactNode }) {
 
 /** Speaker button (rendered inside the NavBar) toggling the ambient loop. */
 export function AudioToggle() {
-  const { muted, toggle } = useContext(AmbientAudioContext);
+  const { audible, toggle } = useContext(AmbientAudioContext);
   const { dict } = useLang();
 
   return (
@@ -138,13 +172,13 @@ export function AudioToggle() {
       type="button"
       className="ambient-audio-toggle"
       onClick={toggle}
-      aria-pressed={!muted}
-      aria-label={muted ? dict.audio.unmute : dict.audio.mute}
+      aria-pressed={audible}
+      aria-label={audible ? dict.audio.mute : dict.audio.unmute}
       data-magnetic
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 9v6h4l5 4V5L8 9H4Z" fill="currentColor" />
-        {muted ? (
+        {!audible ? (
           <path
             d="M17 8.5 22 15.5M22 8.5 17 15.5"
             stroke="currentColor"

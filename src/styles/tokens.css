@@ -5,15 +5,17 @@
 
 :root {
   /* ---- Color ----
-     CRITICAL: emerald-noir is the ONLY green on the entire site.
-     Never introduce #10362E, #164C3F, or any other green. */
-  --color-emerald-noir: #10281f; /* the ONLY green — dominant background, ~54% visual weight (lightened from #0b1f1a, brand identity preserved) */
+     CRITICAL: greens live in ONE family (the emerald-noir ramp below).
+     Never introduce a green outside this ramp (e.g. #10362E, #164C3F). */
+  --color-emerald-noir: #143128; /* dominant background — one-step lighter (QA darkness reduction, was #10281f) */
+  --color-emerald-card: #1d4033; /* raised card/surface tone — one clear step above the page background */
+  --color-emerald-noir-deep: #0d211b; /* deep stop for bottom gradients — same hue family (was #0a1a15) */
   --color-obsidian: #1a1a1a; /* near-black, secondary background/text, ~4% */
   --color-brushed-gold: #b8924f; /* accent, sparingly used, ~8% */
   --color-champagne-gold: #d4b47a; /* highlight/detail accent, ~6% */
+  --color-deep-gold: #9a7433; /* darker saturated gold — the sphere's hidden-logo layer (distinct from shell golds) */
   --color-cream: #f5f0e8; /* primary light text on dark backgrounds */
-  --color-pure-black: #050805; /* deepest background layer, behind emerald-noir */
-  --color-emerald-noir-deep: #0a1a15; /* lightened deep stop for bottom gradients — same hue family */
+  --color-pure-black: #0a120d; /* deepest background layer, behind emerald-noir (one-step lighter, hue-matched) */
 
   /* ---- Typography ---- */
   --font-display: 'Cormorant Garamond', 'Times New Roman', serif;

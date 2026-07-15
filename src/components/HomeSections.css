@@ -120,7 +120,7 @@
       color-mix(in srgb, var(--color-brushed-gold) 12%, transparent) 0%,
       transparent 60%
     ),
-    color-mix(in srgb, var(--color-obsidian) 55%, var(--color-emerald-noir));
+    var(--color-emerald-card); /* raised green surface — was obsidian-mixed near-black */
   transition:
     border-color 0.5s var(--ease-out-soft),
     box-shadow 0.5s var(--ease-out-soft);

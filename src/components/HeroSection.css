@@ -108,8 +108,10 @@
   position: relative;
   overflow: hidden;
   padding: var(--space-12) var(--space-8) var(--space-8);
-  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 15%, transparent);
-  background: color-mix(in srgb, var(--color-obsidian) 40%, transparent);
+  /* contrast pass: gold border 15% → 40% so the card frame is clearly intentional */
+  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 40%, transparent);
+  /* raised green surface (emerald family) — was near-black obsidian */
+  background: color-mix(in srgb, var(--color-emerald-card) 82%, transparent);
 }
 
 .pillar-numeral {
@@ -120,8 +122,9 @@
   font-size: 7.5rem;
   line-height: 1;
   color: transparent;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--color-brushed-gold) 30%, transparent);
-  opacity: 0.7;
+  /* contrast pass: stroke 30% brushed → 60% champagne, opacity 0.7 → 1 */
+  -webkit-text-stroke: 1.2px color-mix(in srgb, var(--color-champagne-gold) 60%, transparent);
+  opacity: 1;
   pointer-events: none;
 }
 

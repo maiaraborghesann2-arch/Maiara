@@ -17,6 +17,15 @@ gsap.registerPlugin(ScrollTrigger);
  *  - lagSmoothing is disabled so the two never disagree after a long frame.
  * The hero's pinned expansion timeline and route transitions both ride this.
  */
+/**
+ * The live Lenis instance (null under reduced motion / before mount).
+ * Route containers use this to reset scroll IMMEDIATELY on enter —
+ * calling window.scrollTo directly would fight Lenis, which then lerps
+ * from the previous page's offset and makes the new page visibly slide
+ * into place.
+ */
+export let lenisInstance: Lenis | null = null;
+
 export function SmoothScroll({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (prefersReducedMotion()) return;
@@ -30,6 +39,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       touchMultiplier: 1.5,
     });
 
+    lenisInstance = lenis;
     lenis.on('scroll', ScrollTrigger.update);
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
@@ -38,6 +48,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     return () => {
       gsap.ticker.remove(tick);
       lenis.destroy();
+      lenisInstance = null;
     };
   }, []);
 
