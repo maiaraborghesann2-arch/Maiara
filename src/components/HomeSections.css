@@ -1,0 +1,318 @@
+/* ============================================================
+   Home sections below the hero — services, featured work,
+   testimonials, closing CTA. Generous full-bleed vertical rhythm
+   (landonorris-style pacing) via --space-section.
+   ============================================================ */
+
+.home-section {
+  position: relative;
+  padding: var(--space-section) var(--space-8);
+  max-width: 84rem;
+  margin: 0 auto;
+}
+
+.home-section-head {
+  margin-bottom: var(--space-16);
+}
+
+.home-section-headline {
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  color: var(--color-cream);
+  letter-spacing: var(--tracking-display);
+}
+
+.home-headline-gold {
+  color: var(--color-champagne-gold);
+}
+
+/* ---------------------------------------------------------------- services */
+
+.services-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+.service-card {
+  position: relative;
+  padding: var(--space-12) var(--space-6) var(--space-8);
+  border-top: 1px solid color-mix(in srgb, var(--color-brushed-gold) 30%, transparent);
+  transition: border-color 0.5s var(--ease-out-soft);
+}
+
+.service-card:hover {
+  border-top-color: var(--color-champagne-gold);
+}
+
+.service-numeral {
+  display: block;
+  color: var(--color-brushed-gold);
+  margin-bottom: var(--space-8);
+}
+
+/* particle-accent: single glowing gold dot tying back to the sphere motif */
+.service-spark {
+  position: absolute;
+  top: calc(var(--space-12) + 0.1em);
+  right: var(--space-6);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-champagne-gold);
+  box-shadow: 0 0 8px 2px color-mix(in srgb, var(--color-champagne-gold) 55%, transparent);
+  opacity: 0.6;
+  transition: opacity 0.5s var(--ease-out-soft);
+}
+
+.service-card:hover .service-spark {
+  opacity: 1;
+}
+
+.service-title {
+  font-size: 1.5rem;
+  color: var(--color-cream);
+  margin-bottom: var(--space-4);
+}
+
+.service-text {
+  font-size: 0.9375rem;
+  color: var(--color-cream);
+  opacity: 0.72;
+  max-width: 30ch;
+}
+
+/* -------------------------------------------------------- featured projects */
+
+.featured-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.featured-all {
+  flex: 0 0 auto;
+}
+
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-8);
+}
+
+.featured-card {
+  display: block;
+  text-decoration: none;
+}
+
+.featured-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 18%, transparent);
+  background:
+    radial-gradient(
+      90% 120% at 70% 20%,
+      color-mix(in srgb, var(--color-brushed-gold) 12%, transparent) 0%,
+      transparent 60%
+    ),
+    color-mix(in srgb, var(--color-obsidian) 55%, var(--color-emerald-noir));
+  transition:
+    border-color 0.5s var(--ease-out-soft),
+    box-shadow 0.5s var(--ease-out-soft);
+}
+
+/* placeholder mark until real case-study imagery lands */
+.featured-media-mark {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, 5rem);
+  color: color-mix(in srgb, var(--color-brushed-gold) 28%, transparent);
+  transform: scale(1);
+  transition: transform 0.7s var(--ease-out-soft);
+}
+
+.featured-card:hover .featured-media,
+.featured-card:focus-visible .featured-media {
+  border-color: color-mix(in srgb, var(--color-champagne-gold) 55%, transparent);
+  box-shadow: 0 0 40px -12px color-mix(in srgb, var(--color-champagne-gold) 35%, transparent);
+}
+
+.featured-card:hover .featured-media-mark,
+.featured-card:focus-visible .featured-media-mark {
+  transform: scale(1.06);
+}
+
+.featured-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+}
+
+.featured-title {
+  font-size: 1.5rem;
+  color: var(--color-cream);
+  transition: color 0.4s var(--ease-out-soft);
+}
+
+.featured-card:hover .featured-title {
+  color: var(--color-champagne-gold);
+}
+
+.featured-tags {
+  color: var(--color-brushed-gold);
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------------------- testimonials */
+
+.testimonial-stage {
+  position: relative;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding-left: var(--space-16);
+}
+
+.testimonial-mark {
+  position: absolute;
+  left: 0;
+  top: -0.12em;
+  font-family: var(--font-display);
+  font-size: 7rem;
+  line-height: 1;
+  color: color-mix(in srgb, var(--color-brushed-gold) 45%, transparent);
+  pointer-events: none;
+}
+
+.testimonial-viewport {
+  min-height: 12rem;
+}
+
+.testimonial-quote p {
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 2.6vw, 2rem);
+  line-height: 1.45;
+  color: var(--color-cream);
+  max-width: 40ch;
+}
+
+.testimonial-attrib {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid color-mix(in srgb, var(--color-brushed-gold) 25%, transparent);
+  max-width: 20rem;
+}
+
+.testimonial-name {
+  font-size: 0.9375rem;
+  color: var(--color-champagne-gold);
+}
+
+.testimonial-role {
+  color: var(--color-cream);
+  opacity: 0.6;
+}
+
+.testimonial-nav {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
+.testimonial-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--color-brushed-gold);
+  background: transparent;
+  transition:
+    background-color 0.4s var(--ease-out-soft),
+    transform 0.4s var(--ease-out-soft);
+}
+
+.testimonial-dot[data-active='true'] {
+  background: var(--color-champagne-gold);
+  border-color: var(--color-champagne-gold);
+  transform: scale(1.2);
+}
+
+/* -------------------------------------------------------------- contact CTA */
+
+.cta-section {
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cta-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    55% 65% at 50% 55%,
+    color-mix(in srgb, var(--color-brushed-gold) 8%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+.cta-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-12);
+  text-align: center;
+}
+
+.cta-headline {
+  font-size: clamp(2rem, 4.5vw, 3.75rem);
+  color: var(--color-cream);
+  max-width: 18ch;
+}
+
+/* ------------------------------------------------------------------ mobile */
+
+@media (max-width: 767px) {
+  .home-section {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  /* services: horizontal scroll-snap row (same pattern as the hero pillars) */
+  .services-row {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: var(--space-4);
+    padding-bottom: var(--space-4);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .service-card {
+    flex: 0 0 78vw;
+    scroll-snap-align: center;
+  }
+
+  .featured-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .testimonial-stage {
+    padding-left: 0;
+    padding-top: var(--space-12);
+  }
+
+  .testimonial-mark {
+    font-size: 5rem;
+  }
+}

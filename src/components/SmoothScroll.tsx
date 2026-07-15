@@ -7,15 +7,27 @@ import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/** Lenis inertial scrolling, driven by the GSAP ticker and synced to ScrollTrigger. */
+/**
+ * Lenis inertial scrolling — mounted ONCE at the app root (App.tsx wraps the
+ * whole tree in <SmoothScroll>), never remounted across route changes.
+ *
+ * ScrollTrigger sync contract (drift-proof):
+ *  - Lenis is stepped exclusively by the GSAP ticker (single rAF source),
+ *  - every Lenis scroll event calls ScrollTrigger.update(),
+ *  - lagSmoothing is disabled so the two never disagree after a long frame.
+ * The hero's pinned expansion timeline and route transitions both ride this.
+ */
 export function SmoothScroll({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (prefersReducedMotion()) return;
 
     const lenis = new Lenis({
-      duration: 1.15,
+      duration: 1.25, // clearly eased glide (spec range 1.1–1.3)
+      // expo-style ease-out — same settle character as --ease-out-soft
+      // (cubic-bezier(0.22, 1, 0.36, 1)) used across the site's UI motion
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
+      touchMultiplier: 1.5,
     });
 
     lenis.on('scroll', ScrollTrigger.update);

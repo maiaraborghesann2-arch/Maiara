@@ -34,7 +34,10 @@ const EXPAND_SCALE = 2.2; // additional scale at full expansion
 const REVEAL_RADIUS_PX = 95; // cursor proximity that parts the sphere / lights the mark
 const PUSH_UNITS = 0.42; // max outward displacement of repelled sphere particles
 const LOGO_BASE_ALPHA = 0.05; // hidden-layer resting opacity
-const LOGO_REVEAL_ALPHA = 0.98;
+// Peak reveal opacity. The logo layer renders in CREAM/near-white (vs. the
+// gold sphere shell) so the reveal reads by hue/value contrast, not just
+// brightness — 0.92 keeps the near-white glow legible without flaring.
+const LOGO_REVEAL_ALPHA = 0.92;
 
 function tokenColor(name: string): THREE.Color {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -291,8 +294,16 @@ function SphereParticles({
   });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const sphereUniforms = useMemo(makeUniforms, [reduced]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const logoUniforms = useMemo(makeUniforms, [reduced]);
+  // The hidden monogram uses CREAM (near-white) instead of the shell's golds:
+  // at reveal time the two layers must separate by hue/value, otherwise the
+  // revealed mark blends into the gold shell regardless of opacity.
+  const logoUniforms = useMemo(() => {
+    const u = makeUniforms();
+    u.uCore.value = tokenColor('--color-cream');
+    u.uOuter.value = tokenColor('--color-cream');
+    return u;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced]);
 
   useFrame((_, rawDelta) => {
     const group = groupRef.current;

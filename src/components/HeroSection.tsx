@@ -105,17 +105,6 @@ export function HeroSection() {
         );
       });
 
-      gsap.fromTo(
-        '.hero-final-inner',
-        { autoAlpha: 0, y: 36 },
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 1,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: '.hero-final', start: 'top 78%' },
-        },
-      );
     }, section);
 
     return () => ctx.revert();
@@ -184,16 +173,8 @@ export function HeroSection() {
         </div>
       </div>
 
-      <div className="hero-final">
-        <div className="hero-final-inner" data-fade>
-          <LiquidText as="h2" className="hero-final-headline">
-            Let's build something unforgettable.
-          </LiquidText>
-          <Link to="/contact" className="btn-ghost" data-magnetic>
-            Start a Conversation
-          </Link>
-        </div>
-      </div>
+      {/* The closing contact CTA moved to <ContactCta /> (HomeSections) so it
+          bookends the page AFTER services / work / testimonials. */}
     </section>
   );
 }

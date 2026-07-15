@@ -138,27 +138,7 @@
   max-width: 30ch;
 }
 
-/* ---------- final CTA ---------- */
-
-.hero-final {
-  padding: var(--space-32) var(--space-6) var(--space-32);
-  display: flex;
-  justify-content: center;
-}
-
-.hero-final-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-12);
-  text-align: center;
-}
-
-.hero-final-headline {
-  font-size: clamp(2rem, 4.5vw, 3.75rem);
-  color: var(--color-cream);
-  max-width: 18ch;
-}
+/* (final CTA moved to HomeSections.css — .cta-section bookends the page) */
 
 /* ---------- reduced motion: no pin, static sphere behind stage 1 ---------- */
 
