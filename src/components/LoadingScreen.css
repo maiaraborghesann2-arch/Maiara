@@ -80,16 +80,40 @@
   text-align: center;
 }
 
+/* de-emphasized secondary: small label pinned to the bottom-center of the
+   viewport, apart from the primary ENTER. The visible text is tiny but the
+   button keeps a ≥44px hit area for touch. */
 .loading-gate-muted {
+  position: fixed;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 var(--space-4);
   background: none;
   border: none;
-  padding: var(--space-2) var(--space-3);
+  font-size: 0.625rem; /* 10px — lighter than the primary */
+  letter-spacing: 0.24em;
   color: var(--color-cream);
-  opacity: 0.6;
+  opacity: 0.55;
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-color: color-mix(in srgb, var(--color-brushed-gold) 45%, transparent);
   transition: opacity var(--duration-base) var(--ease-out-soft);
+  /* opacity-only entrance (fill: backwards so hover transitions still win
+     after it completes) — a transform here (or on an ancestor) would break
+     the fixed positioning that pins it to the viewport bottom */
+  animation: gate-muted-in 0.7s var(--ease-out-soft) 0.25s backwards;
+}
+
+@keyframes gate-muted-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .loading-gate-muted:hover,

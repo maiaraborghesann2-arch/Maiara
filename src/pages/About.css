@@ -2,10 +2,6 @@
   color: var(--color-champagne-gold);
 }
 
-.about-headline {
-  font-size: clamp(2rem, 5vw, 4rem);
-}
-
 .about-intro-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;

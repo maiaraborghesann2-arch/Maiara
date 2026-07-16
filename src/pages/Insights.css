@@ -1,5 +1,4 @@
 .insights-headline {
-  font-size: clamp(1.75rem, 3.5vw, 3rem);
   max-width: 24ch;
 }
 

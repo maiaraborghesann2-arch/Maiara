@@ -240,20 +240,26 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
               >
                 {dict.loading.enter}
               </button>
-              <button
-                type="button"
-                className="loading-gate-muted u-label"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  enter(false);
-                }}
-                aria-label={dict.loading.enterMutedAria}
-              >
-                {dict.loading.enterMuted}
-              </button>
             </div>
           )}
         </div>
+
+        {/* Secondary option OUTSIDE the animated gate container: the gate's
+            entrance transform would otherwise become the containing block
+            for this fixed-position button and pull it off bottom-center. */}
+        {gateVisible && (
+          <button
+            type="button"
+            className="loading-gate-muted u-label"
+            onClick={(e) => {
+              e.stopPropagation();
+              enter(false);
+            }}
+            aria-label={dict.loading.enterMutedAria}
+          >
+            {dict.loading.enterMuted}
+          </button>
+        )}
 
         {skippable && !gateVisible && (
           <button

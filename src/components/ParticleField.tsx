@@ -11,11 +11,16 @@ import { useCanvasActive } from '../hooks/useCanvasActive';
  * so it runs seamlessly from the loading screen into every page.
  */
 
-const MAX_PARTICLES = 120; // hard cap for mid-range hardware (desktop) — QA density pass: was 80
-const MOBILE_MAX_PARTICLES = 52; // hard cap under 768px viewports — was 35
+// QA visibility pass 2: the previous bump raised the CAPS (80→120) but the
+// area-based count below (/18000) never actually reached them (~94 dots at
+// 1440×900), so the change read as no change. Caps doubled AND the area
+// divisor halved so the density genuinely lands near the caps now.
+const MAX_PARTICLES = 240; // hard cap for mid-range hardware (desktop)
+const MOBILE_MAX_PARTICLES = 104; // hard cap under 768px viewports
 const MOUSE_RADIUS = 150; // px — particles inside are pushed away
 const MOUSE_PUSH = 46; // px — max displacement of pushed particles
-const BASE_SIZE = 3.8; // px — nominal dot size; per-particle sizes vary 60%–160% of this
+const BASE_SIZE = 4.6; // px — nominal dot size; per-particle sizes vary 60%–160% of this
+const BASE_OPACITY = 0.95; // was 0.85 — the field must read as present, not faint
 
 /**
  * Scroll-scrubbed tuning channel. The hero timeline tweens `energy` 0→1
@@ -64,8 +69,8 @@ function Particles({ density }: ParticlesProps) {
 
   const count = useMemo(() => {
     const cap = size.width < 768 ? MOBILE_MAX_PARTICLES : MAX_PARTICLES;
-    const byArea = Math.floor((size.width * size.height) / 18000); // was /26000 — denser field
-    return Math.max(30, Math.min(cap, Math.round(byArea * density)));
+    const byArea = Math.floor((size.width * size.height) / 9000); // halved again — see caps note
+    return Math.max(40, Math.min(cap, Math.round(byArea * density)));
   }, [size.width, size.height, density]);
 
   const pointsRef = useRef<THREE.Points>(null);
@@ -103,7 +108,7 @@ function Particles({ density }: ParticlesProps) {
   const uniforms = useMemo(
     () => ({
       uColor: { value: tokenColor('--color-champagne-gold') },
-      uOpacity: { value: 0.85 },
+      uOpacity: { value: BASE_OPACITY },
       uDpr: { value: Math.min(window.devicePixelRatio || 1, 2) },
     }),
     [],
@@ -182,7 +187,7 @@ function Particles({ density }: ParticlesProps) {
     }
     // hero scroll energy gently brightens the field
     const mat = materialRef.current;
-    if (mat) mat.uniforms.uOpacity.value = 0.85 * (1 + 0.15 * particleTuning.energy);
+    if (mat) mat.uniforms.uOpacity.value = BASE_OPACITY * (1 + 0.1 * particleTuning.energy);
   });
 
   return (

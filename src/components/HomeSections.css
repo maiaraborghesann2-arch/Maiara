@@ -7,7 +7,7 @@
 .home-section {
   position: relative;
   padding: var(--space-section) var(--space-8);
-  max-width: 84rem;
+  max-width: var(--width-content);
   margin: 0 auto;
 }
 

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -6,6 +6,14 @@ import { lenisInstance } from './SmoothScroll';
 import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 const LUX_EASE = [0.65, 0, 0.35, 1] as const;
+
+// The camera-swing transition applies only BETWEEN routes. The very first
+// route after boot (revealed by the intro gate) has no previous page to
+// swing from — animating transforms there both looks wrong and puts a
+// transformed ancestor above the page during its initial layout, which is
+// exactly the environment that produced the sphere's wrong-initial-position
+// bug. First mount gets a plain opacity reveal with NO transforms at all.
+let hasShownARoute = false;
 
 interface PageShellProps {
   children: ReactNode;
@@ -30,11 +38,18 @@ interface PageShellProps {
 export function PageShell({ children, className = '' }: PageShellProps) {
   const reduced = useMemo(() => prefersReducedMotion(), []);
   const mainRef = useRef<HTMLElement>(null);
+  // captured once at mount: is this the boot route (no transition) or a
+  // between-routes navigation (camera swing)?
+  const firstRoute = useRef(!hasShownARoute).current;
+  useEffect(() => {
+    hasShownARoute = true;
+  }, []);
   // true once the enter animation has settled — from then on transformTemplate
   // forces framer to emit `transform: none` on EVERY style write, so later
   // re-renders (LayoutGate unmount, language switch, etc.) can never re-apply
   // the residual matrix3d that breaks position:fixed pinning inside the page.
-  const settledRef = useRef(false);
+  // The boot route starts settled: it never carries a transform at all.
+  const settledRef = useRef(firstRoute);
 
   // Scroll reset on route enter — the systemic fix for "elements slide into
   // place after the transition reveal". Three things must all hold:
@@ -63,6 +78,20 @@ export function PageShell({ children, className = '' }: PageShellProps) {
         initial: { opacity: 0 },
         animate: { opacity: 1, transition: { duration: 0.35 } },
         exit: { opacity: 0, transition: { duration: 0.25 } },
+      }
+    : firstRoute
+    ? {
+        // boot reveal: direct fade, zero transforms — content is already in
+        // its final position when the gate closes. Exit keeps the camera
+        // swing so navigating AWAY from the first page still transitions.
+        initial: { opacity: 0 },
+        animate: { opacity: 1, transition: { duration: 0.6, ease: LUX_EASE } },
+        exit: {
+          opacity: 0,
+          rotateY: -8,
+          z: -100,
+          transition: { duration: 0.5, ease: LUX_EASE },
+        },
       }
     : {
         initial: { opacity: 0, rotateY: 8, z: -100 },

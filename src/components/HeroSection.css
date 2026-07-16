@@ -19,9 +19,9 @@
   grid-template-columns: minmax(0, 32rem) 1fr;
   align-items: center;
   gap: clamp(2rem, 5vw, 5rem);
-  max-width: 84rem;
+  max-width: var(--width-content);
   margin: 0 auto;
-  padding: 0 var(--space-16);
+  padding: 0 var(--space-8); /* audit: was space-16 — aligns hero text with the sections below */
   pointer-events: none;
 }
 
@@ -100,7 +100,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-6);
-  max-width: 72rem;
+  max-width: var(--width-content); /* audit: was 72rem */
   margin: 0 auto;
 }
 
