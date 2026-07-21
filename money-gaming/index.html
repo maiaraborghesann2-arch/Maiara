@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="description" content="Money Gaming — Troque o scroll por um jogo de finanças. Aprenda investindo XP e ganhando moedas!" />
+  <meta name="theme-color" content="#1c2b6e" />
+  <title>Money Gaming — Finanças Level Up!</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" class="console">
+    <!-- Top status bar -->
+    <header class="hud">
+      <div class="hud-left">
+        <span id="hud-hearts" class="hearts" aria-label="Vidas"></span>
+      </div>
+      <div class="hud-center">
+        <span class="hud-lvl">LVL <span id="hud-level">1</span></span>
+        <div class="xpbar" role="progressbar" aria-label="XP">
+          <div id="hud-xpfill" class="xpbar-fill"></div>
+        </div>
+      </div>
+      <div class="hud-right">
+        <span class="coin-icon" aria-hidden="true"></span>
+        <span id="hud-coins">0</span>
+      </div>
+    </header>
+
+    <!-- Screens -->
+    <main id="screen" class="screen"></main>
+
+    <!-- Bottom gamepad nav -->
+    <nav class="gamepad" aria-label="Navegação">
+      <div class="dpad" aria-hidden="true">
+        <span class="dpad-v"></span><span class="dpad-h"></span>
+      </div>
+      <div class="pad-center">
+        <div class="pad-title">FINANÇAS<br/>LEVEL UP!</div>
+        <div class="pad-pills">
+          <button class="pill" data-nav="rewards">SELECT</button>
+          <button class="pill" data-nav="home">START</button>
+        </div>
+      </div>
+      <div class="ab">
+        <button class="btn-round" data-nav="profile" aria-label="Perfil">A</button>
+        <button class="btn-round btn-b" data-nav="home" aria-label="Início">B</button>
+      </div>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    }
+  </script>
+</body>
+</html>
