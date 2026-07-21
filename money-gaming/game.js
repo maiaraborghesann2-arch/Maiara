@@ -705,24 +705,37 @@
     var b = document.getElementById(id);
     function down(e) { e.preventDefault(); input[prop] = true; b.classList.add('pressed'); }
     function up(e) { e.preventDefault(); input[prop] = false; b.classList.remove('pressed'); }
-    b.addEventListener('touchstart', down, { passive: false });
-    b.addEventListener('touchend', up);
-    b.addEventListener('touchcancel', up);
-    b.addEventListener('mousedown', down);
-    b.addEventListener('mouseup', up);
-    b.addEventListener('mouseleave', up);
+    b.addEventListener('pointerdown', down);
+    b.addEventListener('pointerup', up);
+    b.addEventListener('pointercancel', up);
+    b.addEventListener('pointerleave', up);
+    b.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   }
   bindHold('btn-left', 'left');
   bindHold('btn-right', 'right');
 
   function bindTap(id, fn) {
     var b = document.getElementById(id);
-    function tap(e) { e.preventDefault(); b.classList.add('pressed'); setTimeout(function () { b.classList.remove('pressed'); }, 120); fn(); }
-    b.addEventListener('touchstart', tap, { passive: false });
-    b.addEventListener('mousedown', tap);
+    b.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      b.classList.add('pressed');
+      setTimeout(function () { b.classList.remove('pressed'); }, 120);
+      fn();
+    });
+    b.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   }
   bindTap('btn-a', function () { if (mode === 'play') input.jumpQueued = true; });
   bindTap('btn-b', function () { if (mode === 'play') input.act = true; });
+
+  // controle reserva: tocar na tela do jogo pula — ou interage se
+  // estiver perto de uma moeda/portal (útil quando a barra do navegador
+  // cobre os botões A/B no celular)
+  canvas.addEventListener('pointerdown', function (e) {
+    if (mode !== 'play' || !run) return;
+    e.preventDefault();
+    if (nearestCoin() || atPortal()) input.act = true;
+    else input.jumpQueued = true;
+  });
 
   // teclado (PC)
   window.addEventListener('keydown', function (e) {
@@ -750,6 +763,9 @@
   // SELECT abre recompensas, e o perfil tem atalho no mapa de fases.
   // (atalho: segurar SELECT — omitido; card no rodapé do mapa)
   document.querySelector('.pad-title').addEventListener('click', showProfile);
+
+  // hook de depuração (console)
+  window.MG = { input: input, getMode: function () { return mode; }, getRun: function () { return run; } };
 
   // ---------- boot ----------
   resize();

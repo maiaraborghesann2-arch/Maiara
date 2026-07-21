@@ -280,7 +280,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
+  padding: 12px 16px calc(34px + env(safe-area-inset-bottom));
   background: var(--paper);
   border-top: 4px solid var(--ink);
   position: sticky;
@@ -318,15 +318,17 @@ body {
 }
 .ab { display: flex; gap: 10px; align-items: flex-end; }
 .btn-round {
-  font-family: inherit; font-size: 10px; color: #fff;
-  width: 44px; height: 44px; border-radius: 50%;
+  font-family: inherit; font-size: 11px; color: #fff;
+  width: 52px; height: 52px; border-radius: 50%;
+  touch-action: none;
   background: radial-gradient(circle at 35% 30%, #f26d5f, var(--red));
   border: 3px solid var(--ink);
   box-shadow: 0 4px 0 var(--ink);
   cursor: pointer;
 }
 .btn-round:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
-.btn-b { margin-top: 14px; }
+.btn-b { margin-top: 10px; }
+.dpad-btn { touch-action: none; }
 
 /* ---------- Toast ---------- */
 .toast {
