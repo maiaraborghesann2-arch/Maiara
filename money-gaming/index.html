@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <meta name="description" content="Money Gaming — Troque o scroll por um jogo de finanças. Aprenda investindo XP e ganhando moedas!" />
+  <meta name="description" content="Money Gaming — Troque o scroll por um jogo de finanças. Explore o mapa, colete moedas respondendo perguntas e destrave o portal!" />
   <meta name="theme-color" content="#1c2b6e" />
   <title>Money Gaming — Finanças Level Up!</title>
   <link rel="manifest" href="manifest.webmanifest" />
@@ -33,13 +33,19 @@
       </div>
     </header>
 
-    <!-- Screens -->
-    <main id="screen" class="screen"></main>
+    <!-- Game viewport: canvas + DOM overlay -->
+    <main class="stage">
+      <canvas id="canvas"></canvas>
+      <div id="screen" class="screen overlay"></div>
+    </main>
 
-    <!-- Bottom gamepad nav -->
-    <nav class="gamepad" aria-label="Navegação">
-      <div class="dpad" aria-hidden="true">
-        <span class="dpad-v"></span><span class="dpad-h"></span>
+    <!-- Bottom gamepad: real controls -->
+    <nav class="gamepad" aria-label="Controles">
+      <div class="dpad">
+        <button id="btn-left" class="dpad-btn dpad-left" aria-label="Andar para a esquerda">◀</button>
+        <button id="btn-right" class="dpad-btn dpad-right" aria-label="Andar para a direita">▶</button>
+        <span class="dpad-v" aria-hidden="true"></span>
+        <span class="dpad-h" aria-hidden="true"></span>
       </div>
       <div class="pad-center">
         <div class="pad-title">FINANÇAS<br/>LEVEL UP!</div>
@@ -49,8 +55,8 @@
         </div>
       </div>
       <div class="ab">
-        <button class="btn-round" data-nav="profile" aria-label="Perfil">A</button>
-        <button class="btn-round btn-b" data-nav="home" aria-label="Início">B</button>
+        <button id="btn-a" class="btn-round" aria-label="A: pular">A</button>
+        <button id="btn-b" class="btn-round btn-b" aria-label="B: interagir">B</button>
       </div>
     </nav>
   </div>

@@ -4,12 +4,16 @@ Jogo de finanças baseado em recompensas, com estética retrô pixel-art (estilo
 
 ## Como funciona
 
-- **Quest Menu** com 4 trilhas: Primeiros Passos ⭐, Bases de Investimento 🪙, Tipos de Impostos 🧰 e Rendimentos Brutos e Líquidos 💰 — cada uma mostra o % de progresso.
-- **Perguntas com recompensas**: cada acerto vale **+10 moedas** e **+20 XP**, com explicação didática após cada resposta.
-- **Vidas (♥♥♥)**: errar custa uma vida; três erros = Game Over (mas o que você acertou fica salvo).
+Agora é um **plataforma 2D** com controles reais no gamepad:
+
+- **◀ ▶** andam, **A** pula, **B** interage (no PC: setas/WASD, espaço e X).
+- **4 fases** em ordem de dificuldade: Primeiros Passos ⭐, Bases de Investimento 🪙, Tipos de Impostos 🧰 e Rendimentos Brutos e Líquidos 💰. Cada fase desbloqueia a próxima.
+- **Moedas no mapa**: chegue perto e aperte **B** — abre um desafio de 1 a 3 perguntas (conforme a fase). Acertou tudo, coleta a moeda (**+10 🪙** e XP); errou, perde uma vida e a moeda continua lá.
+- **Portal de fim de fase**: só destrava com ~70% das moedas do mapa. Ao entrar, vem o **desafio final de 5 perguntas** (mínimo 4 acertos). Passou: bônus de +50 moedas e próxima fase liberada.
+- **Vidas (♥♥♥)**: errar perguntas ou cair em buracos custa vida; três perdas = Game Over (o que já foi ganho fica salvo).
 - **Níveis**: a cada 100 XP você sobe de nível na barra do topo.
-- **Recompensas 🎁**: troque moedas por medalhas colecionáveis (SELECT no gamepad).
-- **Perfil 🎮**: botão A mostra suas estatísticas (nível, precisão, medalhas).
+- **Recompensas 🎁** (SELECT): troque moedas por medalhas colecionáveis.
+- **Perfil 🎮** (toque em "FINANÇAS LEVEL UP!"): estatísticas do jogador.
 - Progresso salvo automaticamente no aparelho (`localStorage`).
 
 ## Rodando
