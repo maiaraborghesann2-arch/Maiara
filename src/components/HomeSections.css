@@ -279,6 +279,38 @@
   max-width: 18ch;
 }
 
+.cta-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+/* de-emphasized second path to the Lykos briefing — deliberately quieter than
+   the ghost CTA above it: no border, hairline gold underline only */
+.cta-secondary {
+  display: inline-block;
+  padding: var(--space-2) var(--space-1);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--color-cream);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-brushed-gold) 45%, transparent);
+  opacity: 0.78;
+  transition:
+    opacity var(--duration-base) var(--ease-out-soft),
+    color var(--duration-base) var(--ease-out-soft),
+    border-color var(--duration-base) var(--ease-out-soft);
+}
+
+.cta-secondary:hover,
+.cta-secondary:focus-visible {
+  opacity: 1;
+  color: var(--color-champagne-gold);
+  border-color: var(--color-champagne-gold);
+}
+
 /* ------------------------------------------------------------------ mobile */
 
 @media (max-width: 767px) {

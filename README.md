@@ -19,6 +19,29 @@ npm run dev      # local dev server
 npm run build    # typecheck + production build
 ```
 
+## Lykos briefing (`/briefing`) + archive (`/admin`)
+
+`/briefing` runs an AI intake conversation ("Lykos") and, on completion, stores a
+structured brief for the team. `/admin` lists those briefs behind a shared
+password. Both are served by Vercel serverless functions in `api/` — the browser
+never holds a key or a secret.
+
+| Env var | Set by | Notes |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | you, from the Anthropic Console | server-side only |
+| `ADMIN_PASSWORD` | you — any strong string | unlocks `/admin`; rotating it signs everyone out |
+| `KV_REST_API_URL` / `KV_REST_API_TOKEN` | Vercel, automatically | injected when a KV store is connected (Storage tab) |
+
+Set all of them in **Vercel → Project → Settings → Environment Variables**
+(Production, Preview and Development), then redeploy. Nothing is read from a
+committed file, and there is no `.env` in the repo. Provisioning steps for KV are
+documented at the top of `api/_lib/store.ts`; until KV is connected the chat and
+the summary still work, only the archive write is skipped.
+
+Cost guards live in `api/lykos-chat.ts` (`WRAP_UP_AFTER`, `MAX_MESSAGES`): Lykos
+is told to conclude once a conversation runs long, and is force-concluded at the
+hard ceiling.
+
 ## Design system
 
 All tokens live in `src/styles/tokens.css`. **Emerald Noir `#143128` is the
@@ -82,4 +105,14 @@ green shade. No raw hex values outside `tokens.css`.
       ambient audio loop (generated placeholder — swap licensed track at
       public/audio/ambient-loop.wav) with nav mute toggle + localStorage
       preference, and a stale-IntersectionObserver fix in useCanvasActive.
+- [x] **Phase 5a — Lykos briefing**: footer CTA renamed to "Start your journey"
+      with a secondary path to `/briefing`; AI intake chat (`api/lykos-chat.ts`,
+      Claude via the Anthropic SDK, server-side key only) that gathers contact,
+      project type, goals, audience, brand personality, budget, timeline and
+      existing assets one question at a time, then generates a structured
+      summary plus an internal-only recommendations readout, archived to Vercel
+      KV; password-protected `/admin` archive (HMAC-signed httpOnly session
+      cookie, no user accounts). Lykos's portrait goes at
+      `public/images/lykos-avatar.png` (falls back to the LK monogram until it
+      is added).
 - [ ] **Phase 5 — real content, imagery, form backend, deploy**

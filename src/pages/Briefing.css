@@ -1,0 +1,380 @@
+/* ============================================================
+   /briefing — Lykos intake conversation
+   Same emerald + gold language as the rest of the site; the chat
+   surface is one clear step above the page background.
+   ============================================================ */
+
+.briefing-layout {
+  display: grid;
+  gap: var(--space-12);
+  align-items: start;
+}
+
+/* wide screens: the brief sits beside the conversation instead of stranding
+   half the viewport next to a reading-width chat panel */
+@media (min-width: 1200px) {
+  .briefing-layout {
+    grid-template-columns: minmax(0, 24rem) minmax(0, 46rem);
+    gap: var(--space-16);
+    justify-content: space-between;
+  }
+}
+
+.briefing-head {
+  /* the grid gap carries the rhythm here, not .page-head's own margin */
+  margin-bottom: 0;
+  max-width: 46rem;
+}
+
+.briefing-headline {
+  max-width: 24ch;
+}
+
+.briefing-intro {
+  margin-top: var(--space-6);
+  max-width: 46ch;
+  color: color-mix(in srgb, var(--color-cream) 82%, transparent);
+}
+
+/* ------------------------------------------------------------------- shell */
+
+.briefing-chat,
+.briefing-summary {
+  width: 100%;
+  max-width: 46rem;
+  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 22%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-card) 62%, transparent);
+}
+
+.briefing-chat {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.briefing-chat-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-brushed-gold) 18%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-noir-deep) 45%, transparent);
+}
+
+.briefing-chat-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.3;
+}
+
+.briefing-chat-titles strong {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--color-cream);
+}
+
+.briefing-chat-role {
+  color: var(--color-champagne-gold);
+  opacity: 0.9;
+}
+
+/* ------------------------------------------------------------------ avatar */
+
+.lykos-avatar {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 55%, transparent);
+  background: var(--color-emerald-noir-deep);
+}
+
+.lykos-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* shown only if public/images/lykos-avatar.png is missing or fails to load */
+.lykos-avatar-fallback {
+  font-family: var(--font-body);
+  font-size: 0.5625rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--color-champagne-gold);
+}
+
+/* --------------------------------------------------------------------- log */
+
+.briefing-log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  /* generous but bounded: the page itself never grows as the chat does */
+  height: clamp(320px, 52vh, 520px);
+  padding: var(--space-6);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-brushed-gold) 40%, transparent) transparent;
+}
+
+.briefing-log:focus-visible {
+  outline-offset: -2px;
+}
+
+.briefing-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: 88%;
+}
+
+.briefing-msg-user {
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+
+.briefing-bubble {
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.briefing-msg-assistant .briefing-bubble {
+  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 16%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-noir-deep) 55%, transparent);
+  color: var(--color-cream);
+}
+
+.briefing-msg-user .briefing-bubble {
+  border: 1px solid color-mix(in srgb, var(--color-champagne-gold) 40%, transparent);
+  background: color-mix(in srgb, var(--color-brushed-gold) 12%, transparent);
+  color: var(--color-cream);
+}
+
+/* typing indicator */
+.briefing-bubble-typing {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+}
+
+.briefing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: var(--space-2);
+}
+
+.briefing-dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-champagne-gold);
+  animation: briefing-dot 1.1s var(--ease-lux) infinite;
+}
+
+.briefing-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.briefing-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes briefing-dot {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------- error */
+
+.briefing-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-champagne-gold) 45%, transparent);
+  background: color-mix(in srgb, var(--color-obsidian) 40%, transparent);
+  font-size: 0.875rem;
+  color: var(--color-cream);
+}
+
+.briefing-retry {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-brushed-gold);
+  color: var(--color-champagne-gold);
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-micro);
+  transition:
+    background var(--duration-base) var(--ease-out-soft),
+    color var(--duration-base) var(--ease-out-soft);
+}
+
+.briefing-retry:hover,
+.briefing-retry:focus-visible {
+  background: var(--color-brushed-gold);
+  color: var(--color-emerald-noir);
+}
+
+/* ---------------------------------------------------------------- composer */
+
+.briefing-composer {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  border-top: 1px solid color-mix(in srgb, var(--color-brushed-gold) 18%, transparent);
+}
+
+.briefing-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-brushed-gold) 30%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-noir-deep) 50%, transparent);
+  color: var(--color-cream);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  transition: border-color var(--duration-base) var(--ease-out-soft);
+}
+
+.briefing-input::placeholder {
+  color: color-mix(in srgb, var(--color-cream) 55%, transparent);
+}
+
+.briefing-input:focus {
+  outline: none;
+  border-color: var(--color-champagne-gold);
+}
+
+.briefing-input:disabled {
+  opacity: 0.5;
+}
+
+.briefing-send {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 var(--space-6);
+  border: 1px solid var(--color-brushed-gold);
+  color: var(--color-champagne-gold);
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-micro);
+  transition:
+    background var(--duration-base) var(--ease-out-soft),
+    color var(--duration-base) var(--ease-out-soft),
+    opacity var(--duration-base) var(--ease-out-soft);
+}
+
+.briefing-send:hover:not(:disabled),
+.briefing-send:focus-visible:not(:disabled) {
+  background: var(--color-brushed-gold);
+  color: var(--color-emerald-noir);
+}
+
+.briefing-send:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ----------------------------------------------------------------- summary */
+
+.briefing-summary {
+  padding: var(--space-8);
+}
+
+.briefing-summary-headline {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: var(--color-cream);
+  max-width: 24ch;
+}
+
+.briefing-summary-intro {
+  margin-top: var(--space-4);
+  max-width: 48ch;
+  color: color-mix(in srgb, var(--color-cream) 82%, transparent);
+}
+
+.briefing-summary-grid {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-8) 0;
+}
+
+.briefing-summary-row {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-brushed-gold) 14%, transparent);
+}
+
+.briefing-summary-row dt {
+  color: var(--color-champagne-gold);
+  padding-top: 3px;
+}
+
+.briefing-summary-row dd {
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--color-cream);
+}
+
+.briefing-summary-cta {
+  margin-top: var(--space-4);
+}
+
+/* ------------------------------------------------------------------ mobile */
+
+@media (max-width: 767px) {
+  .briefing-log {
+    height: clamp(300px, 48vh, 440px);
+    padding: var(--space-4);
+  }
+
+  .briefing-msg {
+    max-width: 100%;
+  }
+
+  .briefing-chat-head,
+  .briefing-composer {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .briefing-composer {
+    flex-direction: column;
+  }
+
+  .briefing-send {
+    padding: var(--space-3) var(--space-6);
+  }
+
+  .briefing-summary {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .briefing-summary-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+}

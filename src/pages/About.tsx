@@ -75,7 +75,7 @@ export function About() {
             Let's build something unforgettable.
           </LiquidText>
           <Link to="/contact" className="btn-ghost" data-magnetic>
-            Start a Conversation
+            {dict.cta.button}
           </Link>
         </Reveal>
       </section>

@@ -196,9 +196,21 @@ export function ContactCta() {
         <h2 id="cta-heading" className="cta-headline">
           <LiquidText as="span">{dict.cta.headline}</LiquidText>
         </h2>
-        <Link to="/contact" className="btn-ghost" data-magnetic>
-          {dict.cta.button}
-        </Link>
+        <div className="cta-actions">
+          <Link to="/contact" className="btn-ghost" data-magnetic>
+            {dict.cta.button}
+          </Link>
+          {/* secondary path: the AI-guided intake conversation */}
+          <Link
+            to="/briefing"
+            className="cta-secondary"
+            aria-label={dict.cta.briefingAria}
+            data-magnetic
+          >
+            {dict.cta.briefingLink}
+            <span aria-hidden="true"> →</span>
+          </Link>
+        </div>
       </Reveal>
     </section>
   );

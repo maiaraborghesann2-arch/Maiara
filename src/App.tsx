@@ -21,6 +21,8 @@ const ArticleDetail = lazy(() =>
   import('./pages/ArticleDetail').then((m) => ({ default: m.ArticleDetail })),
 );
 const Contact = lazy(() => import('./pages/Contact').then((m) => ({ default: m.Contact })));
+const Briefing = lazy(() => import('./pages/Briefing').then((m) => ({ default: m.Briefing })));
+const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })));
 
 const SESSION_KEY = 'lyken:loaded';
 
@@ -84,6 +86,9 @@ function AppInner() {
                 <Route path="/insights" element={<Insights />} />
                 <Route path="/insights/:slug" element={<ArticleDetail />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/briefing" element={<Briefing />} />
+                {/* internal — guarded by the session cookie on /api/admin-* */}
+                <Route path="/admin" element={<Admin />} />
               </Routes>
             </AnimatePresence>
           </Suspense>

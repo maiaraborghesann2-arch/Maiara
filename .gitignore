@@ -3,3 +3,7 @@ dist/
 __pycache__/
 *.pyc
 *.tsbuildinfo
+.vercel/
+# never commit secrets — ANTHROPIC_API_KEY / ADMIN_PASSWORD live in Vercel only
+.env
+.env.*
