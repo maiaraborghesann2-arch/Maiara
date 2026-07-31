@@ -97,6 +97,26 @@ const en = {
     email: 'Email',
     ariaLabel: 'Contact and social',
     copyright: 'Lyken Agency © 2026',
+    legalLabel: 'Legal',
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Service',
+  },
+  consent: {
+    ariaLabel: 'Storage notice',
+    text: 'This site stores a few preferences in your browser — your language and ambient audio choices. No tracking, no advertising.',
+    accept: 'Accept',
+    learnMore: 'Privacy Policy',
+  },
+  legal: {
+    label: 'Legal',
+    lastUpdated: 'Last updated',
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Service',
+    disclaimerLabel: 'Draft — not legal advice',
+    disclaimer:
+      'This is a draft template and has not been reviewed by a lawyer. Consult a qualified data protection professional before relying on this policy in production.',
+    /** Only shown in languages the documents are not maintained in. */
+    langNote: '',
   },
   contact: {
     label: 'Get in Touch',
@@ -116,6 +136,18 @@ const en = {
     withLykos: 'Chatting with Lykos',
     role: 'AI intake strategist',
     avatarAlt: 'Lykos',
+    notice: {
+      label: 'Before you start',
+      title: 'How this conversation is handled',
+      points: [
+        'Lykos is an AI assistant. Your messages are processed by Claude, made by Anthropic, to run the conversation and to prepare a summary for our team.',
+        'What you write — including your name, contact details, and project details — is stored and read by the Lyken Agency team.',
+        'Please do not share confidential third-party information or anyone else’s personal data here.',
+      ],
+      privacyPrefix: 'Full detail in our',
+      privacyLink: 'Privacy Policy',
+      accept: 'I understand — start briefing',
+    },
     inputLabel: 'Your message',
     placeholder: 'Type your answer…',
     send: 'Send',
@@ -235,6 +267,26 @@ const pt: Dict = {
     email: 'E-mail',
     ariaLabel: 'Contato e redes sociais',
     copyright: 'Lyken Agency © 2026',
+    legalLabel: 'Jurídico',
+    privacy: 'Política de Privacidade',
+    terms: 'Termos de Serviço',
+  },
+  consent: {
+    ariaLabel: 'Aviso sobre armazenamento local',
+    text: 'Este site guarda algumas preferências no seu navegador — idioma e som ambiente. Sem rastreamento, sem publicidade.',
+    accept: 'Aceitar',
+    learnMore: 'Política de Privacidade',
+  },
+  legal: {
+    label: 'Jurídico',
+    lastUpdated: 'Atualizado em',
+    privacy: 'Política de Privacidade',
+    terms: 'Termos de Serviço',
+    disclaimerLabel: 'Rascunho — não é aconselhamento jurídico',
+    disclaimer:
+      'Este é um modelo em rascunho e não foi revisado por um advogado. Consulte um profissional qualificado em proteção de dados antes de utilizá-lo em produção.',
+    langNote:
+      'Os documentos jurídicos são mantidos em inglês para evitar divergências de interpretação entre versões. A versão em inglês é a que prevalece.',
   },
   contact: {
     label: 'Fale Conosco',
@@ -254,6 +306,18 @@ const pt: Dict = {
     withLykos: 'Conversando com o Lykos',
     role: 'Estrategista de IA',
     avatarAlt: 'Lykos',
+    notice: {
+      label: 'Antes de começar',
+      title: 'Como esta conversa é tratada',
+      points: [
+        'O Lykos é um assistente de IA. Suas mensagens são processadas pelo Claude, da Anthropic, para conduzir a conversa e preparar um resumo para o nosso time.',
+        'O que você escrever — incluindo nome, contato e detalhes do projeto — é armazenado e lido pelo time da Lyken Agency.',
+        'Por favor, não compartilhe aqui informações confidenciais de terceiros nem dados pessoais de outras pessoas.',
+      ],
+      privacyPrefix: 'Detalhes completos na nossa',
+      privacyLink: 'Política de Privacidade',
+      accept: 'Entendi — começar o briefing',
+    },
     inputLabel: 'Sua mensagem',
     placeholder: 'Escreva sua resposta…',
     send: 'Enviar',

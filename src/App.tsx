@@ -9,6 +9,7 @@ import { NavBar } from './components/NavBar';
 import { Footer } from './components/Footer';
 import { Logo } from './components/Logo';
 import { LayoutGate } from './components/LayoutGate';
+import { ConsentBanner } from './components/ConsentBanner';
 
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })));
@@ -23,6 +24,9 @@ const ArticleDetail = lazy(() =>
 const Contact = lazy(() => import('./pages/Contact').then((m) => ({ default: m.Contact })));
 const Briefing = lazy(() => import('./pages/Briefing').then((m) => ({ default: m.Briefing })));
 const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })));
+// both legal documents share one renderer, so they share one chunk
+const Privacy = lazy(() => import('./pages/Legal').then((m) => ({ default: m.Privacy })));
+const Terms = lazy(() => import('./pages/Legal').then((m) => ({ default: m.Terms })));
 
 const SESSION_KEY = 'lyken:loaded';
 
@@ -87,12 +91,16 @@ function AppInner() {
                 <Route path="/insights/:slug" element={<ArticleDetail />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/briefing" element={<Briefing />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
                 {/* internal — guarded by the session cookie on /api/admin-* */}
                 <Route path="/admin" element={<Admin />} />
               </Routes>
             </AnimatePresence>
           </Suspense>
           <Footer />
+          {/* shown once, after the intro gate — never over the loading screen */}
+          <ConsentBanner />
         </>
       )}
     </SmoothScroll>

@@ -1,0 +1,152 @@
+/* ============================================================
+   /privacy and /terms — long-form legal documents.
+   Reading column in the Insights measure; no hero treatment.
+   ============================================================ */
+
+.legal-wrap {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.legal-head {
+  margin-bottom: var(--space-8);
+}
+
+.legal-headline {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  color: var(--color-cream);
+  margin-bottom: var(--space-4);
+}
+
+.legal-updated {
+  color: var(--color-champagne-gold);
+}
+
+/* ---- draft notice: intentionally visible, not fine print ---- */
+
+.legal-disclaimer {
+  margin-bottom: var(--space-12);
+  padding: var(--space-6);
+  border: 1px solid var(--color-champagne-gold);
+  border-left-width: 3px;
+  background: color-mix(in srgb, var(--color-brushed-gold) 10%, transparent);
+}
+
+.legal-disclaimer-label {
+  display: block;
+  color: var(--color-champagne-gold);
+  margin-bottom: var(--space-2);
+}
+
+.legal-disclaimer p {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-cream);
+}
+
+.legal-langnote {
+  margin-bottom: var(--space-8);
+  font-size: 0.875rem;
+  color: color-mix(in srgb, var(--color-cream) 75%, transparent);
+}
+
+.legal-intro {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  line-height: 1.5;
+  color: var(--color-cream);
+  padding-bottom: var(--space-12);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-brushed-gold) 22%, transparent);
+}
+
+/* ---- body ---- */
+
+.legal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  margin-top: var(--space-12);
+}
+
+.legal-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.legal-h2 {
+  font-size: 1.5rem;
+  color: var(--color-champagne-gold);
+  margin-bottom: var(--space-1);
+}
+
+.legal-section p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--color-cream);
+  opacity: 0.88;
+}
+
+.legal-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-left: var(--space-6);
+  list-style: none;
+}
+
+.legal-list li {
+  position: relative;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--color-cream);
+  opacity: 0.88;
+}
+
+.legal-list li::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--space-6) * -1);
+  top: 0.7em;
+  width: 10px;
+  height: 1px;
+  background: var(--color-brushed-gold);
+}
+
+/* ---- footer of the document ---- */
+
+.legal-crosslinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin-top: var(--space-16);
+  padding-top: var(--space-8);
+  border-top: 1px solid color-mix(in srgb, var(--color-brushed-gold) 22%, transparent);
+}
+
+.legal-crosslinks a {
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-micro);
+  text-decoration: none;
+  color: var(--color-champagne-gold);
+  padding: var(--space-2) 0;
+  transition: opacity var(--duration-base) var(--ease-out-soft);
+  opacity: 0.85;
+}
+
+.legal-crosslinks a:hover,
+.legal-crosslinks a:focus-visible {
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .legal-disclaimer {
+    padding: var(--space-4);
+  }
+
+  .legal-intro {
+    font-size: 1.25rem;
+  }
+}

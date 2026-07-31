@@ -84,6 +84,13 @@ export function Briefing() {
   const { dict } = useLang();
   const t = dict.briefing;
 
+  /**
+   * The chat does not exist — and no request is made — until the visitor has
+   * read the data-processing notice and acknowledged it. GDPR transparency for
+   * automated processing, and it also means a visitor who only glances at the
+   * page never has anything sent to Anthropic on their behalf.
+   */
+  const [started, setStarted] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState(false);
@@ -125,10 +132,10 @@ export function Briefing() {
   // Opening turn: Lykos introduces itself. Sent with an empty transcript —
   // the function seeds the required first user turn on the server side.
   useEffect(() => {
-    if (openedRef.current) return;
+    if (!started || openedRef.current) return;
     openedRef.current = true;
     void turn([]);
-  }, [turn]);
+  }, [started, turn]);
 
   // Once Lykos signals completion, fetch the structured summary. The same call
   // archives the briefing server-side.
@@ -220,7 +227,49 @@ export function Briefing() {
         </header>
 
         <AnimatePresence mode="wait">
-          {showSummaryPanel ? (
+          {!started ? (
+            <motion.section
+              key="notice"
+              className="briefing-notice"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.25 } }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              aria-labelledby="briefing-notice-title"
+            >
+              <header className="briefing-notice-head">
+                <LykosAvatar alt={t.avatarAlt} />
+                <span className="section-label">{t.notice.label}</span>
+              </header>
+
+              <h2 id="briefing-notice-title" className="briefing-notice-title">
+                {t.notice.title}
+              </h2>
+
+              <ul className="briefing-notice-points">
+                {t.notice.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+
+              <p className="briefing-notice-privacy">
+                {t.notice.privacyPrefix}{' '}
+                <Link to="/privacy" className="briefing-notice-link">
+                  {t.notice.privacyLink}
+                </Link>
+                .
+              </p>
+
+              <button
+                type="button"
+                className="btn-ghost briefing-notice-accept"
+                onClick={() => setStarted(true)}
+                data-magnetic
+              >
+                {t.notice.accept}
+              </button>
+            </motion.section>
+          ) : showSummaryPanel ? (
             <motion.section
               key="summary"
               className="briefing-summary"

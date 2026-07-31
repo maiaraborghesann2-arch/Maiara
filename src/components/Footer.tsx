@@ -27,7 +27,20 @@ export function Footer() {
         </nav>
       </div>
 
-      <p className="footer-copyright u-label">{dict.footer.copyright}</p>
+      <div className="footer-base">
+        <p className="footer-copyright u-label">{dict.footer.copyright}</p>
+        <nav className="footer-legal" aria-label={dict.footer.legalLabel}>
+          <Link to="/privacy" data-magnetic>
+            {dict.footer.privacy}
+          </Link>
+          <span className="footer-legal-sep" aria-hidden="true">
+            ·
+          </span>
+          <Link to="/terms" data-magnetic>
+            {dict.footer.terms}
+          </Link>
+        </nav>
+      </div>
     </footer>
   );
 }
