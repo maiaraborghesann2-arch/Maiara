@@ -1,0 +1,14 @@
+{
+  "name": "Money Gaming — Finanças Level Up!",
+  "short_name": "Money Gaming",
+  "description": "Jogo de finanças baseado em recompensas: complete quests, ganhe moedas e XP.",
+  "lang": "pt-BR",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2ede1",
+  "theme_color": "#1c2b6e",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
