@@ -1,0 +1,38 @@
+/*
+ * Design tokens for the Ekklesia Connect experience.
+ *
+ * Colour values mirror `lib/palette.ts` — that file is the source of truth
+ * because the WebGL layer needs the same colours and cannot read CSS variables
+ * cheaply per frame. Change one, change both.
+ */
+
+:root {
+  /* Surfaces */
+  --bone: #f2eae0;
+  --sand: #e9dcc8;
+  --dusk: #ede2d2;
+  --soil: #17120c;
+
+  /* Ink */
+  --ink: #2b2117;
+  --ink-soft: #6e5d4a;
+  --ink-faint: rgba(43, 33, 23, 0.45);
+  --on-soil: #e6dbc9;
+  --on-soil-soft: rgba(230, 219, 201, 0.58);
+
+  /* Accents */
+  --clay: #a2502b;
+  --clay-hover: #8d4223;
+  --olive: #3e4a2e;
+
+  /* Type */
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-ui: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Rhythm */
+  --gutter: clamp(1.5rem, 7vw, 8.25rem);
+  --rule: rgba(43, 33, 23, 0.16);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
