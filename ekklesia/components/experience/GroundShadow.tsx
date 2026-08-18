@@ -6,50 +6,67 @@ import * as THREE from "three";
 
 import { track } from "@/lib/math";
 import { progressStore } from "@/lib/scroll/progressStore";
-import { GROUND_Y, groundShadow, seed } from "@/lib/scroll/choreography";
-import { createShadowTexture } from "./seedGeometry";
+import { GROUND_Y, seed, shadow } from "@/lib/scroll/choreography";
+import { createContactTexture } from "./seedGeometry";
 
 /**
- * The soft ellipse under the seed in frames 01–02.
+ * The surface the seed sits on — implied, never drawn.
  *
- * A real shadow map would need a floor mesh to catch it, and the storyboard has
- * no visible floor — just a shadow floating on cream. So this is a gradient
- * sprite laid flat: cheaper, softer, and it lets the "surface" stay implied.
+ * Two layers do the work. An invisible catcher plane receives the real shadow
+ * map, so the shape on the sand is the seed's actual silhouette and it changes
+ * as the seed turns. On top of it, a small gradient sprite supplies the tight
+ * ambient occlusion right at the contact point, which a 1024px shadow map
+ * cannot resolve and which is the detail that makes an object look *placed*
+ * rather than hovering.
+ *
+ * Both fade out together as the seed breaks free in frame 03.
  */
 export function GroundShadow() {
-  const ref = useRef<THREE.Mesh>(null);
-  const texture = useMemo(() => createShadowTexture(), []);
+  const catcher = useRef<THREE.Mesh>(null);
+  const contact = useRef<THREE.Mesh>(null);
+  const texture = useMemo(() => createContactTexture(), []);
 
   useEffect(() => () => texture.dispose(), [texture]);
 
   useFrame(() => {
-    const mesh = ref.current;
-    if (!mesh) return;
+    const catcherMesh = catcher.current;
+    const contactMesh = contact.current;
+    if (!catcherMesh || !contactMesh) return;
 
     const p = progressStore.get();
-    const material = mesh.material as THREE.MeshBasicMaterial;
-    const opacity = track(groundShadow.opacity, p);
+    const authority = track(shadow.opacity, p);
 
-    mesh.visible = opacity > 0.001;
-    if (!mesh.visible) return;
+    catcherMesh.visible = authority > 0.002;
+    contactMesh.visible = authority > 0.002;
+    if (!catcherMesh.visible) return;
 
-    material.opacity = opacity;
+    (catcherMesh.material as THREE.ShadowMaterial).opacity = authority * 0.26;
 
-    // Widen and soften as the seed lifts off, the way a real contact shadow
-    // loses its edge with distance.
-    const lift = Math.max(0, track(seed.y, p) - -0.199);
-    mesh.scale.setScalar(track(seed.scale, p) * (7.5 + lift * 9));
+    // Contact occlusion widens and softens as the seed lifts, the way a real
+    // one loses its edge with distance.
+    const scale = track(seed.scale, p);
+    const lift = Math.max(0, track(seed.fall, p));
+    (contactMesh.material as THREE.MeshBasicMaterial).opacity =
+      authority * 0.9 * (1 - Math.min(1, lift * 6));
+    contactMesh.scale.setScalar(scale * (6.5 + lift * 22));
   });
 
   return (
-    <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]} position={[0, GROUND_Y, 0]}>
-      <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial
-        map={texture}
-        transparent
-        depthWrite={false}
-        toneMapped={false}
-      />
-    </mesh>
+    <>
+      <mesh
+        ref={catcher}
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, GROUND_Y, 0]}
+        receiveShadow
+      >
+        <planeGeometry args={[6, 6]} />
+        <shadowMaterial transparent opacity={0.26} color="#3A2A1A" />
+      </mesh>
+
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, GROUND_Y + 0.001, 0]} ref={contact}>
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial map={texture} transparent depthWrite={false} toneMapped={false} />
+      </mesh>
+    </>
   );
 }

@@ -4,81 +4,84 @@ import { easing, type Keyframe } from "@/lib/math";
  * The shot list for Act I, expressed as keyframe tracks over the Act I track
  * progress (0 = top of the scroll track, 1 = bottom).
  *
- * Every animated quantity in the chapter lives here, in one file, so the
- * timing of the whole sequence can be read and retuned without opening a
- * single component. Components stay dumb: they sample a track and write the
- * result to a `ref`.
+ * Every animated quantity in the chapter lives here, in one file, so the timing
+ * of the whole sequence can be read and retuned without opening a single
+ * component. Components stay dumb: they sample a track and write the result to
+ * a `ref`.
  */
 
-/** World-space height the seed rests at before it breaks free. */
+/** World-space height of the implied surface the seed rests on. */
 export const GROUND_Y = -0.34;
 
 export const seed = {
+  /**
+   * Small. The storyboard's first frame is mostly empty sand, and the object
+   * only reads as precious because so little of the frame is spent on it.
+   */
   scale: [
-    { at: 0.0, value: 0.105 },
-    { at: 0.24, value: 0.114 },
-    { at: 0.5, value: 0.132 },
-    { at: 0.66, value: 0.126 },
-    { at: 0.88, value: 0.142, ease: easing.outCubic },
-    { at: 1.0, value: 0.147 },
+    { at: 0.0, value: 0.108 },
+    { at: 0.5, value: 0.117 },
+    { at: 0.66, value: 0.114 },
+    { at: 0.88, value: 0.134, ease: easing.outCubic },
+    { at: 1.0, value: 0.138 },
   ] satisfies Keyframe[],
 
   /**
-   * Rest, a small lift as it releases, then an accelerating descent that never
-   * stops — the seed is still drifting downward at the end of the chapter,
-   * which is the handoff into frame 05 ("ela encontra o solo").
+   * Vertical *offset from resting contact*, not absolute height. `Seed` adds
+   * this to `GROUND_Y + halfHeight × scale`, so the seed stays welded to the
+   * surface through Acts 01–02 no matter how the scale track is retuned.
    */
-  y: [
-    { at: 0.0, value: -0.199 },
-    { at: 0.48, value: -0.199 },
-    // A hair of lift as it breaks contact — enough to read as "solta", not so
-    // much that the seed appears to float upward.
-    { at: 0.56, value: -0.16, ease: easing.outCubic },
-    // Hangs briefly at the top of the release so the dust burst blooms
-    // *beneath* it, the way frame 03 stages the moment. Falling immediately
-    // would drop the seed past its own dust.
-    { at: 0.64, value: -0.24 },
-    { at: 0.82, value: -1.34, ease: easing.gravity },
-    { at: 1.0, value: -1.46, ease: easing.outCubic },
+  fall: [
+    { at: 0.0, value: 0 },
+    { at: 0.48, value: 0 },
+    // Breaks contact — a few millimetres, enough to read as release.
+    { at: 0.56, value: 0.048, ease: easing.outCubic },
+    // Hangs at the apex while the dust blooms beneath it.
+    { at: 0.64, value: -0.02 },
+    { at: 0.82, value: -1.2, ease: easing.gravity },
+    { at: 1.0, value: -1.42, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
-  /**
-   * Fraction of the hero anchor the seed has travelled toward. Multiplied by a
-   * viewport-derived x so the composition holds on any aspect ratio.
-   */
   /**
    * Held at zero through the whole fall. The seed has to drop *straight down*
    * over the dust it kicked up — drifting sideways during frame 03 severs the
-   * two and the burst stops reading as caused by the seed. The move to the
-   * hero anchor only starts once the fall has been established.
+   * two and the burst stops reading as caused by the seed. The move to the hero
+   * anchor only starts once the fall has been established.
    */
-  xFactor: [
+  arrival: [
     { at: 0.0, value: 0 },
     { at: 0.68, value: 0 },
     { at: 0.9, value: 1, ease: easing.outCubic },
     { at: 1.0, value: 1 },
   ] satisfies Keyframe[],
 
+  /**
+   * Roughly half a turn across Act 02, on a sine ease so it has no visible
+   * start or stop. A fast spin flattens the object into a blur; what discloses
+   * form is a slow turn where the silhouette and the highlight both change.
+   */
   rotationY: [
-    { at: 0.0, value: 0.2 },
-    { at: 0.2, value: 0.36 },
-    { at: 0.5, value: Math.PI * 2.35, ease: easing.inOutCubic },
-    { at: 0.78, value: Math.PI * 3.0 },
-    { at: 1.0, value: Math.PI * 3.24 },
+    { at: 0.0, value: 0.18 },
+    { at: 0.2, value: 0.3 },
+    { at: 0.5, value: Math.PI * 1.05, ease: easing.inOutSine },
+    { at: 0.82, value: Math.PI * 1.55 },
+    { at: 1.0, value: Math.PI * 1.72 },
+  ] satisfies Keyframe[],
+
+  /** Secondary axes: the turn tips slightly, then tumbles under gravity. */
+  rotationX: [
+    { at: 0.0, value: 0.1 },
+    { at: 0.5, value: -0.12, ease: easing.inOutSine },
+    { at: 0.82, value: -0.42 },
+    { at: 1.0, value: -0.05, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   rotationZ: [
-    { at: 0.48, value: 0.02 },
-    { at: 0.64, value: 0.34 },
-    { at: 0.8, value: 0.5 },
-    { at: 1.0, value: 0.16, ease: easing.outCubic },
-  ] satisfies Keyframe[],
-
-  rotationX: [
-    { at: 0.0, value: 0.09 },
-    { at: 0.5, value: 0.05 },
-    { at: 0.78, value: -0.34 },
-    { at: 1.0, value: -0.11 },
+    { at: 0.0, value: -0.06 },
+    { at: 0.48, value: -0.04 },
+    { at: 0.66, value: 0.16 },
+    { at: 0.82, value: 0.4 },
+    { at: 1.0, value: 0.07, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /** Idle drift authority — silenced once the seed is in free fall. */
@@ -86,44 +89,46 @@ export const seed = {
     { at: 0.0, value: 1 },
     { at: 0.46, value: 1 },
     { at: 0.56, value: 0 },
-    { at: 1.0, value: 0.35 },
+    { at: 1.0, value: 0.3 },
   ] satisfies Keyframe[],
 };
 
 /**
- * The camera never cuts and never resets. It holds for the first three beats,
- * then follows the seed down as the Home assembles — which leaves it already
+ * The camera never cuts and never resets. It eases in through Act 02 — the
+ * slow push is what makes the turn feel observed rather than displayed — then
+ * follows the seed down as the Home assembles, which leaves it already
  * travelling downward, aimed at the ground, exactly where frame 06 ("a câmera
  * atravessa a superfície") needs to pick it up.
  */
 export const camera = {
   y: [
-    { at: 0.0, value: 0.42 },
-    { at: 0.5, value: 0.42 },
-    { at: 0.78, value: -0.42 },
+    { at: 0.0, value: 0.4 },
+    { at: 0.5, value: 0.4 },
+    { at: 0.82, value: -0.42 },
     { at: 1.0, value: -1.02, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   z: [
-    { at: 0.0, value: 5.0 },
-    { at: 0.4, value: 4.86 },
-    { at: 0.7, value: 5.12 },
+    { at: 0.0, value: 5.05 },
+    { at: 0.5, value: 4.72, ease: easing.inOutSine },
+    { at: 0.7, value: 5.0 },
     { at: 1.0, value: 5.5, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   targetY: [
-    { at: 0.0, value: -0.05 },
-    { at: 0.5, value: -0.05 },
-    { at: 0.78, value: -0.72 },
+    { at: 0.0, value: -0.06 },
+    { at: 0.5, value: -0.06 },
+    { at: 0.82, value: -0.72 },
     { at: 1.0, value: -1.3, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };
 
-export const groundShadow = {
+/** Shadow authority — both the shadow map and the contact occlusion. */
+export const shadow = {
   opacity: [
-    { at: 0.0, value: 0.9 },
-    { at: 0.44, value: 0.9 },
-    { at: 0.58, value: 0 },
+    { at: 0.0, value: 1 },
+    { at: 0.46, value: 1 },
+    { at: 0.6, value: 0 },
   ] satisfies Keyframe[],
 };
 
@@ -137,13 +142,37 @@ export const dust = {
   ] satisfies Keyframe[],
 };
 
-/** Background wash: cream of frames 01–03 warming into the Home sand. */
-export const background = {
-  /** 0 = bone, 1 = dusk, 2 = sand. Sampled then split into two lerps. */
-  mix: [
+/**
+ * The backdrop is not a flat fill. A vertical wash, a warm pool of light behind
+ * the object, a soft cast shadow and a vignette give the sand depth — and in
+ * Act 04 they are what bind the seed to the hero typography, because both then
+ * sit inside the same lighting environment instead of being two layers stacked
+ * on each other.
+ */
+export const backdrop = {
+  /** Strength of the warm light pool that follows the seed. */
+  pool: [
+    { at: 0.0, value: 0.55 },
+    { at: 0.5, value: 0.62 },
+    { at: 0.82, value: 0.48 },
+    { at: 1.0, value: 0.76, ease: easing.outCubic },
+  ] satisfies Keyframe[],
+
+  /**
+   * Shadow the seed drops onto the page itself. Off until the Home, where it is
+   * the main thing stopping the object from looking pasted on.
+   */
+  cast: [
     { at: 0.0, value: 0 },
-    { at: 0.5, value: 0 },
-    { at: 0.74, value: 1 },
-    { at: 1.0, value: 2, ease: easing.outCubic },
+    { at: 0.72, value: 0 },
+    { at: 0.92, value: 0.16, ease: easing.outCubic },
+    { at: 1.0, value: 0.19 },
+  ] satisfies Keyframe[],
+
+  vignette: [
+    { at: 0.0, value: 0.12 },
+    { at: 0.5, value: 0.1 },
+    { at: 0.82, value: 0.14 },
+    { at: 1.0, value: 0.19, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };

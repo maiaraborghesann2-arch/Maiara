@@ -80,6 +80,7 @@ compartilhado. Cada camada faz o que faz bem.
 | Arquivo | Papel |
 | --- | --- |
 | `lib/scroll/progressStore.ts` | O número. Fonte única de verdade. |
+| `lib/scene/sharedState.ts` | Posição da semente, publicada para o backdrop. |
 | `lib/scroll/choreography.ts` | **A lista de planos.** Todos os keyframes do Ato I. |
 | `lib/scroll/acts.ts` | Os 15 quadros do storyboard + faixas de scroll do Ato I. |
 | `lib/math.ts` | `track()`, `window4()`, easings, `damp()`. |
@@ -87,17 +88,45 @@ compartilhado. Cada camada faz o que faz bem.
 | `components/scroll/ScrollDriver.tsx` | A trilha de rolagem e o ScrollTrigger. |
 | `components/experience/ExperienceCanvas.tsx` | O palco persistente. |
 | `components/experience/CameraRig.tsx` | Câmera contínua + fundo. |
+| `components/experience/Backdrop.tsx` | Fundo iluminado: wash, light pool, sombra projetada, grão. |
+| `components/experience/StudioEnvironment.tsx` | Environment map gerado (PMREM), sem asset externo. |
+| `components/experience/Lighting.tsx` | Key com shadow map + fill + rim. |
+| `components/experience/GroundShadow.tsx` | Shadow catcher real + oclusão de contato. |
 | `components/experience/Seed.tsx` | Coreografia da semente. |
-| `components/experience/seedGeometry.ts` | Geometria procedural (trocável por `.glb`). |
+| `components/experience/seedGeometry.ts` | Geometria + mapas de cor/rugosidade/normal procedurais. |
 | `components/stage/Overlay.tsx` | Camada HTML fixa. |
 | `components/stage/Caption.tsx` | Narração em itálico dos quadros. |
-| `components/stage/Hero.tsx` | Quadro 04, em HTML acessível. |
+| `components/stage/Hero.tsx` | Quadro 04, em HTML acessível, reveal em máscara. |
+| `components/stage/ScrollIndicator.tsx` | Indicador de scroll discreto. |
 | `components/stage/BeatReadout.tsx` | Leitura de progresso, só com `?debug`. |
 
 **Para retimar qualquer coisa, edite `choreography.ts`.** Os componentes só
 amostram tracks; nenhum deles contém números de tempo.
 
 ---
+
+## Direção visual do Ato I
+
+Quatro coisas fazem o peso da imagem, e nenhuma delas é a geometria:
+
+1. **O fundo é uma superfície iluminada, não um preenchimento.** `#ECDACB`
+   chapado lê como janela vazia; o mesmo tom com wash vertical, poça de luz,
+   vinheta e grão lê como fundo fotografado.
+2. **A poça de luz e a sombra projetada seguem a posição da semente na tela.**
+   É isso que integra objeto e tipografia no quadro 04 — os dois passam a estar
+   no mesmo ambiente de luz, em vez de serem duas camadas empilhadas.
+3. **Sombra de verdade.** Um shadow map (VSM, que é o único tipo nativo que
+   respeita `shadow.radius`) projeta a silhueta real da semente e muda quando
+   ela gira. Por cima, um sprite de gradiente dá a oclusão de contato que
+   1024 px de shadow map não resolvem.
+4. **Material com mapas.** Cor, rugosidade e normal são gerados a partir da
+   *mesma* função de relevo da geometria, então o detalhe pintado coincide com
+   o detalhe modelado. Sem environment map, um material PBR não tem o que
+   refletir — é por isso que objetos three.js sem HDR parecem plástico.
+
+O quadro 01 não tem texto: só areia, luz e o objeto. A narração entra com o
+giro. Para restaurar a legenda de abertura, basta um `<Caption>` para
+`semente` em `Overlay.tsx`.
 
 ## Estado atual
 

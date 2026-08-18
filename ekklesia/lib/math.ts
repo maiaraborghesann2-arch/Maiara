@@ -34,8 +34,10 @@ export const easing = {
   inOutCubic: (t: number) =>
     t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
   outExpo: (t: number) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t)),
-  /** Gravity-ish: slow release, then accelerating. */
-  gravity: (t: number) => t * t * (1.15 - 0.15 * t),
+  inOutSine: (t: number) => -(Math.cos(Math.PI * t) - 1) / 2,
+  /** Actual gravity: distance is quadratic in time. Nothing reads as weight
+   *  like the real curve does. */
+  gravity: (t: number) => t * t,
   /** Lands with a whisper of overshoot — good for "arriving" moves. */
   outBack: (t: number) => {
     const c = 1.18;

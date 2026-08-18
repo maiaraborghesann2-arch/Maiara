@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F2EAE0",
+  themeColor: "#ECDACB",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -38,12 +38,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         */}
         <noscript>
           <style>{`
-            .beat { opacity: 1 !important; visibility: visible !important; transform: none !important; }
+            .beat, .hero__line, .hero__lede, .hero__cta { opacity: 1 !important; visibility: visible !important; transform: none !important; }
+            .hero__mask { overflow: visible; }
             .caption { position: static; margin: 2rem auto; }
             .hero { position: static; min-height: 60vh; }
             .site-header { position: static; }
-            .scroll-cue { display: none; }
-            .overlay { position: static; pointer-events: auto; background: var(--bone); }
+            .scroll-indicator { display: none; }
+            .overlay { position: static; pointer-events: auto; background: var(--sand); }
             .stage { display: none; }
           `}</style>
         </noscript>

@@ -1,26 +1,30 @@
 /**
- * Palette lifted from the Fase 1 storyboard swatches.
+ * Palette for the Ekklesia Connect experience.
  *
- * These values are mirrored as CSS custom properties in `styles/tokens.css`.
- * The 3D layer cannot read CSS variables cheaply per frame, so the source of
- * truth for colours that both layers need lives here in TypeScript.
+ * Mirrored as CSS custom properties in `styles/tokens.css`. This file is the
+ * source of truth because the WebGL layer needs the same colours and cannot
+ * read CSS variables cheaply per frame.
  */
 export const palette = {
-  /** Cream of frames 01–03. */
-  bone: "#F2EAE0",
-  /** Warmer cream the Home settles into (frame 04). */
-  sand: "#E9DCC8",
-  /** Intermediate wash used while the seed is falling. */
-  dusk: "#EDE2D2",
-
-  /** Button and accent — the terracotta of "EXPLORAR RECURSOS". */
-  clay: "#A2502B",
+  /** The Act I ground colour, specified by art direction. */
+  sand: "#ECDACB",
+  /** Lifted sand for the top of the backdrop gradient — where the light is. */
+  sandLight: "#F4E7DA",
+  /** Warm pool that blooms behind the seed. */
+  sandWarm: "#F7ECE0",
+  /** Sunk sand for the vignette and the lower third. */
+  sandDeep: "#DFCAB4",
 
   /** Seed body, lit and shadowed. */
-  bark: "#96633B",
-  barkDeep: "#4A3018",
+  bark: "#B98B5E",
+  barkMid: "#96683F",
+  barkDeep: "#5A3A1E",
 
-  /** Frames 06–10, kept here so later chapters share one palette. */
+  /** Button and accent. */
+  clay: "#A2502B",
+  clayHover: "#8D4223",
+
+  /** Frames 06–15, kept here so later chapters share one palette. */
   soil: "#17120C",
   olive: "#3E4A2E",
 
