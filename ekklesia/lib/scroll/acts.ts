@@ -127,10 +127,10 @@ export type Beat = {
  * continuous shot instead of four clips laid end to end.
  */
 export const ACT_ONE: Record<BeatId, Beat> = {
-  semente: { id: "semente", start: 0.0, end: 0.24 },
-  despertar: { id: "despertar", start: 0.2, end: 0.5 },
-  queda: { id: "queda", start: 0.48, end: 0.74 },
-  home: { id: "home", start: 0.7, end: 1.0 },
+  semente: { id: "semente", start: 0.0, end: 0.22 },
+  despertar: { id: "despertar", start: 0.18, end: 0.48 },
+  queda: { id: "queda", start: 0.46, end: 0.8 },
+  home: { id: "home", start: 0.76, end: 1.0 },
 };
 
 /** Height of the Act I scroll track, in viewport heights. */

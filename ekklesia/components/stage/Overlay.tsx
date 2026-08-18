@@ -24,8 +24,8 @@ const captionOf = (id: string) =>
 export function Overlay() {
   return (
     <div className="overlay">
-      <Caption lines={captionOf("despertar")} a={0.26} b={0.33} c={0.43} d={0.49} />
-      <Caption lines={captionOf("queda")} a={0.54} b={0.59} c={0.66} d={0.72} />
+      <Caption lines={captionOf("despertar")} a={0.24} b={0.3} c={0.41} d={0.46} />
+      <Caption lines={captionOf("queda")} a={0.52} b={0.57} c={0.65} d={0.7} />
 
       <Hero />
       <ScrollIndicator />

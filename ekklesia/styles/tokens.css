@@ -9,28 +9,31 @@
 :root {
   /* Surfaces */
   --sand: #ecdacb;
-  --sand-light: #f4e7da;
-  --sand-deep: #dfcab4;
+  --sand-light: #f6ebe0;
+  --sand-deep: #d9c1a8;
   --soil: #17120c;
 
   /* Ink */
   --ink: #2b2117;
   --ink-soft: #6e5d4a;
-  --ink-faint: rgba(43, 33, 23, 0.4);
-  --ink-hairline: rgba(43, 33, 23, 0.12);
+  --ink-faint: rgba(43, 33, 23, 0.38);
+  --ink-hairline: rgba(43, 33, 23, 0.11);
   --on-soil: #e6dbc9;
   --on-soil-soft: rgba(230, 219, 201, 0.58);
 
   /* Accents */
   --clay: #a2502b;
-  --clay-hover: #8d4223;
+  --clay-hover: #8b4222;
+  --olive: #4a5537;
+  --olive-soft: #6b7550;
+  --olive-hairline: rgba(74, 85, 55, 0.32);
 
   /* Type */
   --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
   --font-ui: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
 
   /* Rhythm */
-  --gutter: clamp(1.5rem, 7vw, 8.25rem);
+  --gutter: clamp(1.5rem, 7vw, 8.5rem);
 
   /* Motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);

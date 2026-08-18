@@ -6,59 +6,59 @@ import * as THREE from "three";
 
 import { track } from "@/lib/math";
 import { progressStore } from "@/lib/scroll/progressStore";
-import { GROUND_Y, shadow } from "@/lib/scroll/choreography";
+import { light } from "@/lib/scroll/choreography";
 import { sceneState } from "@/lib/scene/sharedState";
 
 /**
  * Soft studio lighting: a warm key from the upper right, a cool bounce filling
- * the shadow side, and a rim that lifts the seed off the sand.
+ * the shadow side, and a rim that lifts the grain off the sand.
  *
- * Only the key casts. The shadow camera is kept deliberately tight around the
- * seed — a wide frustum spreads the same 1024 texels over ten times the area
- * and the delicate contact shadow turns into a blocky smear.
+ * The key drifts a little in azimuth through the turn so the highlight travels
+ * across the grain instead of sitting still while the geometry rotates under
+ * it — the difference between an object being examined and a prop spinning.
+ *
+ * Nothing casts a shadow map. `GroundShadow` draws the contact shadow directly
+ * — see the note there for why the map was dropped.
  */
 export function Lighting() {
   const key = useRef<THREE.DirectionalLight>(null);
 
   useFrame(() => {
-    const light = key.current;
-    if (!light) return;
+    const lamp = key.current;
+    if (!lamp) return;
 
     const p = progressStore.get();
+    const azimuth = track(light.azimuth, p);
+    const radius = 2.6;
 
-    // Follow the seed so the shadow frustum stays tight around it, and fade the
-    // cast once the seed has left the surface behind.
-    light.target.position.set(sceneState.seedPosition.x, GROUND_Y, 0);
-    light.target.updateMatrixWorld();
-    light.position.set(sceneState.seedPosition.x + 1.9, 2.6, 1.7);
-    light.castShadow = track(shadow.opacity, p) > 0.01;
+    lamp.intensity = track(light.intensity, p);
+
+    // Ride with the grain so the frustum never has to widen.
+    const { x, y } = sceneState.seedPosition;
+    lamp.position.set(
+      x + Math.cos(0.72 - azimuth) * radius,
+      y + 2.5,
+      Math.sin(0.72 - azimuth) * radius + 1.1,
+    );
+    lamp.target.position.set(x, y - 0.4, 0);
+    lamp.target.updateMatrixWorld();
+
+    lamp.castShadow = false; /*DEBUG*/
   });
 
   return (
     <>
-      <ambientLight intensity={0.5} color="#FFF4E6" />
+      <ambientLight intensity={0.46} color="#FFF3E4" />
 
       <directionalLight
         ref={key}
         position={[1.9, 2.6, 1.7]}
-        intensity={2.4}
-        color="#FFF2DE"
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-        shadow-camera-left={-0.55}
-        shadow-camera-right={0.55}
-        shadow-camera-top={0.55}
-        shadow-camera-bottom={-0.55}
-        shadow-camera-near={0.5}
-        shadow-camera-far={7}
-        shadow-radius={7}
-        shadow-blurSamples={16}
-        shadow-bias={-0.0008}
+        intensity={2.2}
+        color="#FFF1DB"
       />
 
-      <directionalLight position={[-2.4, 0.5, 1.4]} intensity={0.45} color="#CFC2AE" />
-      <directionalLight position={[-1.1, 1.6, -2.4]} intensity={0.7} color="#FFE7C9" />
+      <directionalLight position={[-2.4, 0.4, 1.3]} intensity={0.4} color="#CBBEAB" />
+      <directionalLight position={[-1.0, 1.5, -2.4]} intensity={0.62} color="#FFE6C6" />
     </>
   );
 }

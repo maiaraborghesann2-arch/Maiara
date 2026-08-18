@@ -90,10 +90,11 @@ compartilhado. Cada camada faz o que faz bem.
 | `components/experience/CameraRig.tsx` | Câmera contínua + fundo. |
 | `components/experience/Backdrop.tsx` | Fundo iluminado: wash, light pool, sombra projetada, grão. |
 | `components/experience/StudioEnvironment.tsx` | Environment map gerado (PMREM), sem asset externo. |
-| `components/experience/Lighting.tsx` | Key com shadow map + fill + rim. |
-| `components/experience/GroundShadow.tsx` | Shadow catcher real + oclusão de contato. |
+| `components/experience/Lighting.tsx` | Key com deriva de azimute + fill + rim. |
+| `components/experience/GroundShadow.tsx` | Sombras de contato projetadas nas duas superfícies. |
+| `components/experience/Motes.tsx` | Partículas ambientes, para dar paralaxe ao vazio. |
 | `components/experience/Seed.tsx` | Coreografia da semente. |
-| `components/experience/seedGeometry.ts` | Geometria + mapas de cor/rugosidade/normal procedurais. |
+| `components/experience/seedGeometry.ts` | Grão procedural + mapas de cor/rugosidade/AO/normal. |
 | `components/stage/Overlay.tsx` | Camada HTML fixa. |
 | `components/stage/Caption.tsx` | Narração em itálico dos quadros. |
 | `components/stage/Hero.tsx` | Quadro 04, em HTML acessível, reveal em máscara. |
@@ -107,22 +108,42 @@ amostram tracks; nenhum deles contém números de tempo.
 
 ## Direção visual do Ato I
 
-Quatro coisas fazem o peso da imagem, e nenhuma delas é a geometria:
+Cinco decisões carregam a imagem, e nenhuma delas é "mais elementos":
 
-1. **O fundo é uma superfície iluminada, não um preenchimento.** `#ECDACB`
-   chapado lê como janela vazia; o mesmo tom com wash vertical, poça de luz,
-   vinheta e grão lê como fundo fotografado.
-2. **A poça de luz e a sombra projetada seguem a posição da semente na tela.**
-   É isso que integra objeto e tipografia no quadro 04 — os dois passam a estar
-   no mesmo ambiente de luz, em vez de serem duas camadas empilhadas.
-3. **Sombra de verdade.** Um shadow map (VSM, que é o único tipo nativo que
-   respeita `shadow.radius`) projeta a silhueta real da semente e muda quando
-   ela gira. Por cima, um sprite de gradiente dá a oclusão de contato que
-   1024 px de shadow map não resolvem.
-4. **Material com mapas.** Cor, rugosidade e normal são gerados a partir da
-   *mesma* função de relevo da geometria, então o detalhe pintado coincide com
-   o detalhe modelado. Sem environment map, um material PBR não tem o que
-   refletir — é por isso que objetos three.js sem HDR parecem plástico.
+1. **A escala aparente é trabalho de lente, não de escala.** A semente tem
+   tamanho constante; quem muda é a câmera — abre larga (5% da altura do
+   quadro), avança em macro para o giro, recua na queda. Objetos reais não
+   crescem, e deixar a lente fazer esse trabalho é a maior parte do motivo pelo
+   qual a sequência lê como fotografada.
+
+2. **A chegada da semente é a causa da Home.** Ela não desliza para o hero: cai,
+   toca a terra e fica parada. Quem se move é a câmera — dolly lateral para a
+   esquerda, com o alvo acompanhando o próprio `x` para transladar em vez de
+   girar. O quadro sai de cima do objeto e abre a coluna de texto à esquerda.
+   Uma rotação manteria a semente presa ao centro e destruiria o efeito.
+
+3. **O fundo é uma superfície fotografada.** Wash vertical, poça de luz que
+   segue a semente, névoa atmosférica, vinheta e uma textura de fibra esticada
+   sob tudo. Tire qualquer uma e o quadro volta a ser "janela de navegador
+   vazia".
+
+4. **A sombra conta a distância.** Duas superfícies — o parapeito e a terra —
+   cada uma com sua própria autoridade. Opacidade, espalhamento e deslocamento
+   na direção da luz derivam do *vão* entre a semente e cada superfície. A do
+   parapeito se dissolve enquanto a da terra resolve de um borrão enorme até um
+   contato fechado. É a sombra dizendo ao olho quanto de queda ainda falta.
+
+5. **A rede de ranhuras precisa de domínio deformado.** `min` dos três campos de
+   ridge (não a soma) produz uma rede de linhas em vez de manchas isoladas; e
+   avaliar esses campos em coordenadas retas dá uma regularidade de cestaria.
+   Deformar o espaço antes de medir é o que torna a rede orgânica.
+
+**Sobre o shadow map:** foi tentado e descartado. VSM é o único tipo nativo que
+respeita `shadow.radius`, mas sangra quando a luz acompanha um objeto em queda
+por um frustum apertado — deixava um oval cinza solto na areia durante o pouso.
+Num objeto que lê com sessenta pixels de altura, o detalhe de silhueta que o
+mapa compra é invisível; o artefato não era. As sombras são desenhadas
+diretamente, o que também elimina um passe de render por quadro.
 
 O quadro 01 não tem texto: só areia, luz e o objeto. A narração entra com o
 giro. Para restaurar a legenda de abertura, basta um `<Caption>` para

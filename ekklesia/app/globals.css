@@ -171,14 +171,48 @@ button {
   pointer-events: none;
 }
 
+/*
+ * Held to just under half the frame. The grain lands on the right and the
+ * composition depends on that column of empty sand between them staying empty —
+ * text creeping into it is what would turn the pair back into "a picture next
+ * to a paragraph".
+ */
+.hero__column {
+  width: 100%;
+  /* Not `ch`: that unit resolves against this element's own font, which is the
+     16px sans — it would size the column to roughly a third of what the display
+     serif inside it needs, and break the headline over four lines. */
+  max-width: min(44rem, 47vw);
+}
+
+.hero__kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: clamp(1.4rem, 2.6vw, 2.2rem);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--olive-soft);
+  opacity: 0;
+}
+
+.hero__rule {
+  display: block;
+  width: clamp(28px, 4vw, 52px);
+  height: 1px;
+  background: var(--olive-hairline);
+}
+
 .hero__title {
   display: flex;
   flex-direction: column;
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: clamp(2.7rem, 6.6vw, 5.6rem);
-  line-height: 1;
-  letter-spacing: -0.024em;
+  font-size: clamp(2.6rem, 6.2vw, 5.3rem);
+  line-height: 1.02;
+  letter-spacing: -0.026em;
   color: var(--ink);
 }
 
@@ -197,37 +231,71 @@ button {
 
 .hero__line {
   display: block;
+  /* Each mask is one deliberate line of the storyboard's break. */
+  white-space: nowrap;
   transform: translate3d(0, 104%, 0);
   opacity: 0;
   will-change: transform, opacity;
 }
 
 .hero__lede {
-  margin-top: clamp(1.5rem, 2.6vw, 2.3rem);
-  max-width: 34ch;
-  font-size: clamp(0.88rem, 1.05vw, 1rem);
-  line-height: 1.75;
+  margin-top: clamp(1.6rem, 2.8vw, 2.4rem);
+  max-width: 32ch;
+  font-size: clamp(0.9rem, 1.05vw, 1.02rem);
+  line-height: 1.8;
   color: var(--ink-soft);
   opacity: 0;
 }
 
+.hero__actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.4rem, 2.6vw, 2.4rem);
+  margin-top: clamp(2rem, 3.2vw, 2.9rem);
+  opacity: 0;
+}
+
 .hero__cta {
-  margin-top: clamp(1.9rem, 3.1vw, 2.7rem);
-  padding: 0.95rem 1.8rem;
+  padding: 1rem 1.9rem;
   background: var(--clay);
-  color: #f7f1e8;
+  color: #f8f2e9;
   font-size: 0.66rem;
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   border-radius: 2px;
-  opacity: 0;
   pointer-events: auto;
   transition: background 0.4s var(--ease-out);
 }
 
 .hero__cta:hover {
   background: var(--clay-hover);
+}
+
+.hero__link {
+  position: relative;
+  padding-bottom: 2px;
+  color: var(--olive);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+.hero__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--olive-hairline);
+  transform-origin: left center;
+  transition: transform 0.45s var(--ease-out);
+}
+
+.hero__link:hover::after {
+  transform: scaleX(0.45);
 }
 
 /* ----------------------------------------------------- scroll indicator -- */
@@ -383,6 +451,27 @@ button {
 .readout__value {
   text-align: right;
   color: rgba(230, 219, 201, 0.6);
+}
+
+@media (max-aspect-ratio: 9 / 10) {
+  .hero {
+    justify-content: flex-end;
+    padding-bottom: clamp(4rem, 16vh, 9rem);
+  }
+
+  .hero__column {
+    max-width: none;
+  }
+
+  .hero__title {
+    font-size: clamp(2.2rem, 10vw, 3.4rem);
+  }
+
+  .hero__actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.2rem;
+  }
 }
 
 /* ------------------------------------------------------------ a11y paths -- */

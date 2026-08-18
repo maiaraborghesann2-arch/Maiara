@@ -6,10 +6,9 @@ import * as THREE from "three";
 
 import { clamp, track } from "@/lib/math";
 import { progressStore } from "@/lib/scroll/progressStore";
-import { ACT_ONE, beatProgress } from "@/lib/scroll/acts";
-import { GROUND_Y, dust } from "@/lib/scroll/choreography";
+import { LANDING_Y, dust } from "@/lib/scroll/choreography";
 
-const COUNT = 520;
+const COUNT = 340;
 
 /** Deterministic PRNG so the burst is identical on every reload. */
 function mulberry32(seed: number) {
@@ -23,26 +22,20 @@ function mulberry32(seed: number) {
 }
 
 /**
- * The soil kicked up as the seed releases in frame 03.
+ * The earth displaced where the grain lands.
  *
- * Scrubbed, not simulated: each particle's position is a closed-form function
- * of the beat's progress, so dragging the scroll backwards pulls the dust back
- * into the ground instead of leaving it stranded mid-air. A stateful particle
- * system would break the moment the user scrolls up.
+ * Keyed to impact rather than release, and kept very small: a seed this size
+ * moves almost nothing, and a generous puff would read as a much heavier object
+ * than the one we spent the whole fall establishing. It is here to confirm
+ * contact, not to perform it.
  *
- * The custom material exists for two reasons `PointsMaterial` cannot serve:
- * per-particle size and opacity (a cloud of identical dots reads as a texture,
- * not as dust), and a soft circular falloff instead of the hard square sprite
- * that made the first pass look like grit.
+ * Scrubbed, not simulated — each particle's position is a closed-form function
+ * of progress, so dragging the scroll backwards pulls the dust back into the
+ * ground instead of leaving it stranded mid-air. A stateful particle system
+ * would break the moment the user scrolls up.
  */
 export function Dust() {
   const ref = useRef<THREE.Points>(null);
-  /**
-   * Uniforms are mutated through the material's own ref rather than through the
-   * object handed to the `uniforms` prop. Those are not always the same object,
-   * and when they diverge the writes land on a detached copy — the burst then
-   * renders at its initial values (opacity zero) and vanishes without an error.
-   */
   const material = useRef<THREE.ShaderMaterial>(null);
   const height = useThree((state) => state.size.height);
 
@@ -55,16 +48,14 @@ export function Dust() {
 
     for (let i = 0; i < COUNT; i++) {
       table[i * 4] = random() * Math.PI * 2;
-      // Start clustered near the contact point.
-      table[i * 4 + 1] = 0.008 + random() * 0.045;
-      // Outward speed.
-      table[i * 4 + 2] = 0.06 + random() * 0.4;
-      // Upward kick, plus a stagger so the burst does not fire as one wall.
-      table[i * 4 + 3] = 0.08 + random() * 0.6;
+      // Impact throws outward from the contact point, not upward from a cloud.
+      table[i * 4 + 1] = 0.004 + random() * 0.02;
+      table[i * 4 + 2] = 0.07 + random() * 0.34;
+      table[i * 4 + 3] = 0.05 + random() * 0.4;
 
-      // Wide size spread: a few coarse grains among a lot of fine haze.
-      sizes[i] = 0.8 + random() * random() * 5.4;
-      alphas[i] = 0.3 + random() * 0.7;
+      // Mostly fine haze with a few coarse grains among it.
+      sizes[i] = 0.9 + random() * random() * 5.4;
+      alphas[i] = 0.25 + random() * 0.75;
     }
 
     const buffer = new THREE.BufferGeometry();
@@ -74,10 +65,10 @@ export function Dust() {
     return { geometry: buffer, specs: table };
   }, []);
 
-  const uniforms = useMemo(
+  const initialUniforms = useMemo(
     () => ({
       uOpacity: { value: 0 },
-      uColor: { value: new THREE.Color("#71482A") },
+      uColor: { value: new THREE.Color("#6B4A2A") },
       uScale: { value: 5 },
     }),
     [],
@@ -97,12 +88,10 @@ export function Dust() {
     if (!points.visible) return;
 
     uniforms.uOpacity.value = amount * 0.8;
-    // Pixels per world unit at the seed's depth. Tuned by eye rather than
-    // derived: the point size that reads as airborne soil is a look, not a
-    // projection.
     uniforms.uScale.value = height * 0.0055;
 
-    const t = beatProgress(ACT_ONE.queda, p);
+    // Local time since impact, over the window the burst occupies.
+    const t = clamp((p - 0.745) / 0.175);
     const attribute = geometry.attributes.position as THREE.BufferAttribute;
     const array = attribute.array as Float32Array;
 
@@ -112,13 +101,13 @@ export function Dust() {
       const speed = specs[i * 4 + 2];
       const kick = specs[i * 4 + 3];
 
-      // Stagger: particles with a stronger kick leave a touch earlier.
-      const local = clamp((t - 0.05 * (1 - kick)) / 0.95);
-      const radius = radius0 + speed * local * 0.72;
+      const local = clamp((t - 0.04 * (1 - kick)) / 0.96);
+      // Outward fast, then drag; it never travels far.
+      const radius = radius0 + speed * (1 - Math.pow(1 - local, 2.4)) * 0.62;
 
       array[i * 3] = Math.cos(angle) * radius;
-      array[i * 3 + 1] = GROUND_Y + kick * local * 0.3 - 0.4 * local * local;
-      array[i * 3 + 2] = Math.sin(angle) * radius * 0.7;
+      array[i * 3 + 1] = LANDING_Y + kick * local * 0.24 - 0.26 * local * local;
+      array[i * 3 + 2] = Math.sin(angle) * radius * 0.72;
     }
 
     attribute.needsUpdate = true;
@@ -128,7 +117,7 @@ export function Dust() {
     <points ref={ref} geometry={geometry} frustumCulled={false}>
       <shaderMaterial
         ref={material}
-        uniforms={uniforms}
+        uniforms={initialUniforms}
         transparent
         depthWrite={false}
         vertexShader={VERTEX}
@@ -159,9 +148,8 @@ const FRAGMENT = /* glsl */ `
 
   void main() {
     float d = length(gl_PointCoord - vec2(0.5));
-    // Ascending edges: smoothstep with edge0 >= edge1 is undefined in GLSL and
-    // some drivers simply return 0, which silently erases the whole burst.
-    float a = (1.0 - smoothstep(0.1, 0.5, d)) * vAlpha * uOpacity;
+    // Ascending edges: smoothstep with edge0 >= edge1 is undefined in GLSL.
+    float a = (1.0 - smoothstep(0.08, 0.5, d)) * vAlpha * uOpacity;
     if (a < 0.004) discard;
     gl_FragColor = vec4(uColor, a);
     #include <colorspace_fragment>

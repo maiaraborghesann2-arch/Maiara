@@ -4,69 +4,78 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-import { track } from "@/lib/math";
+import { clamp, track, type Keyframe } from "@/lib/math";
+import { sceneState } from "@/lib/scene/sharedState";
 import { progressStore } from "@/lib/scroll/progressStore";
-import { GROUND_Y, seed, shadow } from "@/lib/scroll/choreography";
+import { GROUND_Y, LANDING_Y, light, shadow } from "@/lib/scroll/choreography";
 import { createContactTexture } from "./seedGeometry";
 
 /**
- * The surface the seed sits on — implied, never drawn.
+ * The surfaces the grain meets — implied, never drawn.
  *
- * Two layers do the work. An invisible catcher plane receives the real shadow
- * map, so the shape on the sand is the seed's actual silhouette and it changes
- * as the seed turns. On top of it, a small gradient sprite supplies the tight
- * ambient occlusion right at the contact point, which a 1024px shadow map
- * cannot resolve and which is the detail that makes an object look *placed*
- * rather than hovering.
+ * These are projected contact shadows, not shadow maps. A real map was tried,
+ * and looked right while the grain sat still, but VSM — the only built-in type
+ * that honours a blur radius — bled badly once the light started riding a
+ * falling object through a tight frustum, and parked a detached grey oval on
+ * the sand during the landing. At a subject that reads sixty pixels tall the
+ * silhouette detail a map buys is invisible; the artefact was not. Drawing the
+ * shadow directly also removes a whole render pass per frame.
  *
- * Both fade out together as the seed breaks free in frame 03.
+ * Everything physical about it comes from one number: the gap between the grain
+ * and the surface. The shadow slides away from the key light as that gap opens,
+ * spreads and thins with it, and tightens back down on contact. That is the cue
+ * that tells the eye how far the fall still has to go — and the difference
+ * between an object resting on a surface and one hovering above it.
  */
 export function GroundShadow() {
-  const catcher = useRef<THREE.Mesh>(null);
-  const contact = useRef<THREE.Mesh>(null);
+  return (
+    <>
+      <ContactShadow planeY={GROUND_Y} authority={shadow.ledge} />
+      <ContactShadow planeY={LANDING_Y} authority={shadow.earth} />
+    </>
+  );
+}
+
+function ContactShadow({ planeY, authority }: { planeY: number; authority: Keyframe[] }) {
+  const ref = useRef<THREE.Mesh>(null);
   const texture = useMemo(() => createContactTexture(), []);
 
   useEffect(() => () => texture.dispose(), [texture]);
 
   useFrame(() => {
-    const catcherMesh = catcher.current;
-    const contactMesh = contact.current;
-    if (!catcherMesh || !contactMesh) return;
+    const mesh = ref.current;
+    if (!mesh) return;
 
     const p = progressStore.get();
-    const authority = track(shadow.opacity, p);
+    const weight = track(authority, p);
 
-    catcherMesh.visible = authority > 0.002;
-    contactMesh.visible = authority > 0.002;
-    if (!catcherMesh.visible) return;
+    mesh.visible = weight > 0.002;
+    if (!mesh.visible) return;
 
-    (catcherMesh.material as THREE.ShadowMaterial).opacity = authority * 0.26;
+    const { seedPosition, seedScale } = sceneState;
+    const gap = Math.max(0, seedPosition.y - seedScale - planeY);
+    const rise = clamp(gap * 1.5, 0, 1);
 
-    // Contact occlusion widens and softens as the seed lifts, the way a real
-    // one loses its edge with distance.
-    const scale = track(seed.scale, p);
-    const lift = Math.max(0, track(seed.fall, p));
-    (contactMesh.material as THREE.MeshBasicMaterial).opacity =
-      authority * 0.9 * (1 - Math.min(1, lift * 6));
-    contactMesh.scale.setScalar(scale * (6.5 + lift * 22));
+    // Slide away from the key light as it lifts, the way a real cast shadow
+    // separates from its object.
+    const azimuth = track(light.azimuth, p);
+    mesh.position.set(
+      seedPosition.x - Math.cos(0.72 - azimuth) * gap * 0.42,
+      planeY + 0.002,
+      -Math.sin(0.72 - azimuth) * gap * 0.42,
+    );
+
+    const spread = seedScale * (6.6 + rise * 26);
+    // Foreshortened along the light, so it reads as cast rather than stamped.
+    mesh.scale.set(spread * 1.18, spread, 1);
+
+    (mesh.material as THREE.MeshBasicMaterial).opacity = weight * (1 - rise * 0.84);
   });
 
   return (
-    <>
-      <mesh
-        ref={catcher}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, GROUND_Y, 0]}
-        receiveShadow
-      >
-        <planeGeometry args={[6, 6]} />
-        <shadowMaterial transparent opacity={0.26} color="#3A2A1A" />
-      </mesh>
-
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, GROUND_Y + 0.001, 0]} ref={contact}>
-        <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial map={texture} transparent depthWrite={false} toneMapped={false} />
-      </mesh>
-    </>
+    <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]} position={[0, planeY, 0]}>
+      <planeGeometry args={[1, 1]} />
+      <meshBasicMaterial map={texture} transparent depthWrite={false} toneMapped={false} />
+    </mesh>
   );
 }

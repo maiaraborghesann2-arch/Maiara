@@ -3,50 +3,78 @@ import * as THREE from "three";
 import { palette } from "@/lib/palette";
 
 /**
- * The seed as a physical object.
+ * The grain.
  *
- * Three things separate "a real thing sitting in light" from "a 3D sphere":
- * an asymmetric silhouette, surface relief that survives close inspection, and
- * a material that varies across that surface. This file produces all three
- * procedurally — geometry, plus colour / roughness / normal maps generated from
- * the *same* relief function, so the painted detail lines up with the modelled
- * detail instead of floating on top of it.
+ * The previous pass read as a walnut, and the reason was one line of code: a
+ * deep pole-to-pole suture on a tall ovoid. That is the silhouette of a stone
+ * fruit pit. A mustard seed is the opposite kind of object — nearly round,
+ * barely a millimetre across, dry, matte, the colour of dug earth, its surface
+ * covered in a fine reticulate net of shallow grooves with one small scar
+ * where it was attached.
  *
- * Deterministic and dependency-free. Swap the whole file for a sculpted `.glb`
- * when art direction lands; `Seed.tsx` does not care where the mesh came from.
+ * So: no seam, a near-spherical body pushed out of true by a few broad lumps,
+ * a groove network too fine to model carried by the normal map, and a single
+ * hilum dimple. Colour, roughness and normal are baked from the *same* relief
+ * functions that displace the geometry, so painted detail and modelled detail
+ * agree instead of fighting.
+ *
+ * Deterministic and dependency-free. To swap in a sculpted `.glb`, replace
+ * `createSeedGeometry`/`createSeedMaps` — `Seed.tsx` only needs a mesh whose
+ * half-height is `SEED_HALF_HEIGHT`.
  */
 
-/** Coarse shell relief — shared by the geometry and the texture maps. */
-function shellRelief(x: number, y: number, z: number): number {
-  let r = 0.045 * Math.sin(3.1 * x + 1.7) * Math.cos(2.6 * y + 0.9) * Math.sin(2.9 * z);
-  r += 0.026 * Math.sin(6.7 * y + 0.4) * Math.cos(5.9 * z + 2.1);
-  r += 0.013 * Math.cos(11.3 * x + 0.8) * Math.sin(9.8 * y + 1.4);
-  r += 0.007 * Math.sin(19.1 * z) * Math.cos(17.4 * x);
+/** Broad lumps: what stops the silhouette from being a circle at any angle. */
+function lumps(x: number, y: number, z: number): number {
+  let r = 0.075 * Math.sin(1.9 * x + 0.7) * Math.cos(1.5 * y + 2.2);
+  r += 0.055 * Math.sin(1.4 * y + 1.3) * Math.cos(2.1 * z + 0.5);
+  r += 0.038 * Math.cos(2.6 * x + 2.1) * Math.sin(1.9 * z + 1.7);
   return r;
 }
 
-/** The suture running pole to pole, like the seam on a stone-fruit pit. */
-function seamDepth(x: number, y: number): number {
-  const seam = Math.exp(-((x / 0.13) ** 2));
-  return 0.05 * seam * (1 - 0.4 * Math.abs(y));
+/**
+ * Reticulate groove network. Returns 0 on a groove line and 1 on the plateaus
+ * between them.
+ *
+ * The operator matters: `min` of the three ridge fields carves a groove wherever
+ * *any* one of them is near zero, which is a net of intersecting lines. Summing
+ * them instead only darkens where all three coincide — isolated blobs, which is
+ * what a first pass here produced, and it read as mould rather than as texture.
+ */
+function reticulum(x: number, y: number, z: number): number {
+  // Domain warp first. Evaluating the ridge fields on straight coordinates
+  // gives a woven, basket-like regularity; bending the space they are measured
+  // in is what turns the same three fields into an irregular net.
+  const wx = x + 0.22 * Math.sin(3.9 * y + 1.2) + 0.14 * Math.cos(5.1 * z);
+  const wy = y + 0.2 * Math.sin(4.4 * z + 2.6) + 0.13 * Math.cos(4.7 * x);
+  const wz = z + 0.24 * Math.sin(3.6 * x + 0.4) + 0.12 * Math.cos(5.6 * y);
+
+  const a = Math.abs(Math.sin(11.3 * wx + 3.1 * wy));
+  const b = Math.abs(Math.sin(9.7 * wy - 4.3 * wz + 1.1));
+  const c = Math.abs(Math.sin(13.1 * wz + 2.7 * wx + 2.4));
+  return Math.min(1, Math.min(a, Math.min(b, c)) / 0.34);
 }
 
-/** Micro-relief: too fine to model, carried entirely by the normal map. */
-function microRelief(x: number, y: number, z: number): number {
-  let m = 0.5 * Math.sin(41 * x + 2.1) * Math.cos(37 * y) * Math.sin(43 * z + 1.2);
-  m += 0.3 * Math.sin(79 * y + 0.7) * Math.cos(83 * z);
-  m += 0.2 * Math.sin(151 * z + 1.9) * Math.cos(147 * x);
-  return m;
+/** Fine wrinkling on top of the net, for the normal map only. */
+function wrinkle(x: number, y: number, z: number): number {
+  let w = 0.6 * Math.sin(47 * x + 1.4) * Math.cos(43 * y);
+  w += 0.3 * Math.sin(89 * y + 0.9) * Math.cos(97 * z);
+  return w;
 }
 
-/** Scattered pores, the pockmarks a dried shell picks up. */
-function pores(x: number, y: number, z: number): number {
-  const v = Math.sin(23.3 * x + 1.1) * Math.sin(21.7 * y + 2.6) * Math.sin(27.1 * z + 0.4);
-  return Math.max(0, v - 0.74) / 0.26;
+/** Direction of the hilum — the scar where the seed was attached. */
+const HILUM = new THREE.Vector3(0.34, -0.52, 0.78).normalize();
+
+function hilum(x: number, y: number, z: number): number {
+  const dot = x * HILUM.x + y * HILUM.y + z * HILUM.z;
+  const angle = Math.acos(Math.max(-1, Math.min(1, dot)));
+  return Math.exp(-((angle / 0.2) ** 2));
 }
 
-/** Anisotropic squash applied after the radial work. */
-const SQUASH = { x: 0.88, y: 1.36, z: 0.95 };
+/**
+ * Barely off-round. A perfect sphere reads as a primitive; 7% of squash reads
+ * as a thing that grew.
+ */
+const SQUASH = { x: 1.0, y: 0.93, z: 0.965 };
 
 /** Half-height of the unit seed, used to sit it on the ground plane. */
 export const SEED_HALF_HEIGHT = SQUASH.y;
@@ -62,11 +90,11 @@ export function createSeedGeometry(): THREE.BufferGeometry {
     n.fromBufferAttribute(position, i).normalize();
     const { x, y, z } = n;
 
-    // Ovoid profile: fuller at the base, tapering to a blunt tip, with one
-    // shoulder slightly heavier than the other so no two turns look alike.
-    let r = 1 - 0.15 * y - 0.09 * y * y + 0.028 * x * (1 - y * y);
-    r += shellRelief(x, y, z);
-    r -= seamDepth(x, y);
+    let r = 1 + lumps(x, y, z);
+    // Grooves are modelled shallowly and deepened by the normal map; cutting
+    // them fully into geometry at this scale just produces shading noise.
+    r -= 0.006 * (1 - reticulum(x, y, z)) ** 1.5;
+    r -= 0.05 * hilum(x, y, z);
 
     position.setXYZ(i, x * r * SQUASH.x, y * r * SQUASH.y, z * r * SQUASH.z);
   }
@@ -91,13 +119,14 @@ export type SeedMaps = {
   map: THREE.CanvasTexture;
   roughnessMap: THREE.CanvasTexture;
   normalMap: THREE.CanvasTexture;
+  aoMap: THREE.CanvasTexture;
   dispose: () => void;
 };
 
 /**
- * Bakes colour, roughness and normal in a single pass over the sphere's UV
- * space. One loop, three outputs — the height field is sampled once and reused,
- * which keeps this to roughly a tenth of a second at 1024×512.
+ * Bakes colour, roughness, occlusion and normal in a single pass over the
+ * sphere's UV space. One loop, four outputs — the height field is sampled once
+ * and reused, which keeps this near a tenth of a second at 1024×512.
  */
 export function createSeedMaps(): SeedMaps {
   const count = MAP_WIDTH * MAP_HEIGHT;
@@ -105,11 +134,12 @@ export function createSeedMaps(): SeedMaps {
 
   const colour = new ImageData(MAP_WIDTH, MAP_HEIGHT);
   const rough = new ImageData(MAP_WIDTH, MAP_HEIGHT);
+  const occlusion = new ImageData(MAP_WIDTH, MAP_HEIGHT);
   const normal = new ImageData(MAP_WIDTH, MAP_HEIGHT);
 
-  const light = new THREE.Color(palette.bark);
-  const mid = new THREE.Color(palette.barkMid);
-  const deep = new THREE.Color(palette.barkDeep);
+  const light = new THREE.Color(palette.grainLight);
+  const mid = new THREE.Color(palette.grainMid);
+  const deep = new THREE.Color(palette.grainDeep);
   const tone = new THREE.Color();
   const dir = new THREE.Vector3();
 
@@ -122,41 +152,58 @@ export function createSeedMaps(): SeedMaps {
       directionAt(u, v, dir);
       const { x, y, z } = dir;
 
-      const coarse = shellRelief(x, y, z);
-      const seam = seamDepth(x, y);
-      const micro = microRelief(x, y, z);
-      const pore = pores(x, y, z);
+      const broad = lumps(x, y, z);
+      const net = reticulum(x, y, z);
+      const groove = (1 - net) ** 1.5;
+      const scar = hilum(x, y, z);
+      const fine = wrinkle(x, y, z);
 
-      height[index] = coarse * 9 + micro * 0.32 - seam * 11 - pore * 0.9;
+      height[index] = broad * 7 - groove * 1.15 - scar * 4.2 + fine * 0.22;
 
-      // Colour: crevices and the seam sink toward the deepest brown, raised
-      // shoulders catch the lighter one. Pores punch darker still.
-      const sink = Math.min(1, Math.max(0, 0.5 - coarse * 7 + seam * 9));
-      tone.copy(light).lerp(mid, sink);
-      tone.lerp(deep, Math.min(1, sink * 0.34 + pore * 0.26));
+      /*
+       * Two independent darkeners. Grooves and the scar sink toward umber
+       * because they hold shadow; the broad lumps shift tone slightly so the
+       * grain does not look uniformly dyed. Earth pigment, not stain.
+       */
+      const inGroove = Math.min(1, groove * 0.7 + scar * 0.7);
+      const facing = Math.min(1, Math.max(0, 0.5 - broad * 6));
 
-      // Fine mottling so no two square millimetres read identically.
-      const mottle = 1 + micro * 0.055;
+      tone.copy(light).lerp(mid, facing);
+      tone.lerp(deep, inGroove * 0.3);
+
+      const mottle = 1 + fine * 0.045;
       const o = index * 4;
       colour.data[o] = Math.min(255, tone.r * 255 * mottle);
       colour.data[o + 1] = Math.min(255, tone.g * 255 * mottle);
       colour.data[o + 2] = Math.min(255, tone.b * 255 * mottle);
       colour.data[o + 3] = 255;
 
-      // Rougher where the shell is pitted or creased, tighter on the polished
-      // shoulders — this is what makes the highlight travel unevenly on turn.
-      const roughness = Math.min(1, 0.56 + sink * 0.28 + pore * 0.14 - micro * 0.045);
-      const r8 = roughness * 255;
+      /*
+       * Uniformly matte would look like clay, uniformly glossy like plastic.
+       * A dry seed is matte with faintly burnished high points, and letting
+       * roughness vary is what makes the highlight crawl unevenly on the turn
+       * rather than sliding across like a bead on glass.
+       */
+      const roughness = Math.min(1, 0.74 + inGroove * 0.16 - Math.max(0, broad) * 1.1 - fine * 0.03);
+      const r8 = Math.max(0, roughness) * 255;
       rough.data[o] = r8;
       rough.data[o + 1] = r8;
       rough.data[o + 2] = r8;
       rough.data[o + 3] = 255;
+
+      // Baked occlusion in the groove network — the contact shadow of the
+      // surface against itself, which no light in the scene can produce.
+      const ao = Math.max(0, 1 - inGroove * 0.24) * 255;
+      occlusion.data[o] = ao;
+      occlusion.data[o + 1] = ao;
+      occlusion.data[o + 2] = ao;
+      occlusion.data[o + 3] = 255;
     }
   }
 
-  // Normals from the height field's gradient. X wraps so the seam of the UV
-  // sphere does not show as a hard line.
-  const STRENGTH = 2.4;
+  // Normals from the height field's gradient. X wraps so the UV sphere's seam
+  // does not show as a hard line.
+  const STRENGTH = 1.35;
   for (let py = 0; py < MAP_HEIGHT; py++) {
     const up = Math.max(0, py - 1);
     const down = Math.min(MAP_HEIGHT - 1, py + 1);
@@ -169,15 +216,14 @@ export function createSeedMaps(): SeedMaps {
 
       let nx = -dx * STRENGTH;
       let ny = -dy * STRENGTH;
-      const nz = 1;
-      const len = Math.hypot(nx, ny, nz);
+      const len = Math.hypot(nx, ny, 1);
       nx /= len;
       ny /= len;
 
       const o = (py * MAP_WIDTH + px) * 4;
       normal.data[o] = (nx * 0.5 + 0.5) * 255;
       normal.data[o + 1] = (ny * 0.5 + 0.5) * 255;
-      normal.data[o + 2] = (nz / len) * 0.5 * 255 + 127.5;
+      normal.data[o + 2] = (1 / len) * 0.5 * 255 + 127.5;
       normal.data[o + 3] = 255;
     }
   }
@@ -197,24 +243,28 @@ export function createSeedMaps(): SeedMaps {
 
   const map = toTexture(colour, true);
   const roughnessMap = toTexture(rough, false);
+  const aoMap = toTexture(occlusion, false);
   const normalMap = toTexture(normal, false);
 
   return {
     map,
     roughnessMap,
     normalMap,
+    aoMap,
     dispose: () => {
       map.dispose();
       roughnessMap.dispose();
       normalMap.dispose();
+      aoMap.dispose();
     },
   };
 }
 
 /**
  * Soft elliptical darkening laid right under the seed. The real shadow comes
- * from the shadow map; this only supplies the tight ambient occlusion that a
- * shadow map cannot resolve at the contact point.
+ * from the shadow map; this only supplies the tight ambient occlusion at the
+ * contact point that a shadow map cannot resolve, and which is the difference
+ * between an object resting on a surface and one hovering above it.
  */
 export function createContactTexture(): THREE.CanvasTexture {
   const size = 256;
@@ -224,10 +274,10 @@ export function createContactTexture(): THREE.CanvasTexture {
 
   const ctx = canvas.getContext("2d")!;
   const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  gradient.addColorStop(0, "rgba(74, 48, 26, 0.5)");
-  gradient.addColorStop(0.28, "rgba(74, 48, 26, 0.24)");
-  gradient.addColorStop(0.62, "rgba(74, 48, 26, 0.05)");
-  gradient.addColorStop(1, "rgba(74, 48, 26, 0)");
+  gradient.addColorStop(0, "rgba(63, 43, 24, 0.55)");
+  gradient.addColorStop(0.24, "rgba(63, 43, 24, 0.26)");
+  gradient.addColorStop(0.58, "rgba(63, 43, 24, 0.05)");
+  gradient.addColorStop(1, "rgba(63, 43, 24, 0)");
 
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, size, size);

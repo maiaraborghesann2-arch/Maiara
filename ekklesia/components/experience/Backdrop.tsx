@@ -11,18 +11,18 @@ import { progressStore } from "@/lib/scroll/progressStore";
 import { backdrop as choreo } from "@/lib/scroll/choreography";
 
 /**
- * The sand is a lit surface, not a fill.
+ * The sand is a photographed surface, not a fill.
  *
- * A flat `#ECDACB` reads as an empty browser window; the same colour with a
- * vertical wash, a warm pool where the light lands, a vignette and a whisper of
- * grain reads as a photographed backdrop. That difference is most of what
- * separates "prototype" from "film still" here, and it costs one full-screen
- * quad.
+ * Five things are layered here, and each one is doing a job the flat colour
+ * cannot: a vertical wash (light has a direction), a warm pool that follows the
+ * grain (the object is lit by something), a broad haze band (there is air in
+ * the room), a vignette (there is a lens), and a stretched fibre texture under
+ * all of it (the surface is a material). Take any of them away and the frame
+ * slides back toward "empty browser window".
  *
- * The pool and the cast shadow track the seed's *screen* position, so the
- * lighting follows the object through the whole act. In Act 04 that is what
- * ties the seed to the typography: both sit inside one lighting environment
- * instead of being two layers stacked on top of each other.
+ * The pool and the cast shadow track the grain's *screen* position, which is
+ * what binds object and typography in Act 04: both end up inside one lighting
+ * environment instead of being two layers stacked on each other.
  */
 export function Backdrop() {
   /**
@@ -43,11 +43,13 @@ export function Backdrop() {
       uSandDeep: { value: new THREE.Color(palette.sandDeep) },
       uSeed: { value: new THREE.Vector2(0.5, 0.5) },
       uAspect: { value: 1 },
-      uPool: { value: 0.55 },
+      uPool: { value: 0.42 },
       uPoolSize: { value: 30 },
       uCast: { value: 0 },
-      uVignette: { value: 0.17 },
-      uGrain: { value: 0.014 },
+      uHaze: { value: 0.24 },
+      uVignette: { value: 0.16 },
+      uGrain: { value: 0.013 },
+      uFibre: { value: 0.03 },
     }),
     [],
   );
@@ -59,19 +61,22 @@ export function Backdrop() {
     const p = progressStore.get();
 
     projected.current.copy(sceneState.seedPosition).project(camera);
-    uniforms.uSeed.value.set(
-      projected.current.x * 0.5 + 0.5,
-      projected.current.y * 0.5 + 0.5,
-    );
+    uniforms.uSeed.value.set(projected.current.x * 0.5 + 0.5, projected.current.y * 0.5 + 0.5);
 
     uniforms.uAspect.value = size.width / size.height;
     uniforms.uPool.value = track(choreo.pool, p);
     uniforms.uCast.value = track(choreo.cast, p);
+    uniforms.uHaze.value = track(choreo.haze, p);
     uniforms.uVignette.value = track(choreo.vignette, p);
 
-    // The pool grows with the object, so the light always feels like it belongs
-    // to the seed rather than being a fixed spot it happens to pass through.
-    uniforms.uPoolSize.value = 0.42 / Math.max(0.04, sceneState.seedScale ** 1.55);
+    // The pool is sized in screen space from the grain's projected radius, so
+    // the light stays attached to the object as the camera pushes and pulls.
+    const projectedRadius = Math.max(
+      0.012,
+      (sceneState.seedScale / Math.max(0.5, camera.position.distanceTo(sceneState.seedPosition))) *
+        7.5,
+    );
+    uniforms.uPoolSize.value = 0.22 / (projectedRadius * projectedRadius);
   });
 
   return (
@@ -100,7 +105,7 @@ const VERTEX = /* glsl */ `
 
 /**
  * Deliberately not tone mapped. Art direction specified `#ECDACB` exactly, and
- * routing it through ACES would hand back a different colour; the seed still
+ * routing it through ACES would hand back a different colour; the grain still
  * gets the filmic curve, which is where it earns its keep.
  */
 const FRAGMENT = /* glsl */ `
@@ -113,42 +118,65 @@ const FRAGMENT = /* glsl */ `
   uniform float uPool;
   uniform float uPoolSize;
   uniform float uCast;
+  uniform float uHaze;
   uniform float uVignette;
   uniform float uGrain;
+  uniform float uFibre;
 
   varying vec2 vUv;
 
-  float hash(vec2 p) {
+  float hash21(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
     p += dot(p, p + 45.32);
     return fract(p.x * p.y);
   }
 
+  float vnoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i);
+    float b = hash21(i + vec2(1.0, 0.0));
+    float c = hash21(i + vec2(0.0, 1.0));
+    float d = hash21(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+
   void main() {
     vec2 uv = vUv;
 
-    // Vertical wash: light gathers toward the top, sand settles at the bottom.
+    // Wash: light gathers toward the top, sand settles at the bottom.
     vec3 col = mix(uSandDeep, uSand, smoothstep(-0.3, 0.58, uv.y));
-    col = mix(col, uSandLight, smoothstep(0.42, 1.0, uv.y) * 0.62);
+    col = mix(col, uSandLight, smoothstep(0.42, 1.0, uv.y) * 0.6);
 
+    // Pool of light around the grain.
     vec2 d = uv - uSeed;
     d.x *= uAspect;
     col = mix(col, uSandWarm, exp(-dot(d, d) * uPoolSize) * uPool);
 
-    // Cast shadow, offset down and to the left of the key light. Kept tight:
-    // a small object throws a small shadow, and a broad one reads as a smudge
-    // on the page rather than as light being blocked.
-    vec2 s = (uv - uSeed) - vec2(-0.03, -0.055);
+    // Atmospheric haze: a broad soft band across the upper middle, the way air
+    // in a lit room lifts and flattens whatever sits behind it.
+    float band = exp(-pow((uv.y - 0.64) * 1.75, 2.0) * 3.2);
+    col = mix(col, uSandWarm, band * uHaze * 0.5);
+
+    // Cast shadow on the page, offset away from the key light. Kept tight —
+    // a small object throws a small shadow, and a broad one reads as a smudge.
+    vec2 s = (uv - uSeed) - vec2(-0.03, -0.05);
     s.x *= uAspect;
     s.y *= 1.35;
-    col *= 1.0 - exp(-dot(s, s) * 92.0) * uCast;
+    col *= 1.0 - exp(-dot(s, s) * 110.0) * uCast;
 
     vec2 c = (uv - 0.5) * vec2(uAspect, 1.0);
-    col *= 1.0 - uVignette * smoothstep(0.2, 0.9, length(c));
+    col *= 1.0 - uVignette * smoothstep(0.2, 0.92, length(c));
 
-    // Fine grain. Without it the gradient bands on wide displays and the whole
-    // frame reads as vector art rather than something photographed.
-    col += (hash(uv * 1024.0) - 0.5) * uGrain;
+    // Fibre: two octaves stretched vertically, so the surface reads as a
+    // material with a grain direction rather than as a gradient.
+    float fibre = vnoise(uv * vec2(180.0, 620.0)) * 0.62
+                + vnoise(uv * vec2(70.0, 220.0)) * 0.38;
+    col *= 1.0 + (fibre - 0.5) * uFibre;
+
+    // Fine grain on top. Without it the wash bands visibly on wide displays.
+    col += (hash21(uv * 1024.0) - 0.5) * uGrain;
 
     gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>

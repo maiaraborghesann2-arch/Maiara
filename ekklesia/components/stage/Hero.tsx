@@ -7,17 +7,22 @@ import { useProgressElement } from "@/lib/scroll/useProgressElement";
 import { Mark } from "@/components/brand/Mark";
 
 /**
- * Frame 04 — the Home the seed arrives at.
+ * Frame 04 — the Home the grain lands in.
  *
- * Deliberately real HTML: a proper `<h1>`, a real `<button>`, real focus rings.
- * The seed beside it is the WebGL object from the shared canvas, and the two are
- * bound together by the backdrop, which puts its light pool and cast shadow at
- * the seed's screen position — so the object sits *in* the page's lighting
- * rather than on top of it.
+ * Real HTML: a proper `<h1>`, a real `<button>`, real focus rings. The grain
+ * beside it is the WebGL object from the shared canvas, resting on the earth it
+ * struck, with its own contact shadow. Neither layer is pretending to be the
+ * other.
  *
- * The reveal is staggered and masked: each headline line rises out of a clipped
- * box instead of fading in. Display serif at this size fades badly — the strokes
- * go grey and muddy — where a wipe keeps every weight crisp the whole way in.
+ * The composition is editorial rather than landing-page: an olive rule and a
+ * kicker set the column, the headline breaks across three lines the way the
+ * storyboard sets it, and the action pairs a terracotta button with a quiet
+ * text link so the block has a foot as well as a head. Depth comes from the
+ * lighting behind it, not from more elements.
+ *
+ * Each line rises out of a clipped box instead of fading. Display serif at this
+ * size fades badly — the strokes go grey and muddy halfway — where a wipe keeps
+ * every weight crisp the whole way in.
  */
 export function Hero() {
   const applyStagger = useCallback((element: HTMLElement, progress: number) => {
@@ -31,16 +36,16 @@ export function Hero() {
       part.style.opacity = String(masked ? Math.min(1, value * 1.6) : value);
       part.style.transform = masked
         ? `translate3d(0, ${(1 - value) * 104}%, 0)`
-        : `translate3d(0, ${(1 - value) * 18}px, 0)`;
+        : `translate3d(0, ${(1 - value) * 16}px, 0)`;
     }
   }, []);
 
   const applyBlock = useCallback(
     (element: HTMLDivElement, progress: number) => {
-      const value = window4(progress, 0.74, 0.9, 1.01, 1.02);
+      const value = window4(progress, 0.8, 0.93, 1.01, 1.02);
       element.style.opacity = "1";
       element.style.visibility = value < 0.004 ? "hidden" : "visible";
-      // Keep the CTA out of the tab order until the Home has actually arrived.
+      // Keep the actions out of the tab order until the Home has arrived.
       element.inert = value <= 0.85;
       applyStagger(element, progress);
     },
@@ -49,7 +54,7 @@ export function Hero() {
 
   const applyHeader = useCallback(
     (element: HTMLElement, progress: number) => {
-      const value = window4(progress, 0.72, 0.88, 1.01, 1.02);
+      const value = window4(progress, 0.8, 0.9, 1.01, 1.02);
       element.style.opacity = String(value);
       element.style.transform = `translate3d(0, ${(1 - value) * -14}px, 0)`;
       element.style.visibility = value < 0.004 ? "hidden" : "visible";
@@ -80,34 +85,45 @@ export function Hero() {
       </header>
 
       <div ref={blockRef} className="hero beat">
-        <h1 className="hero__title">
-          {/* Three masks, not two: the storyboard breaks the headline across
-              three lines, and one mask per line gives the wipe its stagger. */}
-          <span className="hero__mask">
-            <span className="hero__line" data-a="0.75" data-b="0.86">
-              Pequenos
-            </span>
-          </span>
-          <span className="hero__mask">
-            <span className="hero__line" data-a="0.775" data-b="0.885">
-              começos.
-            </span>
-          </span>
-          <span className="hero__mask">
-            <span className="hero__line" data-a="0.8" data-b="0.91">
-              Grandes frutos.
-            </span>
-          </span>
-        </h1>
+        <div className="hero__column">
+          <p className="hero__kicker" data-a="0.835" data-b="0.915">
+            <span className="hero__rule" aria-hidden="true" />
+            Jornada de fé e conhecimento
+          </p>
 
-        <p className="hero__lede" data-a="0.85" data-b="0.95">
-          Conteúdo que transforma vidas
-          <br />e gera crescimento real.
-        </p>
+          <h1 className="hero__title">
+            {/* One mask per line: the storyboard breaks the headline across
+                three, and per-line masks are what give the wipe its stagger. */}
+            <span className="hero__mask">
+              <span className="hero__line" data-a="0.85" data-b="0.93">
+                Pequenos
+              </span>
+            </span>
+            <span className="hero__mask">
+              <span className="hero__line" data-a="0.865" data-b="0.945">
+                começos.
+              </span>
+            </span>
+            <span className="hero__mask">
+              <span className="hero__line" data-a="0.88" data-b="0.96">
+                Grandes frutos.
+              </span>
+            </span>
+          </h1>
 
-        <button type="button" className="hero__cta" data-a="0.88" data-b="0.97">
-          Explorar recursos
-        </button>
+          <p className="hero__lede" data-a="0.905" data-b="0.975">
+            Conteúdo que transforma vidas e gera crescimento real.
+          </p>
+
+          <div className="hero__actions" data-a="0.925" data-b="0.99">
+            <button type="button" className="hero__cta">
+              Explorar recursos
+            </button>
+            <a className="hero__link" href="#">
+              Conhecer a jornada
+            </a>
+          </div>
+        </div>
       </div>
     </>
   );

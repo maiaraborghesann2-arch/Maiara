@@ -9,6 +9,7 @@ import { Backdrop } from "./Backdrop";
 import { CameraRig } from "./CameraRig";
 import { Dust } from "./Dust";
 import { Lighting } from "./Lighting";
+import { Motes } from "./Motes";
 import { GroundShadow } from "./GroundShadow";
 import { Seed } from "./Seed";
 import { StudioEnvironment } from "./StudioEnvironment";
@@ -30,14 +31,10 @@ export function ExperienceCanvas() {
       <Canvas
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: false }}
-        camera={{ fov: 34, near: 0.1, far: 100, position: [0, 0.4, 5.05] }}
+        camera={{ fov: 34, near: 0.1, far: 100, position: [0, 0.3, 5.6] }}
         onCreated={({ gl, scene }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.08;
-          gl.shadowMap.enabled = true;
-          // VSM is the only built-in type that honours `shadow.radius`, and a
-          // genuinely soft edge is the whole point of this shadow.
-          gl.shadowMap.type = THREE.VSMShadowMap;
           // Fallback only — `Backdrop` paints over this every frame.
           scene.background = new THREE.Color(palette.sand);
         }}
@@ -47,7 +44,8 @@ export function ExperienceCanvas() {
         <Lighting />
         <Seed reducedMotion={reducedMotion} />
         <GroundShadow />
-        {!reducedMotion && <Dust />}
+        <Dust />
+        {!reducedMotion && <Motes />}
         {/* Last in the tree so its `useFrame` reads the seed's current-frame
             position; `renderOrder` still draws it first. */}
         <Backdrop />
