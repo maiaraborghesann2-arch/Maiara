@@ -17,13 +17,6 @@ export const LANDING_Y = -1.85;
 /** How far it falls. */
 export const DROP = LANDING_Y - GROUND_Y;
 
-/**
- * How far left the camera dollies to open the Home's text column. `CameraRig`
- * scales this down in portrait, where the visible width is narrower than the
- * pan itself and the full move would carry the grain clean out of frame.
- */
-export const HERO_PAN_X = -1.25;
-
 export const seed = {
   /**
    * Constant. A real object does not change size — apparent scale is the
@@ -96,34 +89,32 @@ export const seed = {
 };
 
 /**
- * The camera carries the whole piece.
- *
- * It opens wide on an almost empty frame, pushes in for the turn, falls with
- * the grain — lagging just enough that the drop accelerates *within* the frame
- * — and then, after impact, pans left and settles. That last move is the whole
- * transition: the grain does not travel to the Home, the frame recomposes
- * around where it landed. Which is what makes its arrival the *cause* of the
- * Home rather than a coincidence of timing.
- *
- * It also never cuts and never resets, because frame 06 needs to pick up this
- * same camera still descending toward the soil.
+ * The camera carries the whole piece: wide on an almost empty frame, a macro
+ * push for the turn, a lagging fall, and a reframe that opens the Home.
  */
 export const camera = {
-  /** Lateral dolly. `targetX` follows it, so this pans without rotating. */
-  x: [
-    { at: 0.0, value: 0 },
-    { at: 0.78, value: 0 },
-    { at: 1.0, value: HERO_PAN_X, ease: easing.outCubic },
-  ] satisfies Keyframe[],
-
+  /**
+   * The grain never leaves the centre line, so neither does the camera.
+   *
+   * Everything the viewer reads as "the Home assembling around it" is done with
+   * `targetY` alone: after impact the lens aims higher while the grain sits
+   * still, which sinks it into the lower third and opens the column of sand
+   * above it that the title occupies. The move continues the direction the fall
+   * already established — down the frame — instead of cutting across it, which
+   * a lateral dolly would.
+   *
+   * It also never cuts and never resets, because frame 06 has to pick up this
+   * same camera still descending toward the soil.
+   */
   y: [
     { at: 0.0, value: 0.3 },
     { at: 0.2, value: 0.3 },
     { at: 0.48, value: 0.16, ease: easing.inOutSine },
-    { at: 0.58, value: 0.02 },
-    { at: 0.745, value: -1.3, ease: easing.gravity },
-    { at: 0.8, value: -1.4, ease: easing.outCubic },
-    { at: 1.0, value: -1.44 },
+    { at: 0.58, value: 0.06 },
+    { at: 0.66, value: -0.1 },
+    { at: 0.745, value: -1.06, ease: easing.gravity },
+    { at: 0.82, value: -1.11, ease: easing.outCubic },
+    { at: 1.0, value: -1.13 },
   ] satisfies Keyframe[],
 
   /**
@@ -140,17 +131,26 @@ export const camera = {
     // because the subject is leaving, which is motivation, not a transition.
     { at: 0.58, value: 3.9, ease: easing.outCubic },
     { at: 0.745, value: 4.75 },
-    { at: 0.8, value: 4.6 },
-    { at: 1.0, value: 4.35, ease: easing.outCubic },
+    { at: 0.82, value: 4.4 },
+    { at: 1.0, value: 3.95, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
+  /**
+   * Deliberately descends *slower* than the grain does through the fall. That
+   * lag is the whole sense of gravity: aim and subject drop together and the
+   * grain still sinks from just above centre to the lower third, because it is
+   * outrunning the lens. Then the camera catches it for the landing.
+   */
   targetY: [
     { at: 0.0, value: 0.02 },
     { at: 0.48, value: -0.14 },
     { at: 0.58, value: -0.28 },
-    { at: 0.745, value: -1.55, ease: easing.gravity },
-    { at: 0.8, value: -1.62 },
-    { at: 1.0, value: -1.63 },
+    { at: 0.66, value: -0.42 },
+    { at: 0.745, value: -1.4, ease: easing.gravity },
+    // The reframe. Nothing in the scene moves; the lens eases upward and the
+    // resting grain settles into the lower third.
+    { at: 0.82, value: -1.24, ease: easing.outCubic },
+    { at: 1.0, value: -1.17, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };
 
@@ -243,7 +243,31 @@ export const backdrop = {
   vignette: [
     { at: 0.0, value: 0.16 },
     { at: 0.48, value: 0.12 },
-    { at: 0.745, value: 0.17 },
-    { at: 1.0, value: 0.2, ease: easing.outCubic },
+    { at: 0.745, value: 0.19 },
+    { at: 1.0, value: 0.26, ease: easing.outCubic },
+  ] satisfies Keyframe[],
+
+  /**
+   * Warm shafts raking in from the upper left. They are the single largest
+   * contributor to the room reading as *lit* rather than *filled*, and they
+   * strengthen through the piece as the atmosphere warms toward the Home.
+   */
+  shaft: [
+    { at: 0.0, value: 0.3 },
+    { at: 0.48, value: 0.2 },
+    { at: 0.745, value: 0.42 },
+    { at: 1.0, value: 0.58, ease: easing.outCubic },
+  ] satisfies Keyframe[],
+
+  /**
+   * The earth itself, resolving out of the haze below the horizon as the camera
+   * descends toward it. Off entirely while the grain is still on the ledge —
+   * there is nothing down there yet to see.
+   */
+  floor: [
+    { at: 0.0, value: 0 },
+    { at: 0.58, value: 0 },
+    { at: 0.745, value: 0.5, ease: easing.outCubic },
+    { at: 1.0, value: 0.72, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };

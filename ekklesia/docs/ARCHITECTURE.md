@@ -116,11 +116,13 @@ Cinco decisões carregam a imagem, e nenhuma delas é "mais elementos":
    crescem, e deixar a lente fazer esse trabalho é a maior parte do motivo pelo
    qual a sequência lê como fotografada.
 
-2. **A chegada da semente é a causa da Home.** Ela não desliza para o hero: cai,
-   toca a terra e fica parada. Quem se move é a câmera — dolly lateral para a
-   esquerda, com o alvo acompanhando o próprio `x` para transladar em vez de
-   girar. O quadro sai de cima do objeto e abre a coluna de texto à esquerda.
-   Uma rotação manteria a semente presa ao centro e destruiria o efeito.
+2. **A trajetória é uma reta vertical, do primeiro quadro ao último.** A semente
+   nunca sai do eixo central. Ela cai, toca a terra e fica parada; o que abre a
+   composição da Home é o `targetY` — a lente mira mais alto depois do impacto,
+   o que faz o grão parado assentar no terço inferior e libera a coluna de areia
+   acima dele para o título. O movimento continua a direção que a queda já
+   estabeleceu, em vez de cortá-la. Um dolly lateral leria como troca de
+   assunto mesmo com o objeto imóvel.
 
 3. **O fundo é uma superfície fotografada.** Wash vertical, poça de luz que
    segue a semente, névoa atmosférica, vinheta e uma textura de fibra esticada
@@ -133,7 +135,19 @@ Cinco decisões carregam a imagem, e nenhuma delas é "mais elementos":
    parapeito se dissolve enquanto a da terra resolve de um borrão enorme até um
    contato fechado. É a sombra dizendo ao olho quanto de queda ainda falta.
 
-5. **A rede de ranhuras precisa de domínio deformado.** `min` dos três campos de
+   A câmera também desce **mais devagar que o grão** durante a queda. Essa
+   defasagem é a sensação de gravidade: alvo e objeto descem juntos e mesmo
+   assim o grão afunda de logo acima do centro até o terço inferior, porque
+   está ganhando da lente.
+
+5. **O chão recua até a altura do olho, não até o ponto de contato.** Um plano
+   horizontal tem sua linha de fuga no nível da câmera; projetar o ponto sob a
+   semente coloca a borda do chão abaixo de onde a superfície realmente lê, e
+   o grão fica pousado no ar com uma faixa de terra por baixo. A densidade
+   cresce com o quadrado da distância abaixo do horizonte — nada na linha de
+   fuga, inconfundível aos seus pés.
+
+6. **A rede de ranhuras precisa de domínio deformado.** `min` dos três campos de
    ridge (não a soma) produz uma rede de linhas em vez de manchas isoladas; e
    avaliar esses campos em coordenadas retas dá uma regularidade de cestaria.
    Deformar o espaço antes de medir é o que torna a rede orgânica.

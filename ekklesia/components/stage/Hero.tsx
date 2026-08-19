@@ -9,17 +9,13 @@ import { Mark } from "@/components/brand/Mark";
 /**
  * Frame 04 — the Home the grain lands in.
  *
- * Real HTML: a proper `<h1>`, a real `<button>`, real focus rings. The grain
- * beside it is the WebGL object from the shared canvas, resting on the earth it
- * struck, with its own contact shadow. Neither layer is pretending to be the
- * other.
+ * The composition is vertical and centred, stacked on the same axis the grain
+ * fell down: title, lede, action, a hairline, and then the grain itself resting
+ * on the earth at the foot of the column. It is not decoration placed beside
+ * copy — it is the thing the copy stands on, which is the whole reason the
+ * trajectory is a straight line.
  *
- * The composition is editorial rather than landing-page: an olive rule and a
- * kicker set the column, the headline breaks across three lines the way the
- * storyboard sets it, and the action pairs a terracotta button with a quiet
- * text link so the block has a foot as well as a head. Depth comes from the
- * lighting behind it, not from more elements.
- *
+ * Real HTML throughout: a proper `<h1>`, a real `<button>`, real focus rings.
  * Each line rises out of a clipped box instead of fading. Display serif at this
  * size fades badly — the strokes go grey and muddy halfway — where a wipe keeps
  * every weight crisp the whole way in.
@@ -45,23 +41,20 @@ export function Hero() {
       const value = window4(progress, 0.8, 0.93, 1.01, 1.02);
       element.style.opacity = "1";
       element.style.visibility = value < 0.004 ? "hidden" : "visible";
-      // Keep the actions out of the tab order until the Home has arrived.
+      // Keep the action out of the tab order until the Home has arrived.
       element.inert = value <= 0.85;
       applyStagger(element, progress);
     },
     [applyStagger],
   );
 
-  const applyHeader = useCallback(
-    (element: HTMLElement, progress: number) => {
-      const value = window4(progress, 0.8, 0.9, 1.01, 1.02);
-      element.style.opacity = String(value);
-      element.style.transform = `translate3d(0, ${(1 - value) * -14}px, 0)`;
-      element.style.visibility = value < 0.004 ? "hidden" : "visible";
-      element.inert = value <= 0.85;
-    },
-    [],
-  );
+  const applyHeader = useCallback((element: HTMLElement, progress: number) => {
+    const value = window4(progress, 0.8, 0.9, 1.01, 1.02);
+    element.style.opacity = String(value);
+    element.style.transform = `translate3d(0, ${(1 - value) * -14}px, 0)`;
+    element.style.visibility = value < 0.004 ? "hidden" : "visible";
+    element.inert = value <= 0.85;
+  }, []);
 
   const blockRef = useProgressElement<HTMLDivElement>(applyBlock);
   const headerRef = useProgressElement<HTMLElement>(applyHeader);
@@ -78,9 +71,11 @@ export function Hero() {
         </a>
 
         <button type="button" className="site-header__menu" aria-label="Abrir menu">
-          <span />
-          <span />
-          <span />
+          <span className="site-header__menu-label">Menu</span>
+          <span className="site-header__menu-icon" aria-hidden="true">
+            <span />
+            <span />
+          </span>
         </button>
       </header>
 
@@ -89,40 +84,38 @@ export function Hero() {
           <p className="hero__kicker" data-a="0.835" data-b="0.915">
             <span className="hero__rule" aria-hidden="true" />
             Jornada de fé e conhecimento
+            <span className="hero__rule" aria-hidden="true" />
           </p>
 
           <h1 className="hero__title">
-            {/* One mask per line: the storyboard breaks the headline across
-                three, and per-line masks are what give the wipe its stagger. */}
             <span className="hero__mask">
               <span className="hero__line" data-a="0.85" data-b="0.93">
-                Pequenos
+                Pequenos começos.
               </span>
             </span>
             <span className="hero__mask">
-              <span className="hero__line" data-a="0.865" data-b="0.945">
-                começos.
-              </span>
-            </span>
-            <span className="hero__mask">
-              <span className="hero__line" data-a="0.88" data-b="0.96">
+              <span className="hero__line" data-a="0.868" data-b="0.948">
                 Grandes frutos.
               </span>
             </span>
           </h1>
 
-          <p className="hero__lede" data-a="0.905" data-b="0.975">
+          <p className="hero__lede" data-a="0.9" data-b="0.97">
             Conteúdo que transforma vidas e gera crescimento real.
           </p>
 
-          <div className="hero__actions" data-a="0.925" data-b="0.99">
+          <div className="hero__actions" data-a="0.92" data-b="0.985">
             <button type="button" className="hero__cta">
               Explorar recursos
             </button>
-            <a className="hero__link" href="#">
-              Conhecer a jornada
-            </a>
           </div>
+
+          {/*
+            Runs from the action down toward the grain. The only job it has is to
+            say the two belong to one column — without it the type reads as
+            floating above an unrelated object.
+          */}
+          <span className="hero__descender" data-a="0.94" data-b="1.0" aria-hidden="true" />
         </div>
       </div>
     </>

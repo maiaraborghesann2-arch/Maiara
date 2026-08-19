@@ -12,8 +12,12 @@ export const palette = {
   sandLight: "#F6EBE0",
   /** Warm pool that blooms around the seed. */
   sandWarm: "#FAF1E7",
+  /** Light itself — the value the shafts carry. Brighter than any surface. */
+  shaft: "#FFFBF3",
   /** Sunk sand for the vignette and the lower third. */
   sandDeep: "#D9C1A8",
+  /** The earth the grain lands on — deeper and warmer than the air above it. */
+  earth: "#C6A585",
 
   /**
    * The grain. Earth pigments rather than shell browns — ochre through umber,

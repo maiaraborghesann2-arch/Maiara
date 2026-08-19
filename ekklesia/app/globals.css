@@ -144,55 +144,68 @@ button {
 }
 
 .site-header__menu {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.5rem 0;
   pointer-events: auto;
 }
 
-.site-header__menu span {
+.site-header__menu-label {
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.site-header__menu-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.site-header__menu-icon span {
   display: block;
-  width: 22px;
+  width: 24px;
   height: 1.2px;
   background: var(--ink);
 }
 
 /* ----------------------------------------------------------------- hero -- */
 
+/*
+ * Anchored to the top rather than centred. The grain rests in the lower third
+ * of the frame — that position is set by the camera, not by CSS — and the text
+ * column has to sit clear above it on the same axis.
+ */
 .hero {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 0 var(--gutter);
+  align-items: center;
+  padding: 15vh var(--gutter) 0;
+  text-align: center;
   pointer-events: none;
 }
 
-/*
- * Held to just under half the frame. The grain lands on the right and the
- * composition depends on that column of empty sand between them staying empty —
- * text creeping into it is what would turn the pair back into "a picture next
- * to a paragraph".
- */
 .hero__column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  /* Not `ch`: that unit resolves against this element's own font, which is the
-     16px sans — it would size the column to roughly a third of what the display
-     serif inside it needs, and break the headline over four lines. */
-  max-width: min(44rem, 47vw);
+  max-width: min(52rem, 82vw);
 }
 
 .hero__kicker {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  margin-bottom: clamp(1.4rem, 2.6vw, 2.2rem);
-  font-size: 0.6rem;
+  gap: 0.9rem;
+  margin-bottom: clamp(1.5rem, 2.8vw, 2.4rem);
+  font-size: 0.58rem;
   font-weight: 500;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--olive-soft);
   opacity: 0;
@@ -200,7 +213,7 @@ button {
 
 .hero__rule {
   display: block;
-  width: clamp(28px, 4vw, 52px);
+  width: clamp(22px, 3.4vw, 44px);
   height: 1px;
   background: var(--olive-hairline);
 }
@@ -208,11 +221,12 @@ button {
 .hero__title {
   display: flex;
   flex-direction: column;
+  align-items: center;
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: clamp(2.6rem, 6.2vw, 5.3rem);
-  line-height: 1.02;
-  letter-spacing: -0.026em;
+  font-size: clamp(2.3rem, 5.4vw, 4.7rem);
+  line-height: 1.06;
+  letter-spacing: -0.024em;
   color: var(--ink);
 }
 
@@ -239,19 +253,16 @@ button {
 }
 
 .hero__lede {
-  margin-top: clamp(1.6rem, 2.8vw, 2.4rem);
-  max-width: 32ch;
-  font-size: clamp(0.9rem, 1.05vw, 1.02rem);
+  margin-top: clamp(1.5rem, 2.6vw, 2.2rem);
+  max-width: 46rem;
+  font-size: clamp(0.88rem, 1.02vw, 1rem);
   line-height: 1.8;
   color: var(--ink-soft);
   opacity: 0;
 }
 
 .hero__actions {
-  display: flex;
-  align-items: center;
-  gap: clamp(1.4rem, 2.6vw, 2.4rem);
-  margin-top: clamp(2rem, 3.2vw, 2.9rem);
+  margin-top: clamp(1.9rem, 3vw, 2.7rem);
   opacity: 0;
 }
 
@@ -272,30 +283,13 @@ button {
   background: var(--clay-hover);
 }
 
-.hero__link {
-  position: relative;
-  padding-bottom: 2px;
-  color: var(--olive);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-decoration: none;
-  pointer-events: auto;
-}
-
-.hero__link::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: var(--olive-hairline);
-  transform-origin: left center;
-  transition: transform 0.45s var(--ease-out);
-}
-
-.hero__link:hover::after {
-  transform: scaleX(0.45);
+.hero__descender {
+  display: block;
+  width: 1px;
+  height: clamp(2.5rem, 7vh, 5rem);
+  margin-top: clamp(1.6rem, 3vh, 2.6rem);
+  background: linear-gradient(to bottom, var(--olive-hairline), transparent);
+  opacity: 0;
 }
 
 /* ----------------------------------------------------- scroll indicator -- */
@@ -455,22 +449,24 @@ button {
 
 @media (max-aspect-ratio: 9 / 10) {
   .hero {
-    justify-content: flex-end;
-    padding-bottom: clamp(4rem, 16vh, 9rem);
-  }
-
-  .hero__column {
-    max-width: none;
+    padding-top: 13vh;
   }
 
   .hero__title {
-    font-size: clamp(2.2rem, 10vw, 3.4rem);
+    font-size: clamp(1.9rem, 8.6vw, 3rem);
   }
 
-  .hero__actions {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.2rem;
+  .hero__line {
+    /* The break has to give on a phone; the masks stay one line each. */
+    white-space: normal;
+  }
+
+  .hero__descender {
+    height: clamp(1.6rem, 4vh, 3rem);
+  }
+
+  .site-header__menu-label {
+    display: none;
   }
 }
 

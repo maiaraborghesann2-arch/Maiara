@@ -8,7 +8,7 @@ import { track } from "@/lib/math";
 import { palette } from "@/lib/palette";
 import { sceneState } from "@/lib/scene/sharedState";
 import { progressStore } from "@/lib/scroll/progressStore";
-import { backdrop as choreo } from "@/lib/scroll/choreography";
+import { LANDING_Y, backdrop as choreo } from "@/lib/scroll/choreography";
 
 /**
  * The sand is a photographed surface, not a fill.
@@ -34,13 +34,16 @@ export function Backdrop() {
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
   const projected = useRef(new THREE.Vector3());
+  const horizonPoint = useRef(new THREE.Vector3());
 
   const initialUniforms = useMemo(
     () => ({
       uSand: { value: new THREE.Color(palette.sand) },
       uSandLight: { value: new THREE.Color(palette.sandLight) },
       uSandWarm: { value: new THREE.Color(palette.sandWarm) },
+      uShaftColor: { value: new THREE.Color(palette.shaft) },
       uSandDeep: { value: new THREE.Color(palette.sandDeep) },
+      uEarth: { value: new THREE.Color(palette.earth) },
       uSeed: { value: new THREE.Vector2(0.5, 0.5) },
       uAspect: { value: 1 },
       uPool: { value: 0.42 },
@@ -48,6 +51,9 @@ export function Backdrop() {
       uCast: { value: 0 },
       uHaze: { value: 0.24 },
       uVignette: { value: 0.16 },
+      uShaft: { value: 0.1 },
+      uFloor: { value: 0 },
+      uHorizon: { value: -1 },
       uGrain: { value: 0.013 },
       uFibre: { value: 0.03 },
     }),
@@ -68,6 +74,18 @@ export function Backdrop() {
     uniforms.uCast.value = track(choreo.cast, p);
     uniforms.uHaze.value = track(choreo.haze, p);
     uniforms.uVignette.value = track(choreo.vignette, p);
+    uniforms.uShaft.value = track(choreo.shaft, p);
+    uniforms.uFloor.value = track(choreo.floor, p);
+
+    /*
+     * The earth's vanishing line, not the point under the grain. A horizontal
+     * plane recedes to the camera's eye level, so projecting the near contact
+     * point puts the ground's edge well below where the surface actually reads
+     * — which left the grain resting on air with a band of soil beneath it.
+     * Projecting a far point on the same plane gives the true horizon.
+     */
+    horizonPoint.current.set(0, LANDING_Y, -80).project(camera);
+    uniforms.uHorizon.value = horizonPoint.current.y * 0.5 + 0.5;
 
     // The pool is sized in screen space from the grain's projected radius, so
     // the light stays attached to the object as the camera pushes and pulls.
@@ -112,7 +130,9 @@ const FRAGMENT = /* glsl */ `
   uniform vec3 uSand;
   uniform vec3 uSandLight;
   uniform vec3 uSandWarm;
+  uniform vec3 uShaftColor;
   uniform vec3 uSandDeep;
+  uniform vec3 uEarth;
   uniform vec2 uSeed;
   uniform float uAspect;
   uniform float uPool;
@@ -120,6 +140,9 @@ const FRAGMENT = /* glsl */ `
   uniform float uCast;
   uniform float uHaze;
   uniform float uVignette;
+  uniform float uShaft;
+  uniform float uFloor;
+  uniform float uHorizon;
   uniform float uGrain;
   uniform float uFibre;
 
@@ -166,6 +189,25 @@ const FRAGMENT = /* glsl */ `
     s.y *= 1.35;
     col *= 1.0 - exp(-dot(s, s) * 110.0) * uCast;
 
+    // Warm shafts raking down from the upper left. More than anything else in
+    // this shader, these are what make the room read as lit rather than filled.
+    vec2 r = uv - vec2(0.02, 1.06);
+    r.x *= uAspect;
+    float ang = -0.58;
+    vec2 rot = vec2(r.x * cos(ang) - r.y * sin(ang), r.x * sin(ang) + r.y * cos(ang));
+    float shaft = pow(0.5 + 0.5 * sin(rot.x * 6.2), 3.0)
+                * (0.55 + 0.45 * pow(0.5 + 0.5 * sin(rot.x * 2.3 + 1.7), 2.0));
+    col = mix(col, uShaftColor, shaft * exp(-length(r) * 0.58) * uShaft);
+
+    /*
+     * The earth, receding into haze rather than ending at a line. Density rises
+     * with the square of the distance below the horizon, which is roughly how a
+     * ground plane reads through air: nothing at the vanishing line, unmistakable
+     * at your feet.
+     */
+    float below = pow(clamp((uHorizon - uv.y) / max(0.12, uHorizon), 0.0, 1.0), 2.0);
+    col = mix(col, uEarth, below * uFloor);
+
     vec2 c = (uv - 0.5) * vec2(uAspect, 1.0);
     col *= 1.0 - uVignette * smoothstep(0.2, 0.92, length(c));
 
@@ -173,7 +215,10 @@ const FRAGMENT = /* glsl */ `
     // material with a grain direction rather than as a gradient.
     float fibre = vnoise(uv * vec2(180.0, 620.0)) * 0.62
                 + vnoise(uv * vec2(70.0, 220.0)) * 0.38;
-    col *= 1.0 + (fibre - 0.5) * uFibre;
+    // The floor carries a coarser tooth than the air above it.
+    float grit = vnoise(uv * vec2(420.0, 160.0));
+    col *= 1.0 + (fibre - 0.5) * uFibre
+               + (grit - 0.5) * uFibre * 4.2 * below * uFloor;
 
     // Fine grain on top. Without it the wash bands visibly on wide displays.
     col += (hash21(uv * 1024.0) - 0.5) * uGrain;
