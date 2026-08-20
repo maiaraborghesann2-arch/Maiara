@@ -13,6 +13,7 @@ import { Lighting } from "./Lighting";
 import { Motes } from "./Motes";
 import { Roots } from "./Roots";
 import { Soil } from "./Soil";
+import { SoilBokeh } from "./SoilBokeh";
 import { GroundShadow } from "./GroundShadow";
 import { Seed } from "./Seed";
 import { LANDING_Y, dust } from "@/lib/scroll/choreography";
@@ -50,6 +51,7 @@ export function ExperienceCanvas() {
         <GroundShadow />
         <Soil />
         <Roots />
+        <SoilBokeh />
 
         {/* Act I's landing, then Act II's planting. Same component, two beats. */}
         <Burst originY={LANDING_Y} amount={dust.impact} from={0.745} span={0.175} />

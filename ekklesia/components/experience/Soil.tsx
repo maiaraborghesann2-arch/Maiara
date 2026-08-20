@@ -8,9 +8,12 @@ import { track } from "@/lib/math";
 import { palette } from "@/lib/palette";
 import { stageProgress } from "@/lib/scroll/stage";
 import { LANDING_Y, soil as choreo } from "@/lib/scroll/choreography";
+import { createRockGeometries } from "./rockGeometry";
 
 const GRAIN_COUNT = 5200;
-const CLOD_COUNT = 210;
+/** Stones per shape family. Six families, so no silhouette repeats nearby. */
+const ROCK_SHAPES = 6;
+const ROCK_PER_SHAPE = 34;
 /** How far down the volume extends. Deeper than the roots ever reach. */
 const FLOOR_Y = -8.5;
 /** Radius of the body of earth the descent happens inside. */
@@ -50,7 +53,7 @@ export function Soil() {
   const shaft = useRef<THREE.Mesh>(null);
   const grains = useRef<THREE.Points>(null);
   const grainMaterial = useRef<THREE.ShaderMaterial>(null);
-  const clods = useRef<THREE.InstancedMesh>(null);
+  const rocks = useRef<(THREE.InstancedMesh | null)[]>([]);
   const height = useThree((state) => state.size.height);
 
   const fog = useMemo(() => new THREE.FogExp2(palette.soil, 0), []);
@@ -94,7 +97,7 @@ export function Soil() {
    * rim anywhere, so there is no line to misread.
    */
   const shaftGeometry = useMemo(() => new THREE.SphereGeometry(SHAFT_R, 64, 44), []);
-  const clodGeometry = useMemo(() => createClodGeometry(), []);
+  const rockGeometries = useMemo(() => createRockGeometries(ROCK_SHAPES, 0x5710), []);
 
   const grainGeometry = useMemo(() => {
     const random = mulberry32(0x5011);
@@ -154,44 +157,62 @@ export function Soil() {
     [],
   );
 
-  // Clods are placed once: they are scenery, not animation.
+  // Stones are placed once: they are scenery, not animation.
   useEffect(() => {
-    const mesh = clods.current;
-    if (!mesh) return;
-
     const random = mulberry32(0xc10d);
     const matrix = new THREE.Matrix4();
     const quaternion = new THREE.Quaternion();
     const euler = new THREE.Euler();
     const position = new THREE.Vector3();
     const scale = new THREE.Vector3();
+    const tint = new THREE.Color();
 
-    for (let i = 0; i < CLOD_COUNT; i++) {
-      /*
-       * Two exclusions, both learned the hard way. The central column stays
-       * clear because that is where the grain and its roots live. And nothing
-       * sits in the corridor at positive z, because that is where the camera
-       * itself travels — a clod placed there ends up centimetres from the lens
-       * and fills a third of the frame.
-       */
-      const angle = random() * Math.PI * 2;
-      const radius = 1.25 + random() ** 0.7 * 4.3;
-      const x = Math.cos(angle) * radius;
-      const z = Math.sin(angle) * radius;
-      if (z > 0.6 && Math.abs(x) < 1.35) {
-        i -= 1;
-        continue;
+    for (const mesh of rocks.current) {
+      if (!mesh) continue;
+      for (let i = 0; i < ROCK_PER_SHAPE; i++) {
+        /*
+         * Two exclusions, both learned the hard way. The central column stays
+         * clear because that is where the grain and its roots live. And nothing
+         * sits in the corridor at positive z, because that is where the camera
+         * itself travels — a stone placed there ends up centimetres from the
+         * lens and fills a third of the frame.
+         */
+        const angle = random() * Math.PI * 2;
+        const radius = 1.3 + random() ** 0.65 * 4.6;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        if (z > 0.6 && Math.abs(x) < 1.35) {
+          i -= 1;
+          continue;
+        }
+        position.set(x, LANDING_Y - 0.12 - random() * (LANDING_Y - FLOOR_Y) * 0.95, z);
+        euler.set(random() * 6.28, random() * 6.28, random() * 6.28);
+        quaternion.setFromEuler(euler);
+
+        /*
+         * Small, and skewed smaller still. The distribution here used to have a
+         * long tail, and a handful of stones came out large enough to hold the
+         * frame — which puts them in competition with a grain that is the whole
+         * subject of the piece. Anything the eye stops on down here should be
+         * the seed.
+         */
+        const size = 0.016 + random() ** 2.4 * 0.075 + radius * 0.012;
+        scale.set(size, size * (0.62 + random() * 0.5), size * (0.75 + random() * 0.45));
+        mesh.setMatrixAt(i, matrix.compose(position, quaternion, scale));
+
+        // Mineral rather than uniform earth: some stones are paler and greyer,
+        // some are the colour of the soil they are sitting in.
+        const grey = random() * random();
+        tint.setRGB(
+          0.86 + grey * 0.22 + random() * 0.1,
+          0.84 + grey * 0.24 + random() * 0.08,
+          0.8 + grey * 0.3 + random() * 0.08,
+        );
+        mesh.setColorAt(i, tint);
       }
-      position.set(x, LANDING_Y - 0.12 - random() * (LANDING_Y - FLOOR_Y) * 0.95, z);
-      euler.set(random() * 6.28, random() * 6.28, random() * 6.28);
-      quaternion.setFromEuler(euler);
-      // Bigger further out, so the density reads as earth rather than as hail.
-      const size = 0.03 + random() * random() * 0.14 + radius * 0.022;
-      scale.set(size, size * (0.7 + random() * 0.5), size * (0.8 + random() * 0.4));
-
-      mesh.setMatrixAt(i, matrix.compose(position, quaternion, scale));
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
-    mesh.instanceMatrix.needsUpdate = true;
   }, []);
 
   useEffect(
@@ -200,7 +221,7 @@ export function Soil() {
       wallMaps.dispose();
       surfaceGeometry.dispose();
       shaftGeometry.dispose();
-      clodGeometry.dispose();
+      for (const rock of rockGeometries) rock.dispose();
       grainGeometry.dispose();
     },
     [
@@ -208,7 +229,7 @@ export function Soil() {
       wallMaps,
       surfaceGeometry,
       shaftGeometry,
-      clodGeometry,
+      rockGeometries,
       grainGeometry,
     ],
   );
@@ -235,7 +256,7 @@ export function Soil() {
      */
     const under = camY < LANDING_Y - 0.01;
     if (shaft.current) shaft.current.visible = under;
-    if (clods.current) clods.current.visible = below > 0.01;
+    for (const mesh of rocks.current) if (mesh) mesh.visible = below > 0.01;
     if (grains.current) grains.current.visible = below > 0.01;
 
     if (grainMaterial.current) {
@@ -305,14 +326,26 @@ export function Soil() {
         />
       </mesh>
 
-      <instancedMesh
-        ref={clods}
-        args={[clodGeometry, undefined, CLOD_COUNT]}
-        visible={false}
-        frustumCulled={false}
-      >
-        <meshStandardMaterial color={palette.soilDark} roughness={0.98} metalness={0} />
-      </instancedMesh>
+      {rockGeometries.map((rock, index) => (
+        <instancedMesh
+          key={index}
+          ref={(mesh) => {
+            rocks.current[index] = mesh;
+          }}
+          args={[rock, undefined, ROCK_PER_SHAPE]}
+          visible={false}
+          frustumCulled={false}
+        >
+          <meshStandardMaterial
+            // The crevice shading is baked per vertex; `color` is the family
+            // tint the per-instance colour multiplies into.
+            vertexColors
+            color={palette.soilLight}
+            roughness={0.97}
+            metalness={0}
+          />
+        </instancedMesh>
+      ))}
 
       <points ref={grains} geometry={grainGeometry} visible={false} frustumCulled={false}>
         <shaderMaterial
@@ -340,28 +373,10 @@ function createSurfaceGeometry() {
   for (let i = 0; i < position.count; i++) {
     const x = position.getX(i);
     const y = position.getY(i);
-    let h = 0.004 * Math.sin(x * 6.2 + 1.3) * Math.cos(y * 5.4);
-    h += 0.0018 * Math.sin(x * 15.8 + 0.4) * Math.cos(y * 16.6 + 2.2);
-    h += 0.0008 * Math.sin(x * 38.2) * Math.cos(y * 34.6 + 1.1);
+    let h = 0.0013 * Math.sin(x * 6.2 + 1.3) * Math.cos(y * 5.4);
+    h += 0.0006 * Math.sin(x * 15.8 + 0.4) * Math.cos(y * 16.6 + 2.2);
+    h += 0.0003 * Math.sin(x * 38.2) * Math.cos(y * 34.6 + 1.1);
     position.setZ(i, h);
-  }
-
-  geometry.computeVertexNormals();
-  return geometry;
-}
-
-function createClodGeometry() {
-  const geometry = new THREE.IcosahedronGeometry(1, 1);
-  const position = geometry.attributes.position as THREE.BufferAttribute;
-  const n = new THREE.Vector3();
-
-  for (let i = 0; i < position.count; i++) {
-    n.fromBufferAttribute(position, i).normalize();
-    const r =
-      1 +
-      0.22 * Math.sin(3.1 * n.x + 1.7) * Math.cos(2.6 * n.y) +
-      0.14 * Math.sin(4.3 * n.z + 0.9);
-    position.setXYZ(i, n.x * r, n.y * r, n.z * r);
   }
 
   geometry.computeVertexNormals();

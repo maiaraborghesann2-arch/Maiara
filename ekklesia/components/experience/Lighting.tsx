@@ -6,7 +6,7 @@ import * as THREE from "three";
 
 import { track } from "@/lib/math";
 import { stageProgress } from "@/lib/scroll/stage";
-import { light } from "@/lib/scroll/choreography";
+import { LANDING_Y, light } from "@/lib/scroll/choreography";
 import { sceneState } from "@/lib/scene/sharedState";
 
 /**
@@ -22,8 +22,9 @@ import { sceneState } from "@/lib/scene/sharedState";
  */
 export function Lighting() {
   const key = useRef<THREE.DirectionalLight>(null);
+  const fill = useRef<THREE.DirectionalLight>(null);
 
-  useFrame(() => {
+  useFrame((state) => {
     const lamp = key.current;
     if (!lamp) return;
 
@@ -43,7 +44,21 @@ export function Lighting() {
     lamp.target.position.set(x, y - 0.4, 0);
     lamp.target.updateMatrixWorld();
 
-    lamp.castShadow = false; /*DEBUG*/
+    /*
+     * Underground fill. Nothing about the soil is legible under the key alone —
+     * it comes from above and there is no sky down here for it to come from —
+     * and the note is "escura e terrosa", not "unreadable". Rigged to the lens
+     * rather than to the world, which is what a macro rig would actually do,
+     * and gated on depth so Act I never sees a photon of it.
+     */
+    const under = fill.current;
+    if (under) {
+      const below = Math.min(1, Math.max(0, (LANDING_Y + 0.2 - state.camera.position.y) / 0.5));
+      under.intensity = below * 0.62;
+      under.position.copy(state.camera.position).add(new THREE.Vector3(0.9, 0.7, 0.2));
+      under.target.position.set(0, y, 0);
+      under.target.updateMatrixWorld();
+    }
   });
 
   return (
@@ -59,6 +74,8 @@ export function Lighting() {
 
       <directionalLight position={[-2.4, 0.4, 1.3]} intensity={0.4} color="#CBBEAB" />
       <directionalLight position={[-1.0, 1.5, -2.4]} intensity={0.62} color="#FFE6C6" />
+
+      <directionalLight ref={fill} intensity={0} color="#E4D2B6" />
     </>
   );
 }

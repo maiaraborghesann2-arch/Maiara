@@ -301,8 +301,9 @@ export const shadow = {
     { at: 1.0, value: 1 },
     // Gone by the time the grain is buried: a shadow needs a surface to fall
     // on, and the grain is no longer standing on one.
-    { at: 1.2, value: 0.9 },
-    { at: 1.4, value: 0 },
+    { at: 1.22, value: 0.85 },
+    { at: 1.3, value: 0.4 },
+    { at: 1.36, value: 0 },
     { at: 2.0, value: 0 },
   ] satisfies Keyframe[],
 };
@@ -341,9 +342,9 @@ export const backdrop = {
     { at: 0.48, value: 0.56 },
     { at: 0.745, value: 0.45 },
     { at: 1.0, value: 0.62, ease: easing.outCubic },
-    { at: 1.24, value: 0.5 },
-    { at: 1.48, value: 0.14 },
-    { at: 2.0, value: 0.1 },
+    { at: 1.14, value: 0.3 },
+    { at: 1.28, value: 0.05 },
+    { at: 2.0, value: 0.02 },
   ] satisfies Keyframe[],
 
   /** Page-level cast shadow. Kept low — the grain now has a real contact
@@ -353,7 +354,7 @@ export const backdrop = {
     { at: 0.74, value: 0 },
     { at: 0.92, value: 0.08, ease: easing.outCubic },
     { at: 1.0, value: 0.09 },
-    { at: 1.28, value: 0 },
+    { at: 1.1, value: 0 },
     { at: 2.0, value: 0 },
   ] satisfies Keyframe[],
 
@@ -375,9 +376,9 @@ export const backdrop = {
     { at: 1.0, value: 0.26, ease: easing.outCubic },
     // Closes in underground: earth on every side is a smaller room than sand
     // under an open sky, and the vignette is what says so.
-    { at: 1.38, value: 0.36 },
-    { at: 1.6, value: 0.46 },
-    { at: 2.0, value: 0.52, ease: easing.outCubic },
+    { at: 1.38, value: 0.3 },
+    { at: 1.6, value: 0.36 },
+    { at: 2.0, value: 0.4, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /**
@@ -441,8 +442,8 @@ export const germination = {
    * arriving rather than as the grain splitting.
    */
   aperture: [
-    { at: 1.48, value: 0 },
-    { at: 1.6, value: 1, ease: easing.outCubic },
+    { at: 1.46, value: 0 },
+    { at: 1.56, value: 1, ease: easing.outCubic },
     { at: 2.0, value: 1 },
   ] satisfies Keyframe[],
 
@@ -453,10 +454,11 @@ export const germination = {
    * branchings come quickly enough to feel like spreading.
    */
   growth: [
-    { at: 1.56, value: 0 },
-    { at: 1.68, value: 0.18, ease: easing.outCubic },
-    { at: 1.82, value: 0.58 },
-    { at: 1.93, value: 0.95 },
+    { at: 1.54, value: 0 },
+    { at: 1.66, value: 0.14, ease: easing.outCubic },
+    { at: 1.78, value: 0.4 },
+    { at: 1.88, value: 0.72 },
+    { at: 1.96, value: 0.94 },
     { at: 2.0, value: 1, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };
