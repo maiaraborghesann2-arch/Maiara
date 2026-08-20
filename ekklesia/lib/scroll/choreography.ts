@@ -1,13 +1,17 @@
 import { easing, type Keyframe } from "@/lib/math";
 
 /**
- * The shot list for Act I, expressed as keyframe tracks over the Act I track
- * progress (0 = top of the scroll track, 1 = bottom).
+ * The shot list, expressed as keyframe tracks over the *stage clock*: `0 → 1`
+ * is Act I, `1 → 2` is Act II. See `lib/scroll/stage.ts` for why the clock is
+ * the sum of two chapter stores rather than one long track.
  *
- * Every animated quantity in the chapter lives here, in one file, so the timing
- * of the whole sequence can be read and retuned without opening a single
- * component. Components stay dumb: they sample a track and write the result to
- * a `ref`.
+ * Every animated quantity lives here, in one file, so the timing of the whole
+ * piece can be read and retuned without opening a single component. Components
+ * stay dumb: they sample a track and write the result to a `ref`.
+ *
+ * Act I's keyframes all sit at or below `1.0` and are untouched — Act II is
+ * appended past them, so sampling anywhere in Act I returns exactly what it
+ * returned before Act II existed.
  */
 
 /** The ledge the grain begins on. */
@@ -17,13 +21,25 @@ export const LANDING_Y = -1.85;
 /** How far it falls. */
 export const DROP = LANDING_Y - GROUND_Y;
 
+/** Working scale of the grain, and the half-height that follows from it. */
+export const SEED_SCALE = 0.095;
+const SEED_HALF = 0.93 * SEED_SCALE;
+
+/**
+ * Where the grain comes to rest once it is planted — below the surface, deep
+ * enough that the camera can sit level with it and still have earth overhead.
+ * `Roots` and `Soil` anchor to this.
+ */
+export const SEED_PLANTED_Y = -2.15;
+const PLANTED_OFFSET = SEED_PLANTED_Y - (GROUND_Y + SEED_HALF);
+
 export const seed = {
   /**
    * Constant. A real object does not change size — apparent scale is the
    * camera's job, and letting the lens do that work is most of why the sequence
    * reads as photographed rather than animated.
    */
-  scale: [{ at: 0, value: 0.095 }] satisfies Keyframe[],
+  scale: [{ at: 0, value: SEED_SCALE }] satisfies Keyframe[],
 
   /**
    * Vertical *offset from resting contact*, not absolute height. `Seed` adds
@@ -44,6 +60,21 @@ export const seed = {
     { at: 0.762, value: DROP + 0.06, ease: easing.outCubic },
     { at: 0.782, value: DROP, ease: easing.inQuad },
     { at: 1.0, value: DROP },
+
+    // Act II. The grain does not fall again — it is *pressed in*. A few
+    // centimetres of give, the soil pushing back, and then the slow sink that
+    // buries it. Repeating the fall would contradict the landing Act I already
+    // earned; this is what "ela encontra o solo" means once it is already there.
+    { at: 1.1, value: DROP },
+    { at: 1.17, value: DROP - 0.03, ease: easing.gravity },
+    { at: 1.2, value: DROP - 0.018, ease: easing.outCubic },
+    // The sink is timed against the *camera's* crossing, not against a beat.
+    // Let the grain go under first and there is a stretch of scroll where the
+    // subject is behind an opaque surface the lens has not reached yet — the
+    // frame is a wall of soil with nothing in it.
+    { at: 1.26, value: DROP - 0.018 },
+    { at: 1.44, value: PLANTED_OFFSET, ease: easing.inOutSine },
+    { at: 2.0, value: PLANTED_OFFSET },
   ] satisfies Keyframe[],
 
   /**
@@ -59,6 +90,9 @@ export const seed = {
     { at: 0.745, value: Math.PI * 1.28 },
     { at: 0.79, value: Math.PI * 1.33, ease: easing.outCubic },
     { at: 1.0, value: Math.PI * 1.34 },
+    // A few degrees of settle as the soil takes it. Nothing more: it is buried.
+    { at: 1.16, value: Math.PI * 1.36, ease: easing.outCubic },
+    { at: 2.0, value: Math.PI * 1.36 },
   ] satisfies Keyframe[],
 
   rotationX: [
@@ -67,6 +101,8 @@ export const seed = {
     { at: 0.745, value: -0.34 },
     { at: 0.79, value: -0.3, ease: easing.outCubic },
     { at: 1.0, value: -0.3 },
+    { at: 1.16, value: -0.26, ease: easing.outCubic },
+    { at: 2.0, value: -0.26 },
   ] satisfies Keyframe[],
 
   rotationZ: [
@@ -76,6 +112,8 @@ export const seed = {
     { at: 0.745, value: 0.22 },
     { at: 0.79, value: 0.19, ease: easing.outCubic },
     { at: 1.0, value: 0.19 },
+    { at: 1.16, value: 0.15, ease: easing.outCubic },
+    { at: 2.0, value: 0.15 },
   ] satisfies Keyframe[],
 
   /** Idle drift authority — silenced at release and never restored: the grain
@@ -84,7 +122,7 @@ export const seed = {
     { at: 0.0, value: 1 },
     { at: 0.44, value: 1 },
     { at: 0.52, value: 0 },
-    { at: 1.0, value: 0 },
+    { at: 2.0, value: 0 },
   ] satisfies Keyframe[],
 };
 
@@ -115,6 +153,28 @@ export const camera = {
     { at: 0.745, value: -1.06, ease: easing.gravity },
     { at: 0.82, value: -1.11, ease: easing.outCubic },
     { at: 1.0, value: -1.13 },
+
+    // Act II. One unbroken descent: it closes on the grain, follows it into the
+    // soil, crosses the surface somewhere around 1.25, settles level with the
+    // buried grain, then falls away again to take in the root system. Nowhere
+    // does it reverse — the whole chapter is the same move Act I started.
+    // Held at the Act I framing until the Home has finished wiping out. Start
+    // the descent underneath the title and the horizon climbs through the
+    // typography, which is the one thing guaranteed to read as two layers
+    // rather than one room.
+    { at: 1.08, value: -1.13, ease: easing.inOutSine },
+    { at: 1.2, value: -1.17 },
+    { at: 1.26, value: -1.42 },
+    // Crosses the surface at ~1.325, within a frame or two of the grain doing
+    // the same. The lens follows it under; it does not arrive afterwards.
+    { at: 1.34, value: -1.95 },
+    { at: 1.44, value: -2.18 },
+    { at: 1.5, value: -2.28, ease: easing.inOutSine },
+    { at: 1.62, value: -2.36 },
+    { at: 1.72, value: -2.5 },
+    { at: 1.84, value: -2.95 },
+    { at: 1.94, value: -3.5, ease: easing.outCubic },
+    { at: 2.0, value: -3.7 },
   ] satisfies Keyframe[],
 
   /**
@@ -133,6 +193,23 @@ export const camera = {
     { at: 0.745, value: 4.75 },
     { at: 0.82, value: 4.4 },
     { at: 1.0, value: 3.95, ease: easing.outCubic },
+
+    // Closes to a macro on the buried grain for germination, then gives the
+    // distance back as the roots need room. The pull-back is the reveal.
+    // Right down onto the soil. Held back at the Act I distance the lens looks
+    // across the ground rather than at it, and a surface seen edge-on to the
+    // horizon reads as landscape — which is the wrong scale entirely for
+    // something a fifth of a unit wide.
+    { at: 1.08, value: 3.85, ease: easing.inOutSine },
+    { at: 1.2, value: 1.6 },
+    { at: 1.3, value: 1.0 },
+    { at: 1.4, value: 1.25 },
+    { at: 1.5, value: 1.7 },
+    { at: 1.62, value: 1.75, ease: easing.inOutSine },
+    { at: 1.72, value: 2.15 },
+    { at: 1.84, value: 3.4 },
+    { at: 1.94, value: 4.7 },
+    { at: 2.0, value: 5.2, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /**
@@ -151,6 +228,21 @@ export const camera = {
     // resting grain settles into the lower third.
     { at: 0.82, value: -1.24, ease: easing.outCubic },
     { at: 1.0, value: -1.17, ease: easing.outCubic },
+
+    // Aims back down onto the grain as the Home dissolves, then leads the
+    // descent — always a little below the camera, so the move reads as going
+    // somewhere rather than sinking.
+    { at: 1.08, value: -1.2, ease: easing.inOutSine },
+    { at: 1.2, value: -1.88 },
+    { at: 1.26, value: -2.0 },
+    { at: 1.34, value: -2.12 },
+    { at: 1.44, value: -2.3 },
+    { at: 1.5, value: -2.42, ease: easing.inOutSine },
+    { at: 1.62, value: -2.3 },
+    { at: 1.72, value: -2.55 },
+    { at: 1.84, value: -3.1 },
+    { at: 1.94, value: -3.35 },
+    { at: 2.0, value: -3.55, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };
 
@@ -166,12 +258,21 @@ export const light = {
     { at: 0.48, value: 2.05 },
     { at: 0.745, value: 2.3 },
     { at: 1.0, value: 2.35 },
+    // Underground the key is no longer the sun — it is what little of it makes
+    // it through the surface. Most of the drop happens as the camera crosses.
+    // Softened before the descent: the same key that modelled a grain against
+    // pale sand blows out soil seen from a hand's breadth away.
+    { at: 1.2, value: 1.65 },
+    { at: 1.4, value: 1.35 },
+    { at: 1.5, value: 1.0 },
+    { at: 2.0, value: 0.92 },
   ] satisfies Keyframe[],
 
   azimuth: [
     { at: 0.0, value: 0.0 },
     { at: 0.48, value: 0.55, ease: easing.inOutSine },
     { at: 1.0, value: 0.24, ease: easing.outCubic },
+    { at: 2.0, value: 0.08, ease: easing.inOutSine },
   ] satisfies Keyframe[],
 };
 
@@ -190,6 +291,7 @@ export const shadow = {
     { at: 0.0, value: 1 },
     { at: 0.52, value: 1 },
     { at: 0.62, value: 0 },
+    { at: 2.0, value: 0 },
   ] satisfies Keyframe[],
 
   earth: [
@@ -197,16 +299,34 @@ export const shadow = {
     { at: 0.56, value: 0 },
     { at: 0.66, value: 1, ease: easing.outCubic },
     { at: 1.0, value: 1 },
+    // Gone by the time the grain is buried: a shadow needs a surface to fall
+    // on, and the grain is no longer standing on one.
+    { at: 1.2, value: 0.9 },
+    { at: 1.4, value: 0 },
+    { at: 2.0, value: 0 },
   ] satisfies Keyframe[],
 };
 
 /** Impact, not release. A grain this size displaces almost nothing. */
 export const dust = {
-  amount: [
+  /** Act I: the landing. */
+  impact: [
     { at: 0.735, value: 0 },
     { at: 0.762, value: 1, ease: easing.outQuad },
     { at: 0.83, value: 0.42 },
     { at: 0.92, value: 0 },
+  ] satisfies Keyframe[],
+
+  /**
+   * Act II: the planting. Smaller than the landing, because the grain is being
+   * pressed into soil that gives rather than struck against a surface — a few
+   * grains rolling aside, not a puff.
+   */
+  plant: [
+    { at: 1.13, value: 0 },
+    { at: 1.18, value: 0.7, ease: easing.outQuad },
+    { at: 1.28, value: 0.34 },
+    { at: 1.42, value: 0 },
   ] satisfies Keyframe[],
 };
 
@@ -221,6 +341,9 @@ export const backdrop = {
     { at: 0.48, value: 0.56 },
     { at: 0.745, value: 0.45 },
     { at: 1.0, value: 0.62, ease: easing.outCubic },
+    { at: 1.24, value: 0.5 },
+    { at: 1.48, value: 0.14 },
+    { at: 2.0, value: 0.1 },
   ] satisfies Keyframe[],
 
   /** Page-level cast shadow. Kept low — the grain now has a real contact
@@ -230,6 +353,8 @@ export const backdrop = {
     { at: 0.74, value: 0 },
     { at: 0.92, value: 0.08, ease: easing.outCubic },
     { at: 1.0, value: 0.09 },
+    { at: 1.28, value: 0 },
+    { at: 2.0, value: 0 },
   ] satisfies Keyframe[],
 
   /** Depth haze: the far field lightens and loses contrast, as air does. */
@@ -238,6 +363,9 @@ export const backdrop = {
     { at: 0.48, value: 0.15 },
     { at: 0.745, value: 0.28 },
     { at: 1.0, value: 0.32, ease: easing.outCubic },
+    { at: 1.24, value: 0.3 },
+    { at: 1.5, value: 0.1 },
+    { at: 2.0, value: 0.06 },
   ] satisfies Keyframe[],
 
   vignette: [
@@ -245,6 +373,11 @@ export const backdrop = {
     { at: 0.48, value: 0.12 },
     { at: 0.745, value: 0.19 },
     { at: 1.0, value: 0.26, ease: easing.outCubic },
+    // Closes in underground: earth on every side is a smaller room than sand
+    // under an open sky, and the vignette is what says so.
+    { at: 1.38, value: 0.36 },
+    { at: 1.6, value: 0.46 },
+    { at: 2.0, value: 0.52, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /**
@@ -257,6 +390,10 @@ export const backdrop = {
     { at: 0.48, value: 0.2 },
     { at: 0.745, value: 0.42 },
     { at: 1.0, value: 0.58, ease: easing.outCubic },
+    // The sun does not follow us down.
+    { at: 1.22, value: 0.48 },
+    { at: 1.4, value: 0.1 },
+    { at: 2.0, value: 0.03 },
   ] satisfies Keyframe[],
 
   /**
@@ -269,5 +406,57 @@ export const backdrop = {
     { at: 0.58, value: 0 },
     { at: 0.745, value: 0.5, ease: easing.outCubic },
     { at: 1.0, value: 0.72, ease: easing.outCubic },
+    { at: 1.2, value: 1 },
+    { at: 2.0, value: 1 },
+  ] satisfies Keyframe[],
+};
+
+/**
+ * Act II only.
+ *
+ * The soil is not a brown plane. It is a volume the camera travels through:
+ * suspended grains at every distance, clods with real silhouettes, and a light
+ * from the surface that recedes as we leave it behind. Depth is the one thing
+ * a flat texture cannot fake, and parallax between near and far matter is what
+ * supplies it.
+ */
+export const soil = {
+  /**
+   * The textured surface fading in over the backdrop's painted earth. It has to
+   * be fully opaque well before the camera arrives: a half-transparent ground
+   * plane shows the clods buried underneath it, which reads as a glitch rather
+   * than as soil.
+   */
+  surface: [
+    { at: 1.06, value: 0 },
+    { at: 1.19, value: 1, ease: easing.outCubic },
+    { at: 2.0, value: 1 },
+  ] satisfies Keyframe[],
+};
+
+export const germination = {
+  /**
+   * The hilum opening. Deliberately its own beat before any root appears —
+   * something has to happen to the grain first, or the root reads as an object
+   * arriving rather than as the grain splitting.
+   */
+  aperture: [
+    { at: 1.48, value: 0 },
+    { at: 1.6, value: 1, ease: easing.outCubic },
+    { at: 2.0, value: 1 },
+  ] satisfies Keyframe[],
+
+  /**
+   * The growth front, 0..1, matched against each vertex's birth time along the
+   * root system. The curve is deliberately slow at the start: the first radicle
+   * has to be watched emerging, and only once it is established do the
+   * branchings come quickly enough to feel like spreading.
+   */
+  growth: [
+    { at: 1.56, value: 0 },
+    { at: 1.68, value: 0.18, ease: easing.outCubic },
+    { at: 1.82, value: 0.58 },
+    { at: 1.93, value: 0.95 },
+    { at: 2.0, value: 1, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };

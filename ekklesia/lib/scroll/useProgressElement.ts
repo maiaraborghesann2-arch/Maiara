@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from "react";
 
-import { progressStore } from "./progressStore";
+import { subscribeStage } from "./stage";
 
 /**
- * Binds a DOM element to the narrative progress.
+ * Binds a DOM element to the stage clock (0 → 1 Act I, 1 → 2 Act II).
  *
  * `apply` runs on every scroll frame and writes styles *directly* — no state,
  * no re-render, no reconciliation. This is the DOM-side twin of `useFrame` in
@@ -23,7 +23,7 @@ export function useProgressElement<T extends HTMLElement>(
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
-    return progressStore.subscribe((progress) => apply(element, progress));
+    return subscribeStage((progress) => apply(element, progress));
   }, [apply]);
 
   return ref;

@@ -113,7 +113,7 @@ export const STORYBOARD: readonly StoryboardFrame[] = [
 export type BeatId = "semente" | "despertar" | "queda" | "home";
 
 export type Beat = {
-  id: BeatId;
+  id: BeatId | ActTwoBeatId;
   /** Start of the beat on the Act I track, 0..1. */
   start: number;
   /** End of the beat on the Act I track, 0..1. */
@@ -135,6 +135,30 @@ export const ACT_ONE: Record<BeatId, Beat> = {
 
 /** Height of the Act I scroll track, in viewport heights. */
 export const ACT_ONE_TRACK_VH = 520;
+
+/**
+ * Act II is longer than Act I because its beats ask to be *watched* rather than
+ * followed: germination and root growth have to unfold slowly enough that the
+ * eye can rest on each stage, and a short track would make them read as an
+ * animation playing rather than something happening.
+ */
+export const ACT_TWO_TRACK_VH = 900;
+
+export type ActTwoBeatId = "plantio" | "imersao" | "germinacao" | "raizes" | "silencio";
+
+/**
+ * Act II beats, expressed on the stage clock (1 → 2). They overlap for the same
+ * reason Act I's do: the camera is already through the surface while the last
+ * grains are still settling, and the roots are already reaching while the seed
+ * is still opening.
+ */
+export const ACT_TWO: Record<ActTwoBeatId, Beat> = {
+  plantio: { id: "plantio", start: 1.0, end: 1.3 },
+  imersao: { id: "imersao", start: 1.22, end: 1.52 },
+  germinacao: { id: "germinacao", start: 1.5, end: 1.72 },
+  raizes: { id: "raizes", start: 1.66, end: 1.94 },
+  silencio: { id: "silencio", start: 1.88, end: 2.0 },
+};
 
 /** Remaps global track progress into a beat's own 0..1 timeline. */
 export function beatProgress(beat: Beat, p: number): number {

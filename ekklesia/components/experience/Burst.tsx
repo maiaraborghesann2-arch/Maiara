@@ -4,13 +4,25 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
-import { clamp, track } from "@/lib/math";
-import { progressStore } from "@/lib/scroll/progressStore";
-import { LANDING_Y, dust } from "@/lib/scroll/choreography";
+import { clamp, track, type Keyframe } from "@/lib/math";
+import { stageProgress } from "@/lib/scroll/stage";
 
-const COUNT = 340;
+type Props = {
+  /** World height the grains are thrown from. */
+  originY: number;
+  /** Visibility over the stage clock. */
+  amount: Keyframe[];
+  /** Stage-clock position where the burst begins. */
+  from: number;
+  /** How much of the stage clock the burst's own motion occupies. */
+  span: number;
+  /** How far the grains travel outward, in world units. */
+  reach?: number;
+  count?: number;
+  seed?: number;
+};
 
-/** Deterministic PRNG so the burst is identical on every reload. */
+/** Deterministic PRNG so a burst is identical on every reload. */
 function mulberry32(seed: number) {
   return () => {
     seed |= 0;
@@ -22,33 +34,40 @@ function mulberry32(seed: number) {
 }
 
 /**
- * The earth displaced where the grain lands.
+ * Earth displaced by contact — the landing in Act I, the planting in Act II.
  *
- * Keyed to impact rather than release, and kept very small: a seed this size
- * moves almost nothing, and a generous puff would read as a much heavier object
- * than the one we spent the whole fall establishing. It is here to confirm
- * contact, not to perform it.
+ * Kept very small in both. A seed this size moves almost nothing, and a
+ * generous puff would read as a much heavier object than the one the fall spent
+ * an entire act establishing. It is here to confirm contact, not to perform it.
  *
- * Scrubbed, not simulated — each particle's position is a closed-form function
- * of progress, so dragging the scroll backwards pulls the dust back into the
+ * Scrubbed, not simulated: each grain's position is a closed-form function of
+ * progress, so dragging the scroll backwards pulls the dust back into the
  * ground instead of leaving it stranded mid-air. A stateful particle system
  * would break the moment the user scrolls up.
  */
-export function Dust() {
+export function Burst({
+  originY,
+  amount,
+  from,
+  span,
+  reach = 0.62,
+  count = 340,
+  seed = 0x5eed,
+}: Props) {
   const ref = useRef<THREE.Points>(null);
   const material = useRef<THREE.ShaderMaterial>(null);
   const height = useThree((state) => state.size.height);
 
   const { geometry, specs } = useMemo(() => {
-    const random = mulberry32(0x5eed);
-    const positions = new Float32Array(COUNT * 3);
-    const sizes = new Float32Array(COUNT);
-    const alphas = new Float32Array(COUNT);
-    const table = new Float32Array(COUNT * 4);
+    const random = mulberry32(seed);
+    const positions = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    const alphas = new Float32Array(count);
+    const table = new Float32Array(count * 4);
 
-    for (let i = 0; i < COUNT; i++) {
+    for (let i = 0; i < count; i++) {
       table[i * 4] = random() * Math.PI * 2;
-      // Impact throws outward from the contact point, not upward from a cloud.
+      // Contact throws grains outward from the point, not upward from a cloud.
       table[i * 4 + 1] = 0.004 + random() * 0.02;
       table[i * 4 + 2] = 0.07 + random() * 0.34;
       table[i * 4 + 3] = 0.05 + random() * 0.4;
@@ -63,7 +82,7 @@ export function Dust() {
     buffer.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
     buffer.setAttribute("aAlpha", new THREE.BufferAttribute(alphas, 1));
     return { geometry: buffer, specs: table };
-  }, []);
+  }, [count, seed]);
 
   const initialUniforms = useMemo(
     () => ({
@@ -81,21 +100,20 @@ export function Dust() {
     const uniforms = material.current?.uniforms;
     if (!points || !uniforms) return;
 
-    const p = progressStore.get();
-    const amount = track(dust.amount, p);
+    const p = stageProgress();
+    const weight = track(amount, p);
 
-    points.visible = amount > 0.002;
+    points.visible = weight > 0.002;
     if (!points.visible) return;
 
-    uniforms.uOpacity.value = amount * 0.8;
+    uniforms.uOpacity.value = weight * 0.8;
     uniforms.uScale.value = height * 0.0055;
 
-    // Local time since impact, over the window the burst occupies.
-    const t = clamp((p - 0.745) / 0.175);
+    const t = clamp((p - from) / span);
     const attribute = geometry.attributes.position as THREE.BufferAttribute;
     const array = attribute.array as Float32Array;
 
-    for (let i = 0; i < COUNT; i++) {
+    for (let i = 0; i < count; i++) {
       const angle = specs[i * 4];
       const radius0 = specs[i * 4 + 1];
       const speed = specs[i * 4 + 2];
@@ -103,10 +121,10 @@ export function Dust() {
 
       const local = clamp((t - 0.04 * (1 - kick)) / 0.96);
       // Outward fast, then drag; it never travels far.
-      const radius = radius0 + speed * (1 - Math.pow(1 - local, 2.4)) * 0.62;
+      const radius = radius0 + speed * (1 - Math.pow(1 - local, 2.4)) * reach;
 
       array[i * 3] = Math.cos(angle) * radius;
-      array[i * 3 + 1] = LANDING_Y + kick * local * 0.24 - 0.26 * local * local;
+      array[i * 3 + 1] = originY + kick * local * 0.24 - 0.26 * local * local;
       array[i * 3 + 2] = Math.sin(angle) * radius * 0.72;
     }
 

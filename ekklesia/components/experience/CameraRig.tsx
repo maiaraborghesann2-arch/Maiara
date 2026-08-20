@@ -5,8 +5,9 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { track } from "@/lib/math";
-import { progressStore } from "@/lib/scroll/progressStore";
+import { stageProgress } from "@/lib/scroll/stage";
 import { camera as choreo } from "@/lib/scroll/choreography";
+import { sceneState } from "@/lib/scene/sharedState";
 
 /**
  * One camera, one continuous move, for the whole fifteen-frame journey.
@@ -24,12 +25,14 @@ export function CameraRig() {
   const target = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((state) => {
-    const p = progressStore.get();
+    const p = stageProgress();
     const cam = state.camera;
 
     cam.position.set(0, track(choreo.y, p), track(choreo.z, p));
     target.set(0, track(choreo.targetY, p), 0);
     cam.lookAt(target);
+
+    sceneState.cameraY = cam.position.y;
   });
 
   return null;

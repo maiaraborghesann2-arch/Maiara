@@ -3,6 +3,7 @@
 import { STORYBOARD } from "@/lib/scroll/acts";
 import { BeatReadout } from "./BeatReadout";
 import { Caption } from "./Caption";
+import { Contemplation } from "./Contemplation";
 import { Hero } from "./Hero";
 import { ScrollIndicator } from "./ScrollIndicator";
 
@@ -28,6 +29,7 @@ export function Overlay() {
       <Caption lines={captionOf("queda")} a={0.52} b={0.57} c={0.65} d={0.7} />
 
       <Hero />
+      <Contemplation />
       <ScrollIndicator />
       <BeatReadout />
     </div>

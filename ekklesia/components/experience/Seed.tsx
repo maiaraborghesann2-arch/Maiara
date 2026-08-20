@@ -6,7 +6,7 @@ import * as THREE from "three";
 
 import { track } from "@/lib/math";
 import { sceneState } from "@/lib/scene/sharedState";
-import { progressStore } from "@/lib/scroll/progressStore";
+import { stageProgress } from "@/lib/scroll/stage";
 import { GROUND_Y, seed as choreo } from "@/lib/scroll/choreography";
 import { SEED_HALF_HEIGHT, createSeedGeometry, createSeedMaps } from "./seedGeometry";
 
@@ -18,9 +18,9 @@ import { SEED_HALF_HEIGHT, createSeedGeometry, createSeedMaps } from "./seedGeom
  * since impact — which is the difference between a landing that causes the
  * Home and an object that slides into a layout.
  *
- * No `useState`, no prop carrying progress: the component pulls from
- * `progressStore` inside `useFrame` and writes straight to the object3D. React
- * renders this once and then stays out of the way for the rest of the session.
+ * No `useState`, no prop carrying progress: the component pulls the stage clock
+ * inside `useFrame` and writes straight to the object3D. React renders this once
+ * and then stays out of the way for the rest of the session.
  */
 export function Seed({ reducedMotion }: { reducedMotion: boolean }) {
   const ref = useRef<THREE.Mesh>(null);
@@ -44,7 +44,7 @@ export function Seed({ reducedMotion }: { reducedMotion: boolean }) {
     const mesh = ref.current;
     if (!mesh) return;
 
-    const p = progressStore.get();
+    const p = stageProgress();
     const time = state.clock.elapsedTime;
     const idle = reducedMotion ? 0 : track(choreo.idle, p);
 

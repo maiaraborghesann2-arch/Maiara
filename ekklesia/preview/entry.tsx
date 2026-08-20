@@ -7,7 +7,7 @@
  */
 import { createRoot } from "react-dom/client";
 
-import { ACT_ONE_TRACK_VH, STORYBOARD } from "@/lib/scroll/acts";
+import { ACT_ONE_TRACK_VH, ACT_TWO_TRACK_VH, STORYBOARD } from "@/lib/scroll/acts";
 import { ExperienceCanvas } from "@/components/experience/ExperienceCanvas";
 import { Overlay } from "@/components/stage/Overlay";
 import { ScrollDriver } from "@/components/scroll/ScrollDriver";
@@ -20,15 +20,16 @@ function App() {
     <SmoothScroll>
       <ExperienceCanvas />
       <Overlay />
-      <ScrollDriver heightVh={ACT_ONE_TRACK_VH} />
+      <ScrollDriver heightVh={ACT_ONE_TRACK_VH} chapter="one" />
+      <ScrollDriver heightVh={ACT_TWO_TRACK_VH} chapter="two" />
 
       <section className="handoff">
-        <p className="handoff__eyebrow">Fase 1 · Ato I</p>
-        <h2 className="handoff__title">Ela encontra o solo.</h2>
+        <p className="handoff__eyebrow">Fase 1 · Atos I e II</p>
+        <h2 className="handoff__title">Aquilo que desce…</h2>
         <p className="handoff__body">
-          O protótipo cobre os quadros 01 a 04 do storyboard. A câmera termina o
-          ato já descendo em direção ao solo — é daqui que os próximos quadros
-          continuam, sem corte e sem recarregar a cena.
+          O protótipo cobre os quadros 01 a 09 do storyboard. A câmera termina
+          parada dentro do solo, com as raízes desenvolvidas — é daqui que a
+          virada do quadro 10 continua, sem corte e sem recarregar a cena.
         </p>
 
         <ol className="handoff__list">

@@ -48,10 +48,17 @@ function reticulum(x: number, y: number, z: number): number {
   const wy = y + 0.2 * Math.sin(4.4 * z + 2.6) + 0.13 * Math.cos(4.7 * x);
   const wz = z + 0.24 * Math.sin(3.6 * x + 0.4) + 0.12 * Math.cos(5.6 * y);
 
-  const a = Math.abs(Math.sin(11.3 * wx + 3.1 * wy));
-  const b = Math.abs(Math.sin(9.7 * wy - 4.3 * wz + 1.1));
-  const c = Math.abs(Math.sin(13.1 * wz + 2.7 * wx + 2.4));
-  return Math.min(1, Math.min(a, Math.min(b, c)) / 0.34);
+  /*
+   * Fine. Act II puts the lens a hand's breadth from the grain, and at the
+   * coarse spacing this net was first tuned at — legible from half a metre —
+   * the grooves come out as long continuous lines across the shoulders and the
+   * whole thing reads as a scribbled-on ball. A mustard seed's reticulum is
+   * dense enough that at arm's length it is texture, not drawing.
+   */
+  const a = Math.abs(Math.sin(24.5 * wx + 6.8 * wy));
+  const b = Math.abs(Math.sin(21.4 * wy - 9.4 * wz + 1.1));
+  const c = Math.abs(Math.sin(28.3 * wz + 6.0 * wx + 2.4));
+  return Math.min(1, Math.min(a, Math.min(b, c)) / 0.22);
 }
 
 /** Fine wrinkling on top of the net, for the normal map only. */
@@ -93,7 +100,7 @@ export function createSeedGeometry(): THREE.BufferGeometry {
     let r = 1 + lumps(x, y, z);
     // Grooves are modelled shallowly and deepened by the normal map; cutting
     // them fully into geometry at this scale just produces shading noise.
-    r -= 0.006 * (1 - reticulum(x, y, z)) ** 1.5;
+    r -= 0.0035 * (1 - reticulum(x, y, z)) ** 1.5;
     r -= 0.05 * hilum(x, y, z);
 
     position.setXYZ(i, x * r * SQUASH.x, y * r * SQUASH.y, z * r * SQUASH.z);
@@ -158,7 +165,7 @@ export function createSeedMaps(): SeedMaps {
       const scar = hilum(x, y, z);
       const fine = wrinkle(x, y, z);
 
-      height[index] = broad * 7 - groove * 1.15 - scar * 4.2 + fine * 0.22;
+      height[index] = broad * 7 - groove * 0.8 - scar * 4.2 + fine * 0.22;
 
       /*
        * Two independent darkeners. Grooves and the scar sink toward umber
@@ -169,7 +176,7 @@ export function createSeedMaps(): SeedMaps {
       const facing = Math.min(1, Math.max(0, 0.5 - broad * 6));
 
       tone.copy(light).lerp(mid, facing);
-      tone.lerp(deep, inGroove * 0.3);
+      tone.lerp(deep, inGroove * 0.24);
 
       const mottle = 1 + fine * 0.045;
       const o = index * 4;

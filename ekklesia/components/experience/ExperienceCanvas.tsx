@@ -6,12 +6,16 @@ import * as THREE from "three";
 import { palette } from "@/lib/palette";
 import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 import { Backdrop } from "./Backdrop";
+import { Grade } from "./Grade";
 import { CameraRig } from "./CameraRig";
-import { Dust } from "./Dust";
+import { Burst } from "./Burst";
 import { Lighting } from "./Lighting";
 import { Motes } from "./Motes";
+import { Roots } from "./Roots";
+import { Soil } from "./Soil";
 import { GroundShadow } from "./GroundShadow";
 import { Seed } from "./Seed";
+import { LANDING_Y, dust } from "@/lib/scroll/choreography";
 import { StudioEnvironment } from "./StudioEnvironment";
 
 /**
@@ -44,11 +48,27 @@ export function ExperienceCanvas() {
         <Lighting />
         <Seed reducedMotion={reducedMotion} />
         <GroundShadow />
-        <Dust />
+        <Soil />
+        <Roots />
+
+        {/* Act I's landing, then Act II's planting. Same component, two beats. */}
+        <Burst originY={LANDING_Y} amount={dust.impact} from={0.745} span={0.175} />
+        <Burst
+          originY={LANDING_Y}
+          amount={dust.plant}
+          from={1.13}
+          span={0.2}
+          reach={0.42}
+          count={220}
+          seed={0x91a2}
+        />
+
         {!reducedMotion && <Motes />}
         {/* Last in the tree so its `useFrame` reads the seed's current-frame
             position; `renderOrder` still draws it first. */}
         <Backdrop />
+        {/* Drawn over everything, so the vignette contains the soil too. */}
+        <Grade />
       </Canvas>
     </div>
   );

@@ -6,7 +6,7 @@ import * as THREE from "three";
 
 import { clamp, track, type Keyframe } from "@/lib/math";
 import { sceneState } from "@/lib/scene/sharedState";
-import { progressStore } from "@/lib/scroll/progressStore";
+import { stageProgress } from "@/lib/scroll/stage";
 import { GROUND_Y, LANDING_Y, light, shadow } from "@/lib/scroll/choreography";
 import { createContactTexture } from "./seedGeometry";
 
@@ -46,7 +46,7 @@ function ContactShadow({ planeY, authority }: { planeY: number; authority: Keyfr
     const mesh = ref.current;
     if (!mesh) return;
 
-    const p = progressStore.get();
+    const p = stageProgress();
     const weight = track(authority, p);
 
     mesh.visible = weight > 0.002;

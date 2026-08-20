@@ -13,67 +13,80 @@
  * HTML captions welded to the 3D choreography.
  */
 
-type Listener = (progress: number) => void;
+export type Listener = (progress: number) => void;
 
-const listeners = new Set<Listener>();
+export type ProgressStore = ReturnType<typeof createProgressStore>;
 
-const state = {
-  /** Raw value written by ScrollTrigger. */
-  raw: 0,
-  /** Damped value published to consumers — this is the one to animate with. */
-  progress: 0,
-  /** Signed scroll velocity, useful for direction-aware effects later. */
-  velocity: 0,
-};
+/**
+ * Each chapter gets its own store and its own scroll track, so Act II could be
+ * added without renumbering a single Act I keyframe. `lib/scroll/stage.ts` sums
+ * them into one continuous clock for everything that has to cross the boundary
+ * — the camera above all.
+ */
+export function createProgressStore() {
+  const listeners = new Set<Listener>();
 
-function emit() {
-  for (const listener of listeners) listener(state.progress);
+  const state = {
+    /** Raw value written by ScrollTrigger. */
+    raw: 0,
+    /** Damped value published to consumers — this is the one to animate with. */
+    progress: 0,
+    /** Signed scroll velocity, useful for direction-aware effects later. */
+    velocity: 0,
+  };
+
+  function emit() {
+    for (const listener of listeners) listener(state.progress);
+  }
+
+  return {
+    /** Read the damped chapter progress, 0..1. */
+    get: () => state.progress,
+    getRaw: () => state.raw,
+    getVelocity: () => state.velocity,
+
+    /** Called by ScrollTrigger's `onUpdate`. */
+    setRaw(value: number) {
+      state.raw = value;
+    },
+
+    /**
+     * Advance the damped value toward the raw one. Driven from a single ticker
+     * so that every consumer sees the same value in the same frame.
+     *
+     * `lambda === Infinity` snaps instantly (reduced-motion path).
+     */
+    advance(dt: number, lambda: number) {
+      const previous = state.progress;
+      state.progress = Number.isFinite(lambda)
+        ? previous + (state.raw - previous) * (1 - Math.exp(-lambda * dt))
+        : state.raw;
+
+      state.velocity = dt > 0 ? (state.progress - previous) / dt : 0;
+
+      // Snap out the last sliver so idle frames settle exactly on the target.
+      if (Math.abs(state.raw - state.progress) < 0.00005) {
+        state.progress = state.raw;
+      }
+
+      if (state.progress !== previous) emit();
+    },
+
+    /** Force-publish, e.g. on mount so the first paint is already correct. */
+    sync() {
+      state.progress = state.raw;
+      emit();
+    },
+
+    subscribe(listener: Listener) {
+      listeners.add(listener);
+      listener(state.progress);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
 }
 
-export const progressStore = {
-  /** Read the damped narrative progress, 0..1. */
-  get: () => state.progress,
-  getRaw: () => state.raw,
-  getVelocity: () => state.velocity,
-
-  /** Called by ScrollTrigger's `onUpdate`. */
-  setRaw(value: number) {
-    state.raw = value;
-  },
-
-  /**
-   * Advance the damped value toward the raw one. Driven from a single ticker so
-   * that every consumer sees the same value in the same frame.
-   *
-   * `lambda === Infinity` snaps instantly (reduced-motion path).
-   */
-  advance(dt: number, lambda: number) {
-    const previous = state.progress;
-    state.progress = Number.isFinite(lambda)
-      ? previous + (state.raw - previous) * (1 - Math.exp(-lambda * dt))
-      : state.raw;
-
-    state.velocity = dt > 0 ? (state.progress - previous) / dt : 0;
-
-    // Snap out the last sliver so idle frames settle exactly on the target.
-    if (Math.abs(state.raw - state.progress) < 0.00005) {
-      state.progress = state.raw;
-    }
-
-    if (state.progress !== previous) emit();
-  },
-
-  /** Force-publish, e.g. on mount so the first paint is already correct. */
-  sync() {
-    state.progress = state.raw;
-    emit();
-  },
-
-  subscribe(listener: Listener) {
-    listeners.add(listener);
-    listener(state.progress);
-    return () => {
-      listeners.delete(listener);
-    };
-  },
-};
+/** Act I. Its scroll track is the first column on the page. */
+export const progressStore = createProgressStore();

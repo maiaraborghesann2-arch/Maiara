@@ -292,6 +292,75 @@ button {
   opacity: 0;
 }
 
+/* ------------------------------------------------------- contemplation -- */
+
+/*
+ * Frame 09. Set as a page of a book, not a section of a site: no rule, no
+ * eyebrow, no button. It sits a little above centre so it lands in the sparser
+ * soil above the root mass rather than across the middle of it.
+ */
+.contemplation {
+  --scrim: 0;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--gutter) 14vh;
+  text-align: center;
+  pointer-events: none;
+}
+
+/*
+ * Pale roots crossing display serif would cut the strokes apart. Dimming the
+ * roots instead would remove the thing being contemplated, so the type gets a
+ * scrim soft enough to go unnoticed.
+ */
+.contemplation::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(64rem, 96vw);
+  height: 46vh;
+  transform: translate(-50%, -62%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(12, 9, 6, 0.62) 0%,
+    rgba(12, 9, 6, 0.4) 42%,
+    rgba(12, 9, 6, 0) 72%
+  );
+  opacity: var(--scrim);
+}
+
+.contemplation__lead,
+.contemplation__note {
+  position: relative;
+  opacity: 0;
+}
+
+.contemplation__lead {
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.6rem, 3.6vw, 3rem);
+  line-height: 1.22;
+  letter-spacing: -0.012em;
+  color: var(--on-soil);
+  text-wrap: balance;
+}
+
+.contemplation__note {
+  margin-top: clamp(1.4rem, 2.6vh, 2.2rem);
+  max-width: 42ch;
+  font-size: clamp(0.85rem, 1vw, 0.98rem);
+  line-height: 1.8;
+  color: var(--on-soil-soft);
+  text-wrap: balance;
+}
+
 /* ----------------------------------------------------- scroll indicator -- */
 
 .scroll-indicator {

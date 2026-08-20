@@ -18,7 +18,9 @@ import { Mark } from "@/components/brand/Mark";
  * Real HTML throughout: a proper `<h1>`, a real `<button>`, real focus rings.
  * Each line rises out of a clipped box instead of fading. Display serif at this
  * size fades badly — the strokes go grey and muddy halfway — where a wipe keeps
- * every weight crisp the whole way in.
+ * every weight crisp the whole way in. On the way out, in Act II, the same mask
+ * wipes them back down as the camera drops toward the soil, so the Home leaves
+ * in the direction the descent is already going.
  */
 export function Hero() {
   const applyStagger = useCallback((element: HTMLElement, progress: number) => {
@@ -26,7 +28,7 @@ export function Hero() {
     for (const part of parts) {
       const a = Number(part.dataset.a);
       const b = Number(part.dataset.b);
-      const value = window4(progress, a, b, 1.01, 1.02);
+      const value = window4(progress, a, b, 1.015, 1.075);
       const masked = part.classList.contains("hero__line");
 
       part.style.opacity = String(masked ? Math.min(1, value * 1.6) : value);
@@ -38,7 +40,7 @@ export function Hero() {
 
   const applyBlock = useCallback(
     (element: HTMLDivElement, progress: number) => {
-      const value = window4(progress, 0.8, 0.93, 1.01, 1.02);
+      const value = window4(progress, 0.8, 0.93, 1.015, 1.075);
       element.style.opacity = "1";
       element.style.visibility = value < 0.004 ? "hidden" : "visible";
       // Keep the action out of the tab order until the Home has arrived.
@@ -49,7 +51,7 @@ export function Hero() {
   );
 
   const applyHeader = useCallback((element: HTMLElement, progress: number) => {
-    const value = window4(progress, 0.8, 0.9, 1.01, 1.02);
+    const value = window4(progress, 0.8, 0.9, 1.015, 1.075);
     element.style.opacity = String(value);
     element.style.transform = `translate3d(0, ${(1 - value) * -14}px, 0)`;
     element.style.visibility = value < 0.004 ? "hidden" : "visible";

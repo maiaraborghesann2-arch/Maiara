@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
+import { LANDING_Y } from "@/lib/scroll/choreography";
+
 const COUNT = 130;
 
 /** Deterministic PRNG so the field is identical on every reload. */
@@ -90,6 +92,14 @@ export function Motes() {
 
     uniforms.uScale.value = height * 0.0052;
 
+    /*
+     * Motes belong to the lit room above. Underground there is no shaft of
+     * light for dust to hang in, and leaving them on washes out the dark the
+     * whole chapter depends on.
+     */
+    const below = Math.max(0, LANDING_Y + 0.3 - state.camera.position.y);
+    uniforms.uOpacity.value = 0.08 * Math.max(0, 1 - below / 0.8);
+
     const time = state.clock.elapsedTime;
     const attribute = geometry.attributes.position as THREE.BufferAttribute;
     const array = attribute.array as Float32Array;
@@ -127,7 +137,10 @@ const VERTEX = /* glsl */ `
   void main() {
     vAlpha = aAlpha;
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = aSize * uScale / max(0.1, -mv.z);
+    // Clamped. Act II flies the camera straight through this field, and an
+    // unclamped mote passing within centimetres of the lens covers a third of
+    // the frame in pale haze — which is exactly what buried the underground.
+    gl_PointSize = min(18.0, aSize * uScale / max(0.1, -mv.z));
     gl_Position = projectionMatrix * mv;
   }
 `;

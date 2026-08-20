@@ -38,10 +38,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         */}
         <noscript>
           <style>{`
-            .beat, .hero__line, .hero__kicker, .hero__lede, .hero__actions, .hero__descender { opacity: 1 !important; visibility: visible !important; transform: none !important; }
+            .beat, .hero__line, .hero__kicker, .hero__lede, .hero__actions, .hero__descender, .contemplation__lead, .contemplation__note { opacity: 1 !important; visibility: visible !important; transform: none !important; }
             .hero__mask { overflow: visible; }
             .caption { position: static; margin: 2rem auto; }
             .hero { position: static; min-height: 60vh; }
+            .contemplation { position: static; padding: 4rem 2rem; background: var(--soil); }
+            .contemplation::before { display: none; }
             .site-header { position: static; }
             .scroll-indicator { display: none; }
             .overlay { position: static; pointer-events: auto; background: var(--sand); }

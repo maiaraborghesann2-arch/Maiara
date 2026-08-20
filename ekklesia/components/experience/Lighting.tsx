@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { track } from "@/lib/math";
-import { progressStore } from "@/lib/scroll/progressStore";
+import { stageProgress } from "@/lib/scroll/stage";
 import { light } from "@/lib/scroll/choreography";
 import { sceneState } from "@/lib/scene/sharedState";
 
@@ -27,7 +27,7 @@ export function Lighting() {
     const lamp = key.current;
     if (!lamp) return;
 
-    const p = progressStore.get();
+    const p = stageProgress();
     const azimuth = track(light.azimuth, p);
     const radius = 2.6;
 

@@ -18,4 +18,8 @@ export const sceneState = {
   seedPosition: new THREE.Vector3(),
   /** Current uniform scale of the seed, for sizing the light pool. */
   seedScale: 0.1,
+  /** Camera height, published for the debug readout. Act II's whole look keys
+   *  off how far the lens is below the surface, so it is worth being able to
+   *  read that number while tuning. */
+  cameraY: 0,
 };

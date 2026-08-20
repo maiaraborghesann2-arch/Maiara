@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { track } from "@/lib/math";
 import { palette } from "@/lib/palette";
 import { sceneState } from "@/lib/scene/sharedState";
-import { progressStore } from "@/lib/scroll/progressStore";
+import { stageProgress } from "@/lib/scroll/stage";
 import { LANDING_Y, backdrop as choreo } from "@/lib/scroll/choreography";
 
 /**
@@ -44,6 +44,9 @@ export function Backdrop() {
       uShaftColor: { value: new THREE.Color(palette.shaft) },
       uSandDeep: { value: new THREE.Color(palette.sandDeep) },
       uEarth: { value: new THREE.Color(palette.earth) },
+      uUnderground: { value: new THREE.Color(palette.soil) },
+      uDepth: { value: 0 },
+      uDeep: { value: 0 },
       uSeed: { value: new THREE.Vector2(0.5, 0.5) },
       uAspect: { value: 1 },
       uPool: { value: 0.42 },
@@ -64,7 +67,7 @@ export function Backdrop() {
     const uniforms = material.current?.uniforms;
     if (!uniforms) return;
 
-    const p = progressStore.get();
+    const p = stageProgress();
 
     projected.current.copy(sceneState.seedPosition).project(camera);
     uniforms.uSeed.value.set(projected.current.x * 0.5 + 0.5, projected.current.y * 0.5 + 0.5);
@@ -78,23 +81,30 @@ export function Backdrop() {
     uniforms.uFloor.value = track(choreo.floor, p);
 
     /*
-     * The earth's vanishing line, not the point under the grain. A horizontal
-     * plane recedes to the camera's eye level, so projecting the near contact
-     * point puts the ground's edge well below where the surface actually reads
-     * — which left the grain resting on air with a band of soil beneath it.
-     * Projecting a far point on the same plane gives the true horizon.
+     * Underground is read off the camera, not off a track. The moment the lens
+     * passes the landing plane the world has to change, and tying that to the
+     * camera's own height means it happens exactly on the crossing however the
+     * descent is later retimed. `uDepth` closes the room quickly; `uDeep` is the
+     * slower measure that lets the light from the surface recede over the whole
+     * descent rather than snapping out.
      */
-    horizonPoint.current.set(0, LANDING_Y, -80).project(camera);
-    uniforms.uHorizon.value = horizonPoint.current.y * 0.5 + 0.5;
-
-    // The pool is sized in screen space from the grain's projected radius, so
-    // the light stays attached to the object as the camera pushes and pulls.
-    const projectedRadius = Math.max(
-      0.012,
-      (sceneState.seedScale / Math.max(0.5, camera.position.distanceTo(sceneState.seedPosition))) *
-        7.5,
-    );
-    uniforms.uPoolSize.value = 0.22 / (projectedRadius * projectedRadius);
+    /*
+     * The darkening starts *above* the plane, not at it. A surface has no
+     * thickness, so crossing one is a single frame — and if the world only
+     * begins to change on that frame, the camera reads as passing through a
+     * sheet of paper rather than pressing into a material. Beginning the
+     * transition a little before contact is what gives the entry a body.
+     */
+    const below = LANDING_Y + 0.35 - camera.position.y;
+    // Short. Soil is opaque — a hand's breadth under the surface it is already
+    // dark, and a long ramp leaves the frame in a pale grey nowhere for the
+    // whole crossing instead of putting us inside a material.
+    uniforms.uDepth.value = Math.min(1, Math.max(0, below / 0.55));
+    // The daylight seam should be gone within a hand's breadth of soil. It was
+    // written for a backdrop that *was* the underground; the soil now has a
+    // ceiling of its own, and any seam still burning behind it only shows in
+    // the sliver the geometry does not cover.
+    uniforms.uDeep.value = Math.min(1, Math.max(0, below / 0.75));
   });
 
   return (
@@ -133,6 +143,9 @@ const FRAGMENT = /* glsl */ `
   uniform vec3 uShaftColor;
   uniform vec3 uSandDeep;
   uniform vec3 uEarth;
+  uniform vec3 uUnderground;
+  uniform float uDepth;
+  uniform float uDeep;
   uniform vec2 uSeed;
   uniform float uAspect;
   uniform float uPool;
@@ -222,6 +235,22 @@ const FRAGMENT = /* glsl */ `
 
     // Fine grain on top. Without it the wash bands visibly on wide displays.
     col += (hash21(uv * 1024.0) - 0.5) * uGrain;
+
+    /*
+     * Below the surface. Everything above was a lit room; this is the inside of
+     * a material. The only light left is what comes back down through the hole
+     * we fell in by, and it shrinks and dims the further we get from it.
+     */
+    if (uDepth > 0.001) {
+      // Tight: a narrow band at the very top of frame reads as an opening we
+      // are moving away from. Spread wide it just reads as fog.
+      // A narrow seam of daylight at the very top of frame, and no more. Wider
+      // than this it stops being an opening we are leaving behind and becomes
+      // an overcast sky the soil is apparently lit by.
+      float glow = exp(-pow((uv.y - 1.0) * 5.2, 2.0) * 2.6) * (1.0 - uDeep);
+      vec3 under = mix(uUnderground, uSandWarm, glow * 0.34);
+      col = mix(col, under, uDepth);
+    }
 
     gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>
