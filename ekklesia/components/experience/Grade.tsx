@@ -6,7 +6,8 @@ import * as THREE from "three";
 
 import { track } from "@/lib/math";
 import { stageProgress } from "@/lib/scroll/stage";
-import { LANDING_Y, backdrop as choreo } from "@/lib/scroll/choreography";
+import { backdrop as choreo } from "@/lib/scroll/choreography";
+import { postAmount } from "@/lib/scene/depth";
 
 /**
  * A vignette that lands on the *scene*, not on the backdrop.
@@ -41,7 +42,7 @@ export function Grade() {
      * grade still arrives on the crossing.
      */
     const p = stageProgress();
-    const below = Math.min(1, Math.max(0, (LANDING_Y + 0.2 - state.camera.position.y) / 0.5));
+    const below = postAmount(state.camera.position.y, p);
     /*
      * Also ramped in on the clock from the top of Act II, because the planting
      * happens *above* the surface: by then the ground fills the frame, the

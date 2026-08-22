@@ -113,7 +113,7 @@ export const STORYBOARD: readonly StoryboardFrame[] = [
 export type BeatId = "semente" | "despertar" | "queda" | "home";
 
 export type Beat = {
-  id: BeatId | ActTwoBeatId;
+  id: BeatId | ActTwoBeatId | ActThreeBeatId;
   /** Start of the beat on the Act I track, 0..1. */
   start: number;
   /** End of the beat on the Act I track, 0..1. */
@@ -160,6 +160,25 @@ export const ACT_TWO: Record<ActTwoBeatId, Beat> = {
   silencio: { id: "silencio", start: 1.88, end: 2.0 },
 };
 
+/**
+ * Act III is the longest track of the three. It carries a camera move that
+ * reverses direction mid-way, and the whole illusion depends on that reversal
+ * being slow enough to read as the shot settling rather than as a change of
+ * mind — which is a thing you buy with scroll length and cannot fake with
+ * easing.
+ */
+export const ACT_THREE_TRACK_VH = 1000;
+
+export type ActThreeBeatId = "descida" | "eixo" | "subida" | "superficie" | "broto";
+
+export const ACT_THREE: Record<ActThreeBeatId, Beat> = {
+  descida: { id: "descida", start: 2.0, end: 2.3 },
+  eixo: { id: "eixo", start: 2.24, end: 2.58 },
+  subida: { id: "subida", start: 2.52, end: 2.84 },
+  superficie: { id: "superficie", start: 2.78, end: 2.94 },
+  broto: { id: "broto", start: 2.88, end: 3.0 },
+};
+
 /** Remaps global track progress into a beat's own 0..1 timeline. */
 export function beatProgress(beat: Beat, p: number): number {
   const t = (p - beat.start) / (beat.end - beat.start);
@@ -189,4 +208,9 @@ export const CHECKPOINTS: readonly Checkpoint[] = [
   { id: "cp4", label: "04 germinação", note: "A casca abre, a primeira raiz.", at: 1.66 },
   { id: "cp5", label: "05 sistema", note: "Principal + ramificações.", at: 1.88 },
   { id: "cp6", label: "06 pausa", note: "Sistema completo e a frase.", at: 2.0 },
+  { id: "cp7", label: "07 descida", note: "A lente desce pela raiz principal.", at: 2.22 },
+  { id: "cp8", label: "08 eixo", note: "Junto ao eixo — a direção se inverte.", at: 2.46 },
+  { id: "cp9", label: "09 subida", note: "Subindo pelo caule, a luz volta.", at: 2.74 },
+  { id: "cp10", label: "10 superfície", note: "O broto rompe a terra.", at: 2.9 },
+  { id: "cp11", label: "11 broto", note: "Pausa: as duas primeiras folhas.", at: 3.0 },
 ] as const;

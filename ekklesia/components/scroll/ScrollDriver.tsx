@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { progressStore } from "@/lib/scroll/progressStore";
-import { actTwoStore } from "@/lib/scroll/stage";
+import { actThreeStore, actTwoStore } from "@/lib/scroll/stage";
 
 type Props = {
   /** Length of the narrative track, in viewport heights. */
@@ -15,7 +15,7 @@ type Props = {
    * page is a Server Component, and an object full of functions cannot cross
    * that boundary.
    */
-  chapter: "one" | "two";
+  chapter: "one" | "two" | "three";
 };
 
 /**
@@ -29,7 +29,8 @@ type Props = {
  * past the camera can add their own pinned trigger without disturbing this one.
  */
 export function ScrollDriver({ heightVh, chapter }: Props) {
-  const store = chapter === "one" ? progressStore : actTwoStore;
+  const store =
+    chapter === "one" ? progressStore : chapter === "two" ? actTwoStore : actThreeStore;
   const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,7 +42,8 @@ export function ScrollDriver({ heightVh, chapter }: Props) {
     const trigger = ScrollTrigger.create({
       trigger: element,
       /*
-       * Chapter two starts one viewport *earlier* than its own top.
+       * Every chapter after the first starts one viewport *earlier* than its
+       * own top.
        *
        * "top top" fires when the element's top reaches the top of the screen,
        * but the previous track finishes at "bottom bottom" — one viewport
@@ -49,7 +51,7 @@ export function ScrollDriver({ heightVh, chapter }: Props) {
        * full screen of scrolling between the chapters where neither clock
        * advances and the whole piece freezes mid-descent.
        */
-      start: chapter === "two" ? "top bottom" : "top top",
+      start: chapter === "one" ? "top top" : "top bottom",
       end: "bottom bottom",
       // `true` follows Lenis' own smoothing 1:1; the cinematic easing comes
       // from the damping in the store, so we do not want to smooth twice here.

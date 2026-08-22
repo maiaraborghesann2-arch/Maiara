@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { ACT_ONE, ACT_TWO, CHECKPOINTS, beatProgress, type Beat } from "@/lib/scroll/acts";
+import {
+  ACT_ONE,
+  ACT_THREE,
+  ACT_TWO,
+  CHECKPOINTS,
+  beatProgress,
+  type Beat,
+} from "@/lib/scroll/acts";
 import { useProgressElement } from "@/lib/scroll/useProgressElement";
 import { sceneState } from "@/lib/scene/sharedState";
 import { LANDING_Y } from "@/lib/scroll/choreography";
@@ -17,6 +24,11 @@ const BEATS: Beat[] = [
   ACT_TWO.germinacao,
   ACT_TWO.raizes,
   ACT_TWO.silencio,
+  ACT_THREE.descida,
+  ACT_THREE.eixo,
+  ACT_THREE.subida,
+  ACT_THREE.superficie,
+  ACT_THREE.broto,
 ];
 
 const LABELS = [
@@ -29,6 +41,11 @@ const LABELS = [
   "07 germinação",
   "08 raízes",
   "09 silêncio",
+  "10 descida",
+  "11 eixo",
+  "12 subida",
+  "13 superfície",
+  "14 broto",
 ];
 
 /**
@@ -90,18 +107,24 @@ export function BeatReadout() {
    */
   const jump = useCallback((at: number) => {
     const tracks = document.querySelectorAll<HTMLElement>("[data-scroll-track]");
-    if (tracks.length < 2) return;
+    if (tracks.length < 3) return;
     const vh = window.innerHeight;
     const oneEnd = tracks[0].getBoundingClientRect().height - vh;
     const twoEnd = oneEnd + tracks[1].getBoundingClientRect().height;
-    const y = at <= 1 ? at * oneEnd : oneEnd + (at - 1) * (twoEnd - vh - oneEnd);
+    const threeEnd = twoEnd + tracks[2].getBoundingClientRect().height;
+    const y =
+      at <= 1
+        ? at * oneEnd
+        : at <= 2
+          ? oneEnd + (at - 1) * (twoEnd - vh - oneEnd)
+          : twoEnd - vh + (at - 2) * (threeEnd - vh - (twoEnd - vh));
     window.scrollTo({ top: Math.round(y), behavior: "smooth" });
   }, []);
 
   return (
     <div ref={ref} className="readout" style={{ display: enabled ? undefined : "none" }}>
       <div className="readout__global">
-        stage <span data-global>0.000</span> / 2 · abaixo{" "}
+        stage <span data-global>0.000</span> / 3 · abaixo{" "}
         <span data-depth>0.00</span>
       </div>
       <div className="readout__checkpoints">

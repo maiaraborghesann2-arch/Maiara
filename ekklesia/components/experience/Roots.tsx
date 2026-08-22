@@ -4,11 +4,14 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+
 import { track } from "@/lib/math";
 import { stageProgress } from "@/lib/scroll/stage";
-import { SEED_PLANTED_Y, germination } from "@/lib/scroll/choreography";
+import { SEED_PLANTED_Y, germination, shoot } from "@/lib/scroll/choreography";
 import { ROOT_DEPTH, buildRootGeometry } from "./rootSystem";
 import { createRockGeometries } from "./rockGeometry";
+import { SHOOT_GROW_FROM, buildShootGeometry, shootUniform } from "./shootSystem";
 
 /**
  * Where the radicle starts — *inside* the grain, a few centimetres above the
@@ -33,7 +36,21 @@ function mulberry32(seed: number) {
 }
 
 export function Roots() {
-  const { geometry, strands } = useMemo(() => buildRootGeometry(ORIGIN), []);
+  /*
+   * Root and shoot, merged. Not a stylistic choice — the narration claims the
+   * thing descending and the thing rising are one organ, and the cheapest way
+   * to make that true rather than merely asserted is for them to be one mesh
+   * with one material and one growth attribute. There is no crossfade to get
+   * wrong because there are not two objects.
+   */
+  const { geometry, strands } = useMemo(() => {
+    const roots = buildRootGeometry(ORIGIN);
+    const stem = buildShootGeometry(SHOOT_GROW_FROM);
+    const merged = mergeGeometries([roots.geometry, stem], false)!;
+    roots.geometry.dispose();
+    stem.dispose();
+    return { geometry: merged, strands: roots.strands };
+  }, []);
   const aperture = useRef<THREE.Mesh>(null);
   const litter = useRef<THREE.InstancedMesh>(null);
   const litterMaterial = useRef<THREE.MeshStandardMaterial>(null);
@@ -101,12 +118,18 @@ export function Roots() {
   useFrame(() => {
     const p = stageProgress();
     const grow = track(germination.growth, p);
+    const rising = shootUniform(grow, track(shoot.growth, p));
 
-    if (injected.current) injected.current.uniforms.uGrow.value = grow;
+    if (injected.current) injected.current.uniforms.uGrow.value = rising;
 
     const opening = aperture.current;
     if (opening) {
-      const value = track(germination.aperture, p);
+      /*
+       * Closes again as the shoot takes the grain away. It is the shadow of the
+       * split in a coat that is no longer there — left running, it stays behind
+       * at the collar as a small dark disc the lens rises straight past.
+       */
+      const value = track(germination.aperture, p) * (1 - Math.min(1, track(shoot.growth, p) * 4));
       opening.visible = value > 0.01;
       opening.scale.set(0.022 * value, 0.009 * value, 0.022 * value);
     }

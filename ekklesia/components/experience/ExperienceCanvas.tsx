@@ -12,6 +12,7 @@ import { CameraRig } from "./CameraRig";
 import { Burst } from "./Burst";
 import { Lighting } from "./Lighting";
 import { Motes } from "./Motes";
+import { Cotyledons } from "./Cotyledons";
 import { Roots } from "./Roots";
 import { Soil } from "./Soil";
 import { GroundShadow } from "./GroundShadow";
@@ -60,6 +61,7 @@ export function ExperienceCanvas() {
         <GroundShadow />
         <Soil />
         <Roots />
+        <Cotyledons />
 
         {/* Act I's landing, then Act II's planting. Same component, two beats. */}
         <Burst originY={LANDING_Y} amount={dust.impact} from={0.745} span={0.175} />

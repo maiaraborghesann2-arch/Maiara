@@ -7,7 +7,8 @@ import * as THREE from "three";
 import { track } from "@/lib/math";
 import { sceneState } from "@/lib/scene/sharedState";
 import { stageProgress } from "@/lib/scroll/stage";
-import { LANDING_Y, backdrop as choreo } from "@/lib/scroll/choreography";
+import { backdrop as choreo } from "@/lib/scroll/choreography";
+import { postAmount } from "@/lib/scene/depth";
 
 /**
  * Depth of field, for real this time.
@@ -127,10 +128,8 @@ export function Focus() {
    * paths, not just the one it added.
    */
   useFrame((state) => {
-    const active = Math.min(
-      1,
-      Math.max(0, (LANDING_Y + 0.2 - state.camera.position.y) / 0.5),
-    );
+    const p = stageProgress();
+    const active = postAmount(state.camera.position.y, p);
 
     if (active <= 0.001) {
       gl.setRenderTarget(null);
@@ -145,7 +144,19 @@ export function Focus() {
     shared.uFar.value = perspective.far;
     // Focused on the grain, always. It is the subject of every frame down here,
     // and the roots hang within a stop of it.
-    const focus = camera.position.distanceTo(sceneState.seedPosition);
+    /*
+     * Focused on whichever is nearer: the grain, or the axis itself.
+     *
+     * Locking onto the grain works for as long as the grain is the subject. It
+     * stops working the moment the lens comes in beside the stem — there the
+     * subject is the run of tube a few centimetres away, the grain is half a
+     * metre off, and focusing on the grain puts the only thing in frame outside
+     * the near limit. The axis is a vertical line through the origin, so its
+     * distance is just the lens's own horizontal radius.
+     */
+    const toSeed = camera.position.distanceTo(sceneState.seedPosition);
+    const toAxis = Math.hypot(camera.position.x, camera.position.z);
+    const focus = Math.max(0.12, Math.min(toSeed, toAxis));
     shared.uFocus.value = focus;
     /*
      * Both ranges scale with the focus distance, because depth of field does.
@@ -168,8 +179,7 @@ export function Focus() {
     gl.render(passes.blurScene, passes.quadCamera);
 
     compositeMaterial.uniforms.tBlur.value = targets.blurred.texture;
-    compositeMaterial.uniforms.uVignette.value =
-      active * track(choreo.vignette, stageProgress());
+    compositeMaterial.uniforms.uVignette.value = active * track(choreo.vignette, p);
     compositeMaterial.uniforms.uAspect.value = size.width / size.height;
 
     gl.setRenderTarget(null);

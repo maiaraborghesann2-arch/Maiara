@@ -6,7 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { progressStore } from "@/lib/scroll/progressStore";
-import { actTwoStore } from "@/lib/scroll/stage";
+import { actThreeStore, actTwoStore } from "@/lib/scroll/stage";
 import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
 /** How fast the damped progress chases the raw scroll position. */
@@ -43,11 +43,12 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 
     const tick = (time: number, deltaMs: number) => {
       lenis?.raf(time * 1000);
-      // Both chapters advance in the same tick, so the stage clock they sum to
-      // never sees one of its halves lag the other by a frame.
+      // Every chapter advances in the same tick, so the stage clock they sum
+      // to never sees one of its parts lag another by a frame.
       const dt = Math.min(deltaMs, 50) / 1000;
       progressStore.advance(dt, lambda);
       actTwoStore.advance(dt, lambda);
+      actThreeStore.advance(dt, lambda);
     };
 
     gsap.ticker.add(tick);
@@ -56,6 +57,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 
     progressStore.sync();
     actTwoStore.sync();
+    actThreeStore.sync();
 
     return () => {
       gsap.ticker.remove(tick);

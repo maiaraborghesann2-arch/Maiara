@@ -103,6 +103,8 @@ export const seed = {
     { at: 1.0, value: -0.3 },
     { at: 1.16, value: -0.26, ease: easing.outCubic },
     { at: 2.0, value: -0.26 },
+    { at: 2.6, value: -0.22, ease: easing.inOutSine },
+    { at: 3.0, value: -0.07, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   rotationZ: [
@@ -114,6 +116,8 @@ export const seed = {
     { at: 1.0, value: 0.19 },
     { at: 1.16, value: 0.15, ease: easing.outCubic },
     { at: 2.0, value: 0.15 },
+    { at: 2.6, value: 0.12, ease: easing.inOutSine },
+    { at: 3.0, value: 0.04, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /** Idle drift authority — silenced at release and never restored: the grain
@@ -183,6 +187,24 @@ export const camera = {
     { at: 1.84, value: -2.52 },
     { at: 1.94, value: -2.57, ease: easing.outCubic },
     { at: 2.0, value: -2.6 },
+
+    /*
+     * Act III. What sells the transformation is the move, not the geometry: the
+     * lens leaves the pause travelling *down* the radicle, closes to within half
+     * a unit of the axis where the tube is nearly all there is in frame, and
+     * reverses there. With nothing else to measure against — dark soil, the
+     * laterals out of frame, a near-uniform run — the reversal reads as the shot
+     * settling rather than as a cut, and what it climbs on the way back up is
+     * the same tube it came down.
+     */
+    { at: 2.16, value: -2.66, ease: easing.inOutSine },
+    { at: 2.36, value: -2.73 },
+    { at: 2.5, value: -2.72, ease: easing.inOutSine },
+    { at: 2.62, value: -2.6 },
+    { at: 2.74, value: -2.25 },
+    { at: 2.86, value: -1.82 },
+    { at: 2.94, value: -1.56, ease: easing.outCubic },
+    { at: 3.0, value: -1.44 },
   ] satisfies Keyframe[],
 
   /**
@@ -220,6 +242,16 @@ export const camera = {
     // Close enough that the root system is *photographed* rather than charted,
     // far enough that the deepest runs stay inside the frame.
     { at: 2.0, value: 2.55, ease: easing.outCubic },
+
+    // In to the axis, held there through the reversal, then given back slowly
+    // as the shoot needs room and the surface arrives.
+    { at: 2.16, value: 1.0, ease: easing.inOutSine },
+    { at: 2.36, value: 0.42 },
+    { at: 2.5, value: 0.4, ease: easing.inOutSine },
+    { at: 2.62, value: 0.44 },
+    { at: 2.74, value: 0.6 },
+    { at: 2.86, value: 0.95 },
+    { at: 3.0, value: 1.45, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /**
@@ -261,6 +293,16 @@ export const camera = {
     { at: 1.84, value: -2.3 },
     { at: 1.94, value: -2.27 },
     { at: 2.0, value: -2.25, ease: easing.outCubic },
+
+    // Leads the move in both directions: below the lens on the way down, above
+    // it on the way up, so the shot always reads as going somewhere.
+    { at: 2.16, value: -2.56, ease: easing.inOutSine },
+    { at: 2.36, value: -2.79 },
+    { at: 2.5, value: -2.7, ease: easing.inOutSine },
+    { at: 2.62, value: -2.48 },
+    { at: 2.74, value: -2.06 },
+    { at: 2.86, value: -1.7 },
+    { at: 3.0, value: -1.56, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };
 
@@ -284,6 +326,12 @@ export const light = {
     { at: 1.4, value: 1.35 },
     { at: 1.5, value: 1.0 },
     { at: 2.0, value: 0.92 },
+    // Deepest at the bottom of the descent, then the sun comes back as the lens
+    // climbs — gradually, and never past where Act I had it.
+    { at: 2.44, value: 0.8 },
+    { at: 2.7, value: 1.05 },
+    { at: 2.86, value: 1.7 },
+    { at: 3.0, value: 2.1, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   azimuth: [
@@ -291,6 +339,7 @@ export const light = {
     { at: 0.48, value: 0.55, ease: easing.inOutSine },
     { at: 1.0, value: 0.24, ease: easing.outCubic },
     { at: 2.0, value: 0.08, ease: easing.inOutSine },
+    { at: 3.0, value: 0.3, ease: easing.inOutSine },
   ] satisfies Keyframe[],
 };
 
@@ -363,6 +412,8 @@ export const backdrop = {
     { at: 1.14, value: 0.3 },
     { at: 1.28, value: 0.05 },
     { at: 2.0, value: 0.02 },
+    { at: 2.7, value: 0.02 },
+    { at: 3.0, value: 0.34, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /** Page-level cast shadow. Kept low — the grain now has a real contact
@@ -385,6 +436,8 @@ export const backdrop = {
     { at: 1.24, value: 0.3 },
     { at: 1.5, value: 0.1 },
     { at: 2.0, value: 0.06 },
+    { at: 2.6, value: 0.06 },
+    { at: 3.0, value: 0.26, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   vignette: [
@@ -397,6 +450,9 @@ export const backdrop = {
     { at: 1.38, value: 0.3 },
     { at: 1.6, value: 0.36 },
     { at: 2.0, value: 0.4, ease: easing.outCubic },
+    // Opens back up as we surface: the room stops being a room.
+    { at: 2.6, value: 0.42 },
+    { at: 3.0, value: 0.2, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /**
@@ -413,6 +469,9 @@ export const backdrop = {
     { at: 1.22, value: 0.48 },
     { at: 1.4, value: 0.1 },
     { at: 2.0, value: 0.03 },
+    { at: 2.62, value: 0.03 },
+    // The sun does follow us back.
+    { at: 3.0, value: 0.34, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /**
@@ -478,5 +537,38 @@ export const germination = {
     { at: 1.88, value: 0.72 },
     { at: 1.96, value: 0.94 },
     { at: 2.0, value: 1.06, ease: easing.outCubic },
+  ] satisfies Keyframe[],
+};
+
+/**
+ * Act III only.
+ *
+ * `growth` runs the shoot up the *same* shared timeline the roots grow on — one
+ * attribute on one mesh, so the uniform that reveals the radicle is the uniform
+ * that reveals the stem. The curve is slow through the middle on purpose: that
+ * stretch is where the lens is closest to the axis, and the transformation is
+ * meant to happen without being watched happening.
+ */
+export const shoot = {
+  growth: [
+    { at: 2.0, value: 0 },
+    { at: 2.16, value: 0 },
+    { at: 2.34, value: 0.1, ease: easing.outCubic },
+    { at: 2.56, value: 0.3 },
+    { at: 2.74, value: 0.6, ease: easing.inOutSine },
+    { at: 2.88, value: 0.87 },
+    { at: 2.96, value: 0.99, ease: easing.outCubic },
+    { at: 3.0, value: 1 },
+  ] satisfies Keyframe[],
+
+  /**
+   * The coat parting into two leaves. Right at the end and barely at all — the
+   * note is a sprout, not a seedling with foliage, and the whole of the next
+   * act is still ahead of it.
+   */
+  cotyledon: [
+    { at: 2.86, value: 0 },
+    { at: 2.95, value: 0.55, ease: easing.outCubic },
+    { at: 3.0, value: 1, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };
