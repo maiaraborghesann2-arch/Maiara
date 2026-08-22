@@ -112,7 +112,7 @@ export function Soil() {
   const filamentGeometry = useMemo(
     () =>
       createFilaments({
-        count: 170,
+        count: 130,
         seed: 0x0f1b,
         top: LANDING_Y - 0.05,
         bottom: FLOOR_Y + 1.5,
@@ -120,7 +120,7 @@ export function Soil() {
         // Clear of the root system. Old growth crossing the living roots at the
         // same value reads as debris on the lens, and worse, competes with the
         // one thing the frame is about.
-        keepOut: 1.15,
+        keepOut: 1.75,
       }),
     [],
   );
@@ -192,6 +192,7 @@ export function Soil() {
     const position = new THREE.Vector3();
     const scale = new THREE.Vector3();
     const tint = new THREE.Color();
+    const pocket = new THREE.Vector3();
 
     for (const mesh of rocks.current) {
       if (!mesh) continue;
@@ -203,15 +204,29 @@ export function Soil() {
          * itself travels — a stone placed there ends up centimetres from the
          * lens and fills a third of the frame.
          */
-        const angle = random() * Math.PI * 2;
-        const radius = 1.3 + random() ** 0.65 * 4.6;
-        const x = Math.cos(angle) * radius;
-        const z = Math.sin(angle) * radius;
+        /*
+         * Pockets, not a sprinkle. Every few stones share a centre and sit
+         * within a hand's breadth of each other, the way stones in a soil
+         * profile actually occur — an even scatter of similar pebbles is the
+         * one arrangement that reads as placed by hand.
+         */
+        if (i % 4 === 0) {
+          const pocketAngle = random() * Math.PI * 2;
+          const pocketRadius = 1.3 + random() ** 0.65 * 4.6;
+          pocket.set(
+            Math.cos(pocketAngle) * pocketRadius,
+            LANDING_Y - 0.12 - random() * (LANDING_Y - FLOOR_Y) * 0.95,
+            Math.sin(pocketAngle) * pocketRadius,
+          );
+        }
+        const x = pocket.x + (random() - 0.5) * 0.9;
+        const z = pocket.z + (random() - 0.5) * 0.9;
         if (z > 0.6 && Math.abs(x) < 1.35) {
           i -= 1;
           continue;
         }
-        position.set(x, LANDING_Y - 0.12 - random() * (LANDING_Y - FLOOR_Y) * 0.95, z);
+        const radius = Math.hypot(x, z);
+        position.set(x, pocket.y + (random() - 0.5) * 0.7, z);
         euler.set(random() * 6.28, random() * 6.28, random() * 6.28);
         quaternion.setFromEuler(euler);
 
@@ -222,7 +237,7 @@ export function Soil() {
          * subject of the piece. Anything the eye stops on down here should be
          * the seed.
          */
-        const size = 0.016 + random() ** 2.4 * 0.075 + radius * 0.012;
+        const size = 0.011 + random() ** 2.6 * 0.058 + radius * 0.009;
         scale.set(size, size * (0.62 + random() * 0.5), size * (0.75 + random() * 0.45));
         mesh.setMatrixAt(i, matrix.compose(position, quaternion, scale));
 
@@ -230,9 +245,9 @@ export function Soil() {
         // some are the colour of the soil they are sitting in.
         const grey = random() * random();
         tint.setRGB(
-          0.86 + grey * 0.22 + random() * 0.1,
-          0.84 + grey * 0.24 + random() * 0.08,
-          0.8 + grey * 0.3 + random() * 0.08,
+          0.6 + grey * 0.2 + random() * 0.1,
+          0.58 + grey * 0.2 + random() * 0.08,
+          0.54 + grey * 0.24 + random() * 0.07,
         );
         mesh.setColorAt(i, tint);
       }

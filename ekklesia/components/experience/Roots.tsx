@@ -20,7 +20,7 @@ const ORIGIN = new THREE.Vector3(0, SEED_PLANTED_Y - 0.035, 0);
 /** The shell's lower pole, where the root actually breaks through. */
 const APERTURE_Y = SEED_PLANTED_Y - 0.083;
 
-const LITTER_COUNT = 240;
+const LITTER_COUNT = 300;
 
 function mulberry32(seed: number) {
   return () => {
@@ -33,7 +33,7 @@ function mulberry32(seed: number) {
 }
 
 export function Roots() {
-  const { geometry } = useMemo(() => buildRootGeometry(ORIGIN), []);
+  const { geometry, strands } = useMemo(() => buildRootGeometry(ORIGIN), []);
   const aperture = useRef<THREE.Mesh>(null);
   const litter = useRef<THREE.InstancedMesh>(null);
   const litterMaterial = useRef<THREE.MeshStandardMaterial>(null);
@@ -56,27 +56,39 @@ export function Roots() {
 
     for (let i = 0; i < LITTER_COUNT; i++) {
       /*
-       * Deliberately *inside* the root volume, and deliberately including the
-       * near side. Roots that are all perfectly visible read as a specimen on a
-       * lab bench; a few crumbs of soil crossing in front of them is most of
-       * what says they are buried.
+       * Placed *on the roots*, not near them.
+       *
+       * Scattering crumbs through a cylinder around the system leaves the roots
+       * themselves clean — the grains sit in the space between the branches and
+       * nothing ever crosses one. Sampling a random point on a random strand and
+       * offsetting it by a little more than that strand's own radius puts soil
+       * against the root, lodged in the crotches and lying over the runs, which
+       * is where soil actually collects on something growing through it. A
+       * fraction sit proud of the surface toward the lens, so a few branches are
+       * genuinely interrupted rather than merely shaded.
        */
-      const angle = random() * Math.PI * 2;
-      const radius = 0.06 + random() ** 0.55 * 1.15;
+      const strand = strands[Math.floor(random() * strands.length)];
+      const at = Math.floor(random() * strand.points.length);
+      const anchor = strand.points[at];
+      const radius = strand.radii[at];
+
+      const theta = random() * Math.PI * 2;
+      const phi = Math.acos(2 * random() - 1);
+      const reach = radius * (0.9 + random() * random() * 4.2);
       position.set(
-        Math.cos(angle) * radius,
-        SEED_PLANTED_Y - random() ** 0.75 * ROOT_DEPTH * 1.05,
-        Math.sin(angle) * radius,
+        anchor.x + Math.sin(phi) * Math.cos(theta) * reach,
+        anchor.y + Math.cos(phi) * reach * 0.8,
+        anchor.z + Math.sin(phi) * Math.sin(theta) * reach,
       );
 
       euler.set(random() * 6.28, random() * 6.28, random() * 6.28);
       quaternion.setFromEuler(euler);
-      const size = 0.0035 + random() * random() * 0.016;
-      scale.set(size, size * (0.7 + random() * 0.5), size * (0.8 + random() * 0.4));
+      const size = radius * (0.22 + random() * random() * 1.1);
+      scale.set(size, size * (0.65 + random() * 0.5), size * (0.75 + random() * 0.45));
       mesh.setMatrixAt(i, matrix.compose(position, quaternion, scale));
     }
     mesh.instanceMatrix.needsUpdate = true;
-  }, []);
+  }, [strands]);
 
   useEffect(
     () => () => {
@@ -96,7 +108,7 @@ export function Roots() {
     if (opening) {
       const value = track(germination.aperture, p);
       opening.visible = value > 0.01;
-      opening.scale.set(0.032 * value, 0.013 * value, 0.032 * value);
+      opening.scale.set(0.022 * value, 0.009 * value, 0.022 * value);
     }
 
     // The soil around the roots is disturbed by them, so it arrives with them.
@@ -146,9 +158,18 @@ export function Roots() {
             shader.vertexShader = shader.vertexShader.replace(
               "#include <begin_vertex>",
               `#include <begin_vertex>
-               float g = 1.0 - smoothstep(uGrow - 0.045, uGrow, aGrow);
+               float g = 1.0 - smoothstep(uGrow - 0.022, uGrow, aGrow);
                vGrow = g;
-               transformed = mix(aCenter, transformed, g);`,
+               /*
+                * A rounded cap, not a point. Collapsing linearly toward the
+                * axis draws the growing end out into a long needle — the
+                * radicle ends in a thorn, which is the one shape a root tip
+                * never has. A circular profile over the same band gives an
+                * advancing dome instead: still full width a moment behind the
+                * front, and closed at it.
+                */
+               float cap = sqrt(max(0.0, 1.0 - (1.0 - g) * (1.0 - g)));
+               transformed = mix(aCenter, transformed, cap);`,
             );
 
             shader.vertexShader = shader.vertexShader.replace(
@@ -196,8 +217,8 @@ export function Roots() {
             shader.fragmentShader = shader.fragmentShader.replace(
               "#include <color_fragment>",
               `#include <color_fragment>
-               float cover = rootNoise(vRootPos * 2.4) * 0.72
-                           + rootNoise(vRootPos * 5.2 + 11.0) * 0.28;
+               float cover = rootNoise(vRootPos * 5.0) * 0.7
+                           + rootNoise(vRootPos * 11.5 + 11.0) * 0.3;
                cover = smoothstep(0.4, 0.78, cover);
                float skin = rootNoise(vRootPos * 41.0) * 0.5
                           + rootNoise(vRootPos * 97.0 + 3.0) * 0.5;
@@ -223,7 +244,9 @@ export function Roots() {
         <meshStandardMaterial
           ref={litterMaterial}
           vertexColors
-          color="#3A2E20"
+          // Soil, not soot. Darker than this and the crumbs read as burnt
+          // specks stuck on the root rather than as earth lying against it.
+          color="#7A6244"
           roughness={0.98}
           metalness={0}
           transparent

@@ -171,10 +171,18 @@ export const camera = {
     { at: 1.44, value: -2.18 },
     { at: 1.5, value: -2.28, ease: easing.inOutSine },
     { at: 1.62, value: -2.36 },
-    { at: 1.72, value: -2.5 },
-    { at: 1.84, value: -2.95 },
-    { at: 1.94, value: -3.5, ease: easing.outCubic },
-    { at: 2.0, value: -3.7 },
+    /*
+     * The tail decelerates instead of falling away. The old ending pulled to
+     * three and a half units below the grain and five back from it, and a root
+     * system read from that far is a diagram of one however well it is built —
+     * the taproot came out six pixels wide, which is a stroke, not a subject.
+     * It still only ever descends; it just stops sooner, and eases as it does,
+     * which is what a shot settling into a pause should do anyway.
+     */
+    { at: 1.72, value: -2.45 },
+    { at: 1.84, value: -2.52 },
+    { at: 1.94, value: -2.57, ease: easing.outCubic },
+    { at: 2.0, value: -2.6 },
   ] satisfies Keyframe[],
 
   /**
@@ -205,11 +213,13 @@ export const camera = {
     { at: 1.3, value: 1.0 },
     { at: 1.4, value: 1.25 },
     { at: 1.5, value: 1.7 },
-    { at: 1.62, value: 1.75, ease: easing.inOutSine },
-    { at: 1.72, value: 2.15 },
-    { at: 1.84, value: 3.4 },
-    { at: 1.94, value: 4.7 },
-    { at: 2.0, value: 5.2, ease: easing.outCubic },
+    { at: 1.62, value: 1.8, ease: easing.inOutSine },
+    { at: 1.72, value: 2.1 },
+    { at: 1.84, value: 2.5 },
+    { at: 1.94, value: 3.3 },
+    // Close enough that the root system is *photographed* rather than charted,
+    // far enough that the deepest runs stay inside the frame.
+    { at: 2.0, value: 3.45, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /**
@@ -238,11 +248,16 @@ export const camera = {
     { at: 1.34, value: -2.12 },
     { at: 1.44, value: -2.3 },
     { at: 1.5, value: -2.42, ease: easing.inOutSine },
-    { at: 1.62, value: -2.3 },
-    { at: 1.72, value: -2.55 },
-    { at: 1.84, value: -3.1 },
-    { at: 1.94, value: -3.35 },
-    { at: 2.0, value: -3.55, ease: easing.outCubic },
+    { at: 1.62, value: -2.35 },
+    /*
+     * Aimed a little above the grain at the end, which drops the whole organism
+     * into the lower two thirds and opens the top of frame. The phrase lives in
+     * that gap — over soil rather than over roots.
+     */
+    { at: 1.72, value: -2.4 },
+    { at: 1.84, value: -2.42 },
+    { at: 1.94, value: -2.46 },
+    { at: 2.0, value: -2.5, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };
 
