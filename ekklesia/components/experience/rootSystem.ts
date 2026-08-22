@@ -2,37 +2,35 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 /**
- * The root system.
+ * The root system — such as it is.
  *
- * The version before this one was botanically sound and read as wire, and the
- * reason was arithmetic rather than art. Its taproot was eleven thousandths of
- * a unit across and the shot that took it in was five units back: two and a
- * half thousandths of the frame, six pixels, with nine radial segments. At that
- * size a tube has no shading gradient across it, so it cannot read as having a
- * cross-section — it is a stroke with a colour. Everything finer than it was
- * one or two pixels.
+ * This is a deliberate retreat from the previous build, which was botanically
+ * complete and read as an inverted tree: fifteen laterals, forty-odd second
+ * order runs and a scatter of hairs, spreading evenly to both sides of a thick
+ * vertical trunk. Every one of those is a true thing about a root system and
+ * together they were the wrong picture, because the frame was showing all of it
+ * at once and the eye had nothing to rest on.
  *
- * So the fix is proportion, not radius. A macro photograph of a germinating
- * seed shows three or four seed-widths of root, not thirteen; the system here
- * is now about six times the grain across rather than twenty-five, the lens
- * comes in to match, and the taproot lands at a fifth of the grain's width —
- * which is both what a real radicle looks like and thick enough on screen to
- * be modelled by light.
+ * What is here instead is what a macro lens would actually catch a few days
+ * into germination: a radicle, three laterals at three different heights going
+ * three different ways, and a handful of tips. Nine runs in total. The rest is
+ * soil and dark, and the viewer is left to assume the rest of the system is out
+ * there beyond the plane of focus — which is both true and a great deal more
+ * convincing than showing it.
  *
- * Three other things keep it from reading as drawn:
+ * Two structural notes:
  *
- *  1. Paths are *evaluated*, never integrated. Summing steps with a `sin(t)`
- *     wobble added to each accumulates a net drift, and every root ends up
- *     leaning the same way.
- *  2. No run has a circular cross-section, a monotonic taper, or a constant
- *     radius — ovality, swellings and nodules all vary along it.
- *  3. Junctions are occluded in the vertex colours. Nothing in the scene can
- *     compute the shadow a branch casts into the crotch it grows out of, and
- *     without it every fork reads as two cylinders intersecting.
+ *  - The radicle is *fusiform*, not tapered. It leaves the shell thin, swells
+ *    over the first fifth of its run, and thins from there. Thickest-at-the-seed
+ *    is what made the last version read as a stem with a ball on top; a young
+ *    root is delicate exactly where it emerges.
+ *  - Branch positions are written down rather than sampled. At three branches a
+ *    seeded generator clusters them or mirrors them about as often as not, and
+ *    either outcome is the thing this round exists to remove.
  */
 
-/** How far the system reaches below the grain. */
-export const ROOT_DEPTH = 1.0;
+/** How far the radicle reaches below the grain. */
+export const ROOT_DEPTH = 0.68;
 
 function mulberry32(seed: number) {
   return () => {
@@ -61,7 +59,7 @@ export type Strand = {
   birth: number;
   life: number;
   radial: number;
-  /** Generation, 0 for the taproot. Children get a shadowed collar. */
+  /** Generation, 0 for the radicle. Children get a shadowed collar. */
   order: number;
   phase: number;
 };
@@ -99,9 +97,9 @@ function path({ start, direction, length, steps, gravity, sinuosity, phase }: Pa
     base.y -= gravity * length * t * t;
 
     /*
-     * Deviation grows as the square root of the run. Linearly, a root is dead
-     * straight for its first third and only starts to wander once it is far
-     * from the grain — which is exactly the stretch the camera is closest to.
+     * Deviation grows as the square root of the run — never as a sum of steps.
+     * Integrating a `sin(t)` wobble into the heading accumulates a net drift
+     * over any finite run, and every root ends up leaning the same way.
      */
     const amount = sinuosity * length * Math.pow(t, 0.55);
     base.addScaledVector(side, wobble(t, phase) * amount);
@@ -116,9 +114,22 @@ function path({ start, direction, length, steps, gravity, sinuosity, phase }: Pa
 type StrandOptions = PathOptions & {
   rBase: number;
   rTip: number;
-  /** Extra thickness right at the origin, so the run swells into its parent. */
-  flare: number;
   taper: number;
+  /**
+   * How much thinner the run is where it leaves its parent, and over what
+   * fraction of its length it recovers. This is the fusiform profile: nothing
+   * young is thickest at the point it emerged from.
+   */
+  neck: number;
+  neckLength: number;
+  /**
+   * Where along the run the thinning is centred. The radicle starts *inside*
+   * the grain, so a neck measured from `t = 0` is spent entirely behind opaque
+   * shell and what emerges is already at full thickness — which is exactly the
+   * stem-with-a-ball-on-top this profile exists to prevent. Anchoring it at the
+   * point the run leaves the shell puts the delicate part on screen.
+   */
+  neckAt?: number;
   ageFrom: number;
   ageTo: number;
   birth: number;
@@ -129,27 +140,25 @@ type StrandOptions = PathOptions & {
 
 function strand(options: StrandOptions): Strand {
   const points = path(options);
-  const { rBase, rTip, flare, taper, ageFrom, ageTo, steps, phase } = options;
+  const { rBase, rTip, taper, neck, neckLength, ageFrom, ageTo, steps, phase } = options;
+  const neckAt = options.neckAt ?? 0;
 
   const radii: number[] = [];
   const ages: number[] = [];
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
-    // Power taper. Linear leaves a straw; anything above 1 loses most of the
-    // thickness early, which is what a root actually does.
     const body = rTip + (rBase - rTip) * Math.pow(1 - t, taper);
     /*
-     * Nodules. A root thickens where a lateral is about to leave it, thins
-     * between, and carries a slow swell along its length — three scales of
-     * variation, none of them in step with the others. A monotonic taper is
-     * the last thing standing between this and a length of dowel.
+     * Three scales of irregularity, none of them in step with the others. A
+     * monotonic profile is the last thing standing between this and dowel.
      */
     const nodule =
       1 +
-      Math.sin(t * 9.1 + phase) * 0.07 +
-      Math.sin(t * 23.7 + phase * 1.9) * 0.05 +
-      Math.sin(t * 47.3 + phase * 0.7) * 0.03;
-    radii.push(body * (1 + flare * Math.exp(-t * 13)) * nodule);
+      Math.sin(t * 8.3 + phase) * 0.08 +
+      Math.sin(t * 21.1 + phase * 1.9) * 0.05 +
+      Math.sin(t * 44.7 + phase * 0.7) * 0.028;
+    const thin = 1 - neck * Math.exp(-Math.max(0, t - neckAt) / neckLength);
+    radii.push(body * thin * nodule);
     ages.push(ageFrom + (ageTo - ageFrom) * t);
   }
 
@@ -165,7 +174,6 @@ function strand(options: StrandOptions): Strand {
   };
 }
 
-/** Radius of a run at parameter `t`, so a child can be sized to its parent. */
 function radiusAt(host: Strand, t: number) {
   const i = Math.min(host.radii.length - 1, Math.round(t * (host.radii.length - 1)));
   return host.radii[i];
@@ -186,96 +194,77 @@ export function buildStrands(origin: THREE.Vector3) {
   const strands: Strand[] = [];
 
   /*
-   * The taproot. It begins *above* where it becomes visible — inside the grain —
-   * so nothing on screen shows a tube meeting a sphere; the flare handles the
-   * few millimetres either side of the shell.
+   * The radicle. It begins inside the grain, so nothing on screen shows a tube
+   * meeting a sphere — what emerges from the shell is already a root, and it is
+   * at its thinnest there.
    */
   const tap = strand({
     start: origin,
     direction: new THREE.Vector3(0, -1, 0),
     length: ROOT_DEPTH,
-    steps: 40,
+    steps: 44,
     gravity: 0,
-    sinuosity: 0.14,
+    // Enough to read as grown rather than drawn, not enough to wander.
+    sinuosity: 0.16,
     phase: 1.4,
-    /*
-     * Nearly parallel-sided, then blunt. A radicle does not narrow steadily
-     * from the seed to a point — it holds most of its thickness and ends. The
-     * combination that produced the point was a strong flare on top of a fast
-     * taper: fat at the shell, a third of that a few centimetres down, and the
-     * whole visible run read as one long spike at the beat where the radicle is
-     * the only thing in frame.
-     */
     rBase: 0.019,
-    rTip: 0.008,
-    flare: 0.8,
-    taper: 1.5,
+    rTip: 0.0022,
+    taper: 1.35,
+    neck: 0.5,
+    neckLength: 0.09,
+    // The shell's lower pole, as a fraction of the run: origin sits 0.035 above
+    // the grain's centre and the coat is 0.083 below it.
+    neckAt: 0.118 / ROOT_DEPTH,
     ageFrom: 0,
-    ageTo: 0.7,
+    ageTo: 0.62,
     birth: 0,
-    life: 0.4,
+    life: 0.42,
     radial: 16,
     order: 0,
   });
   strands.push(tap);
 
   /*
-   * Laterals. Golden-angle azimuths with jitter: evenly spaced angles read as a
-   * whorl and purely random ones clump, and both are tells.
-   *
-   * Two populations rather than one distribution — a few long runners that
-   * strike out sideways and hold the width of the composition, and a majority
-   * of shorter ones that stay near the taproot. A single length distribution
-   * gives every branch the same weight, which is what makes a root system look
-   * like a diagram of itself.
+   * Three laterals, at three heights, going three ways. Written out rather than
+   * sampled: at this count a generator clusters them or mirrors them as often
+   * as not, and a system that spreads evenly to both sides is the inverted tree
+   * this round exists to remove. The azimuths are deliberately not opposed and
+   * the lengths deliberately unequal.
    */
+  const plan = [
+    // Early, long, out to the left and slightly toward the lens.
+    { at: 0.28, azimuth: -0.62, drop: 0.16, length: 0.3, gravity: 0.55, life: 0.2 },
+    // Later, shorter, away to the right — it reads as further into the soil.
+    { at: 0.55, azimuth: 2.35, drop: 0.42, length: 0.19, gravity: 0.85, life: 0.17 },
+    // Low and small, almost following the radicle down.
+    { at: 0.79, azimuth: 0.95, drop: 0.78, length: 0.115, gravity: 1.05, life: 0.14 },
+  ];
+
   const laterals: Strand[] = [];
-  const LATERALS = 15;
-  for (let i = 0; i < LATERALS; i++) {
-    const at = 0.06 + (i / LATERALS) * 0.86 + (random() - 0.5) * 0.05;
-    const azimuth = i * 2.39996 + (random() - 0.5) * 1.0;
-    const parentRadius = radiusAt(tap, at);
-
-    // Which flank a lateral leaves on decides how far it gets to go. Real
-    // systems are lopsided — they follow the water and the gaps — and a
-    // silhouette balanced about its own axis is the loudest tell there is.
-    const favoured = Math.cos(azimuth) > -0.15;
-    const runner = random() < (favoured ? 0.48 : 0.16);
-    const length = runner
-      ? (0.4 + random() * 0.36) * (1.1 - at * 0.6)
-      : (0.1 + random() * 0.26) * (1.15 - at * 0.65);
-
+  for (const [index, spec] of plan.entries()) {
+    const parentRadius = radiusAt(tap, spec.at);
     const lateral = strand({
-      start: pointAt(tap, at),
+      start: pointAt(tap, spec.at),
       direction: new THREE.Vector3(
-        Math.cos(azimuth),
-        runner ? -0.06 - random() * 0.2 : -0.3 - random() * 0.55,
-        Math.sin(azimuth) * 0.82,
+        Math.cos(spec.azimuth),
+        -spec.drop,
+        Math.sin(spec.azimuth) * 0.8,
       ),
-      length,
-      steps: 20,
-      /*
-       * The laterals lowest on the taproot pull down least. Given the same
-       * gravitropism as the ones near the grain they hang a long way past the
-       * tip, and the system's extent stops being something the composition can
-       * be framed around.
-       */
-      gravity: (runner ? 0.3 + random() * 0.5 : 0.55 + random() * 1.0) * (1 - at * 0.55),
-      sinuosity: 0.15 + random() * 0.13,
-      phase: random() * 12,
-      rBase: parentRadius * (0.5 + random() * 0.2),
-      rTip: 0.0022,
-      flare: 0.7,
-      taper: 1.1,
-      ageFrom: ageAt(tap, at),
-      ageTo: 0.9,
-      /*
-       * Cannot exist before the taproot has grown past its own branch point —
-       * and held back well beyond that, so there is a stretch of scroll where
-       * the frame is one radicle descending and nothing else.
-       */
-      birth: 0.16 + at * 0.42 + random() * 0.04,
-      life: 0.26 + random() * 0.1,
+      length: spec.length,
+      steps: 18,
+      gravity: spec.gravity,
+      sinuosity: 0.17 + index * 0.03,
+      phase: 3.1 + index * 4.7,
+      rBase: parentRadius * 0.52,
+      rTip: 0.0011,
+      taper: 1.25,
+      neck: 0.42,
+      neckLength: 0.09,
+      ageFrom: ageAt(tap, spec.at),
+      ageTo: 0.95,
+      // Cannot exist before the radicle has grown past its own branch point.
+      birth: 0.2 + spec.at * 0.4,
+      life: spec.life,
       radial: 10,
       order: 1,
     });
@@ -283,71 +272,77 @@ export function buildStrands(origin: THREE.Vector3) {
     laterals.push(lateral);
   }
 
-  // Second order, then a scatter of hairs. Both are what stop the system
-  // reading as a trunk with arms.
-  const seconds: Strand[] = [];
-  for (const lateral of laterals) {
-    const branches = 2 + Math.floor(random() * 3);
-    for (let i = 0; i < branches; i++) {
-      const at = 0.18 + random() * 0.7;
-      const azimuth = random() * Math.PI * 2;
-      const parentRadius = radiusAt(lateral, at);
+  /*
+   * A handful of tips. Not a generation — just enough that the laterals are
+   * visibly dividing rather than ending, which is the whole difference between
+   * a system that is growing and one that has been drawn.
+   */
+  const tips = [
+    { host: 0, at: 0.52, azimuth: 0.4, length: 0.075 },
+    { host: 0, at: 0.82, azimuth: -1.9, length: 0.05 },
+    { host: 1, at: 0.61, azimuth: 1.3, length: 0.045 },
+    { host: 2, at: 0.58, azimuth: -0.7, length: 0.032 },
+  ];
 
-      const second = strand({
-        start: pointAt(lateral, at),
-        direction: new THREE.Vector3(
-          Math.cos(azimuth) * 0.8,
-          -0.2 - random() * 0.6,
-          Math.sin(azimuth) * 0.8,
-        ),
-        length: 0.05 + random() * 0.17,
-        steps: 12,
-        gravity: 0.6 + random() * 0.9,
-        sinuosity: 0.22 + random() * 0.14,
-        phase: random() * 12,
-        rBase: parentRadius * (0.52 + random() * 0.2),
-        rTip: 0.0014,
-        flare: 0.6,
-        taper: 1.05,
-        ageFrom: ageAt(lateral, at),
-        ageTo: 1,
-        birth: lateral.birth + lateral.life * at * 0.9 + 0.03,
-        life: 0.17 + random() * 0.08,
-        radial: 8,
-        order: 2,
-      });
-      strands.push(second);
-      seconds.push(second);
-    }
-  }
-
-  for (const second of seconds) {
-    if (random() > 0.62) continue;
-    const at = 0.28 + random() * 0.55;
-    const azimuth = random() * Math.PI * 2;
+  for (const tip of tips) {
+    const host = laterals[tip.host];
     strands.push(
       strand({
-        start: pointAt(second, at),
+        start: pointAt(host, tip.at),
         direction: new THREE.Vector3(
-          Math.cos(azimuth) * 0.9,
-          -0.25 - random() * 0.6,
-          Math.sin(azimuth) * 0.9,
+          Math.cos(tip.azimuth) * 0.85,
+          -0.35 - random() * 0.5,
+          Math.sin(tip.azimuth) * 0.85,
         ),
-        length: 0.022 + random() * 0.055,
-        steps: 7,
-        gravity: 0.6 + random() * 0.8,
-        sinuosity: 0.3,
+        length: tip.length,
+        steps: 9,
+        gravity: 0.8 + random() * 0.6,
+        sinuosity: 0.26,
         phase: random() * 12,
-        rBase: radiusAt(second, at) * 0.6,
-        rTip: 0.0009,
-        flare: 0.55,
-        taper: 1.0,
-        ageFrom: ageAt(second, at),
+        rBase: radiusAt(host, tip.at) * 0.55,
+        rTip: 0.0006,
+        taper: 1.15,
+        neck: 0.36,
+        neckLength: 0.1,
+        ageFrom: ageAt(host, tip.at),
         ageTo: 1,
-        birth: second.birth + second.life * at * 0.9 + 0.02,
-        life: 0.1 + random() * 0.05,
-        radial: 6,
-        order: 3,
+        birth: host.birth + host.life * tip.at * 0.9 + 0.03,
+        life: 0.09 + random() * 0.04,
+        radial: 7,
+        order: 2,
+      }),
+    );
+  }
+
+  // And two on the radicle itself, low down, so it is not a bare shaft.
+  for (const spec of [
+    { at: 0.62, azimuth: 1.85, length: 0.06 },
+    { at: 0.88, azimuth: -1.15, length: 0.038 },
+  ]) {
+    strands.push(
+      strand({
+        start: pointAt(tap, spec.at),
+        direction: new THREE.Vector3(
+          Math.cos(spec.azimuth) * 0.9,
+          -0.5 - random() * 0.4,
+          Math.sin(spec.azimuth) * 0.9,
+        ),
+        length: spec.length,
+        steps: 9,
+        gravity: 0.9,
+        sinuosity: 0.24,
+        phase: random() * 12,
+        rBase: radiusAt(tap, spec.at) * 0.42,
+        rTip: 0.0006,
+        taper: 1.15,
+        neck: 0.4,
+        neckLength: 0.1,
+        ageFrom: ageAt(tap, spec.at),
+        ageTo: 1,
+        birth: 0.34 + spec.at * 0.36,
+        life: 0.1,
+        radial: 7,
+        order: 2,
       }),
     );
   }
@@ -360,10 +355,9 @@ export function buildStrands(origin: THREE.Vector3) {
  * Sweeps a strand into a tube with a parallel-transport frame.
  *
  * `TubeGeometry` cannot do this: it takes a single radius, so a taper has to be
- * faked afterwards by pulling rings toward the axis — which works until a run
- * needs to flare *outward* at its base, and every junction in the system needs
- * exactly that. Building the rings directly also lets each generation carry its
- * own radial count, so a hair root costs six vertices a ring instead of sixteen.
+ * faked afterwards by pulling rings toward the axis — and the fusiform profile
+ * every run here uses needs the radius to be free at every ring. Building the
+ * rings directly also lets each generation carry its own radial count.
  */
 function sweep(strand: Strand, maxGrow: number) {
   const { points, radii, ages, radial, order, phase } = strand;
@@ -382,12 +376,14 @@ function sweep(strand: Strand, maxGrow: number) {
 
   const vertex = new THREE.Vector3();
   /*
-   * Damp earth, not gold. The previous ramp ran to an olive-yellow that read as
-   * lit from within; a real rootlet against dark soil is warm cream at the tip
-   * and the colour of the soil itself where it has been in the ground longest.
+   * Dirty cream at the tips, the colour of the soil where it has been in the
+   * ground longest — and dark enough overall that the lighting has to reveal it
+   * rather than the albedo announcing it. The previous ramp ran bright enough
+   * that the roots were the light source of the frame, which is the one thing
+   * the note rules out.
    */
-  const base = new THREE.Color("#4A3826");
-  const tip = new THREE.Color("#A08F76");
+  const base = new THREE.Color("#2A1F14");
+  const tip = new THREE.Color("#6A5B46");
   const tone = new THREE.Color();
 
   for (let i = 0; i < rings; i++) {
@@ -414,24 +410,19 @@ function sweep(strand: Strand, maxGrow: number) {
      * The collar. A branch grows *out of* its parent, and the crotch between
      * them holds shadow no light in this scene can produce — there is no
      * ambient occlusion pass, and at this scale a fork without one reads as two
-     * cylinders that happen to intersect. Only children get it; the taproot
-     * leaves the grain, which does its own occluding.
+     * cylinders that happen to intersect.
      */
-    const collar = order === 0 ? 1 : 0.4 + 0.6 * Math.min(1, t / 0.14);
+    const collar = order === 0 ? 1 : 0.34 + 0.66 * Math.min(1, t / 0.16);
 
     for (let j = 0; j <= radial; j++) {
       const angle = (j / radial) * Math.PI * 2;
-      /*
-       * A root is not a cylinder. Ovality that rotates along the run, plus a
-       * fine ridging around it, is the difference between a grown thing and
-       * extruded pipe — and it is what gives the silhouette something to catch
-       * the light on.
-       */
+      // Not a cylinder: ovality that rotates along the run, plus fine ridging,
+      // which is what gives the silhouette something to catch light on.
       const oval =
         1 +
-        Math.sin(angle * 2 + t * 5.1 + phase) * 0.14 +
-        Math.sin(angle * 3 - t * 3.3) * 0.08 +
-        Math.sin(angle * 7 + t * 19.0) * 0.035;
+        Math.sin(angle * 2 + t * 5.1 + phase) * 0.13 +
+        Math.sin(angle * 3 - t * 3.3) * 0.075 +
+        Math.sin(angle * 7 + t * 19.0) * 0.03;
       const r = radii[i] * oval;
 
       vertex
@@ -448,10 +439,9 @@ function sweep(strand: Strand, maxGrow: number) {
       centre[index * 3 + 2] = points[i].z;
       grow[index] = (strand.birth + t * strand.life) / maxGrow;
 
-      // Shade the underside of every run down. There is no bounce light a metre
-      // inside soil, and a uniformly lit root floats.
-      const lift = 0.5 + 0.5 * Math.max(0, Math.cos(angle) * 0.5 + 0.5);
-      // Crevices between the ridges hold their own shadow.
+      // Deep shadow underneath. There is no bounce light down here, and a
+      // uniformly lit root floats in front of the soil rather than sitting in it.
+      const lift = 0.42 + 0.58 * Math.max(0, Math.cos(angle) * 0.5 + 0.5);
       const crevice = 0.9 + 0.1 * Math.cos(angle * 7 + t * 19.0);
       const shade = lift * crevice * collar;
 

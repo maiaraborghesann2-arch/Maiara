@@ -11,7 +11,7 @@ import { LANDING_Y, soil as choreo } from "@/lib/scroll/choreography";
 import { createRockGeometries } from "./rockGeometry";
 import { createFilaments } from "./soilDetritus";
 
-const GRAIN_COUNT = 5200;
+const GRAIN_COUNT = 6800;
 /** Stones per shape family. Six families, so no silhouette repeats nearby. */
 const ROCK_SHAPES = 6;
 const ROCK_PER_SHAPE = 34;
@@ -22,7 +22,7 @@ const ROCK_PER_SHAPE = 34;
  * round faked this with dark sprites; with a real lens in the chain the fake is
  * both unnecessary and doubled.
  */
-const NEAR_COUNT = 40;
+const NEAR_COUNT = 58;
 /** How far down the volume extends. Deeper than the roots ever reach. */
 const FLOOR_Y = -8.5;
 /** Radius of the body of earth the descent happens inside. */
@@ -329,7 +329,7 @@ export function Soil() {
     if (grains.current) grains.current.visible = below > 0.01;
 
     if (grainMaterial.current) {
-      grainMaterial.current.uniforms.uOpacity.value = below * 0.45;
+      grainMaterial.current.uniforms.uOpacity.value = below * 0.62;
       grainMaterial.current.uniforms.uScale.value = height * 0.0055;
     }
 

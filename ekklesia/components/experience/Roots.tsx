@@ -20,7 +20,7 @@ const ORIGIN = new THREE.Vector3(0, SEED_PLANTED_Y - 0.035, 0);
 /** The shell's lower pole, where the root actually breaks through. */
 const APERTURE_Y = SEED_PLANTED_Y - 0.083;
 
-const LITTER_COUNT = 300;
+const LITTER_COUNT = 190;
 
 function mulberry32(seed: number) {
   return () => {
@@ -219,11 +219,11 @@ export function Roots() {
               `#include <color_fragment>
                float cover = rootNoise(vRootPos * 5.0) * 0.7
                            + rootNoise(vRootPos * 11.5 + 11.0) * 0.3;
-               cover = smoothstep(0.4, 0.78, cover);
+               cover = smoothstep(0.36, 0.72, cover);
                float skin = rootNoise(vRootPos * 41.0) * 0.5
                           + rootNoise(vRootPos * 97.0 + 3.0) * 0.5;
                diffuseColor.rgb *= 0.86 + skin * 0.28;
-               diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.055, 0.038, 0.022), cover * 0.88);`,
+               diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.04, 0.028, 0.016), cover * 0.94);`,
             );
 
             shader.fragmentShader = shader.fragmentShader.replace(

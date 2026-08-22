@@ -72,7 +72,7 @@ export function Lighting() {
 
     const scattered = filtered.current;
     if (scattered) {
-      scattered.intensity = below * (0.72 / (1 + depth * 0.42)) * (1 + breath);
+      scattered.intensity = below * (0.88 / (1 + depth * 0.42)) * (1 + breath);
     }
 
     const under = fill.current;

@@ -215,11 +215,11 @@ export const camera = {
     { at: 1.5, value: 1.7 },
     { at: 1.62, value: 1.8, ease: easing.inOutSine },
     { at: 1.72, value: 2.1 },
-    { at: 1.84, value: 2.5 },
-    { at: 1.94, value: 3.3 },
+    { at: 1.84, value: 2.45 },
+    { at: 1.94, value: 2.52 },
     // Close enough that the root system is *photographed* rather than charted,
     // far enough that the deepest runs stay inside the frame.
-    { at: 2.0, value: 3.45, ease: easing.outCubic },
+    { at: 2.0, value: 2.55, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /**
@@ -255,9 +255,12 @@ export const camera = {
      * that gap — over soil rather than over roots.
      */
     { at: 1.72, value: -2.4 },
-    { at: 1.84, value: -2.42 },
-    { at: 1.94, value: -2.46 },
-    { at: 2.0, value: -2.5, ease: easing.outCubic },
+    // Eased up onto the grain for the pause. The organism hangs below it, so
+    // aiming a little above puts the whole of it in the lower two thirds and
+    // leaves the top of frame as bare soil for the words.
+    { at: 1.84, value: -2.3 },
+    { at: 1.94, value: -2.27 },
+    { at: 2.0, value: -2.25, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };
 

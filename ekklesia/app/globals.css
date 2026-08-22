@@ -312,7 +312,7 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 9vh var(--gutter) 0;
+  padding: 11vh var(--gutter) 0;
   text-align: center;
   pointer-events: none;
 }
@@ -328,12 +328,14 @@ button {
   left: 50%;
   top: 0;
   width: min(70rem, 100vw);
-  height: 44vh;
+  height: 38vh;
   transform: translateX(-50%);
+  /* Barely there. The words now sit over open soil, so the scrim only has to
+     keep the finest grain from breaking up the strokes. */
   background: linear-gradient(
     to bottom,
-    rgba(12, 9, 6, 0.55) 0%,
-    rgba(12, 9, 6, 0.42) 46%,
+    rgba(12, 9, 6, 0.34) 0%,
+    rgba(12, 9, 6, 0.24) 50%,
     rgba(12, 9, 6, 0) 100%
   );
   opacity: var(--scrim);
@@ -346,22 +348,24 @@ button {
 }
 
 .contemplation__lead {
-  max-width: 22ch;
+  max-width: 26ch;
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 300;
-  font-size: clamp(1.6rem, 3.6vw, 3rem);
-  line-height: 1.22;
-  letter-spacing: -0.012em;
+  /* A pause in the narration, not the subject of the frame. */
+  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
+  line-height: 1.34;
+  letter-spacing: 0.004em;
   color: var(--on-soil);
   text-wrap: balance;
 }
 
 .contemplation__note {
-  margin-top: clamp(1.4rem, 2.6vh, 2.2rem);
-  max-width: 42ch;
-  font-size: clamp(0.85rem, 1vw, 0.98rem);
-  line-height: 1.8;
+  margin-top: clamp(1rem, 2vh, 1.5rem);
+  max-width: 44ch;
+  font-size: clamp(0.7rem, 0.76vw, 0.82rem);
+  line-height: 1.9;
+  letter-spacing: 0.03em;
   color: var(--on-soil-soft);
   text-wrap: balance;
 }
