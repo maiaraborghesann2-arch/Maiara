@@ -151,7 +151,60 @@ export function Roots() {
                transformed = mix(aCenter, transformed, g);`,
             );
 
-            shader.fragmentShader = "varying float vGrow;\n" + shader.fragmentShader;
+            shader.vertexShader = shader.vertexShader.replace(
+              "#include <worldpos_vertex>",
+              `#include <worldpos_vertex>
+               vRootPos = transformed;`,
+            );
+            shader.vertexShader =
+              "varying vec3 vRootPos;\n" + shader.vertexShader;
+
+            shader.fragmentShader =
+              `varying float vGrow;
+               varying vec3 vRootPos;
+
+               float rootHash(vec3 p) {
+                 p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
+                 p *= 17.0;
+                 return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+               }
+
+               float rootNoise(vec3 x) {
+                 vec3 i = floor(x);
+                 vec3 f = fract(x);
+                 f = f * f * (3.0 - 2.0 * f);
+                 return mix(
+                   mix(mix(rootHash(i), rootHash(i + vec3(1,0,0)), f.x),
+                       mix(rootHash(i + vec3(0,1,0)), rootHash(i + vec3(1,1,0)), f.x), f.y),
+                   mix(mix(rootHash(i + vec3(0,0,1)), rootHash(i + vec3(1,0,1)), f.x),
+                       mix(rootHash(i + vec3(0,1,1)), rootHash(i + vec3(1,1,1)), f.x), f.y),
+                   f.z);
+               }
+              ` + shader.fragmentShader;
+
+            /*
+             * Soil over the root, and grain in it.
+             *
+             * A root grown *through* soil is not cleanly visible along its whole
+             * length — it is smeared, half-covered, and in places it vanishes
+             * behind a crumb and picks up again further along. Without that it
+             * does not matter how good the geometry is: it reads as a model
+             * placed into a set. The covering is a low-frequency field sampled
+             * in the root's own space, so the same run is buried in the same
+             * places from every angle; the fine octave on top is skin.
+             */
+            shader.fragmentShader = shader.fragmentShader.replace(
+              "#include <color_fragment>",
+              `#include <color_fragment>
+               float cover = rootNoise(vRootPos * 2.4) * 0.72
+                           + rootNoise(vRootPos * 5.2 + 11.0) * 0.28;
+               cover = smoothstep(0.4, 0.78, cover);
+               float skin = rootNoise(vRootPos * 41.0) * 0.5
+                          + rootNoise(vRootPos * 97.0 + 3.0) * 0.5;
+               diffuseColor.rgb *= 0.86 + skin * 0.28;
+               diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.055, 0.038, 0.022), cover * 0.88);`,
+            );
+
             shader.fragmentShader = shader.fragmentShader.replace(
               "#include <clipping_planes_fragment>",
               `#include <clipping_planes_fragment>

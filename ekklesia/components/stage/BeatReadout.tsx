@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { ACT_ONE, ACT_TWO, beatProgress, type Beat } from "@/lib/scroll/acts";
+import { ACT_ONE, ACT_TWO, CHECKPOINTS, beatProgress, type Beat } from "@/lib/scroll/acts";
 import { useProgressElement } from "@/lib/scroll/useProgressElement";
 import { sceneState } from "@/lib/scene/sharedState";
 import { LANDING_Y } from "@/lib/scroll/choreography";
@@ -51,6 +51,19 @@ export function BeatReadout() {
     const depth = element.querySelector<HTMLElement>("[data-depth]");
     if (depth) depth.textContent = (LANDING_Y - sceneState.cameraY).toFixed(2);
 
+    // Highlight whichever review checkpoint the clock is nearest.
+    let nearest = 0;
+    for (let i = 1; i < CHECKPOINTS.length; i++) {
+      if (Math.abs(CHECKPOINTS[i].at - progress) < Math.abs(CHECKPOINTS[nearest].at - progress)) {
+        nearest = i;
+      }
+    }
+    element.querySelectorAll<HTMLElement>("[data-checkpoint]").forEach((row, index) => {
+      row.dataset.active = index === nearest && Math.abs(CHECKPOINTS[index].at - progress) < 0.05
+        ? "true"
+        : "false";
+    });
+
     const rows = element.querySelectorAll<HTMLElement>("[data-beat]");
     rows.forEach((row, index) => {
       const local = beatProgress(BEATS[index], progress);
@@ -70,12 +83,44 @@ export function BeatReadout() {
    */
   const ref = useProgressElement<HTMLDivElement>(apply);
 
+  /**
+   * Jumping to a checkpoint means computing where on the *page* a given value
+   * of the stage clock lives — the two chapter tracks are adjacent, so it is
+   * the first track's scrollable length, then a fraction of the second's.
+   */
+  const jump = useCallback((at: number) => {
+    const tracks = document.querySelectorAll<HTMLElement>("[data-scroll-track]");
+    if (tracks.length < 2) return;
+    const vh = window.innerHeight;
+    const oneEnd = tracks[0].getBoundingClientRect().height - vh;
+    const twoEnd = oneEnd + tracks[1].getBoundingClientRect().height;
+    const y = at <= 1 ? at * oneEnd : oneEnd + (at - 1) * (twoEnd - vh - oneEnd);
+    window.scrollTo({ top: Math.round(y), behavior: "smooth" });
+  }, []);
+
   return (
     <div ref={ref} className="readout" style={{ display: enabled ? undefined : "none" }}>
       <div className="readout__global">
         stage <span data-global>0.000</span> / 2 · abaixo{" "}
         <span data-depth>0.00</span>
       </div>
+      <div className="readout__checkpoints">
+        {CHECKPOINTS.map((checkpoint) => (
+          <button
+            key={checkpoint.id}
+            type="button"
+            className="readout__checkpoint"
+            data-checkpoint
+            data-active="false"
+            onClick={() => jump(checkpoint.at)}
+            title={checkpoint.note}
+          >
+            <span>{checkpoint.label}</span>
+            <span className="readout__at">{checkpoint.at.toFixed(2)}</span>
+          </button>
+        ))}
+      </div>
+
       {LABELS.map((label) => (
         <div key={label} className="readout__row" data-beat>
           <span className="readout__label">{label}</span>

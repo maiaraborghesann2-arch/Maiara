@@ -49,7 +49,13 @@ export function Grade() {
      * evenly lit carpet corner to corner. Zero anywhere in Act I.
      */
     const entered = Math.min(1, Math.max(0, (p - 1.06) / 0.14));
-    uniforms.uAmount.value = Math.max(below, entered) * track(choreo.vignette, p);
+    /*
+     * Released to `Focus` as the lens goes under. Below the surface the frame
+     * is composited through the depth-of-field pass, which applies the same
+     * vignette with the same curve — but in linear, before the tone curve,
+     * which is where it physically belongs. Running both would double it.
+     */
+    uniforms.uAmount.value = Math.max(below, entered) * (1 - below) * track(choreo.vignette, p);
     uniforms.uAspect.value = state.size.width / state.size.height;
   });
 

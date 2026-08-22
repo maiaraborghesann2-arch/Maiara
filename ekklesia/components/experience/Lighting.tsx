@@ -8,6 +8,7 @@ import { track } from "@/lib/math";
 import { stageProgress } from "@/lib/scroll/stage";
 import { LANDING_Y, light } from "@/lib/scroll/choreography";
 import { sceneState } from "@/lib/scene/sharedState";
+import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
 /**
  * Soft studio lighting: a warm key from the upper right, a cool bounce filling
@@ -23,6 +24,8 @@ import { sceneState } from "@/lib/scene/sharedState";
 export function Lighting() {
   const key = useRef<THREE.DirectionalLight>(null);
   const fill = useRef<THREE.DirectionalLight>(null);
+  const filtered = useRef<THREE.HemisphereLight>(null);
+  const reducedMotion = usePrefersReducedMotion();
 
   useFrame((state) => {
     const lamp = key.current;
@@ -45,17 +48,37 @@ export function Lighting() {
     lamp.target.updateMatrixWorld();
 
     /*
-     * Underground fill. Nothing about the soil is legible under the key alone —
-     * it comes from above and there is no sky down here for it to come from —
-     * and the note is "escura e terrosa", not "unreadable". Rigged to the lens
-     * rather than to the world, which is what a macro rig would actually do,
-     * and gated on depth so Act I never sees a photon of it.
+     * Below the surface the key is no use on its own: it comes from above and
+     * there is nothing down here for it to come *from*. Two lights take over,
+     * both gated on depth so Act I never sees a photon of either.
+     *
+     * The hemisphere is the important one. It is light that has already been
+     * scattered — warm from the direction of the surface, almost nothing from
+     * below — which is exactly what daylight does a few centimetres into soil,
+     * and being a gradient rather than a direction it *cannot* produce a hard
+     * edge. It also gets weaker and flatter with depth on its own, because the
+     * ratio it is scaled by does.
+     *
+     * The lens-side fill is small and only there so the near face of the grain
+     * is not a silhouette. The note is "escura e terrosa", not unreadable.
      */
+    const below = Math.min(1, Math.max(0, (LANDING_Y + 0.2 - state.camera.position.y) / 0.5));
+    const depth = Math.max(0, LANDING_Y - state.camera.position.y);
+    // Breath: the pause is the one moment nothing moves, and a frame that is
+    // *perfectly* still reads as a still. Environment only, never the growth,
+    // and it stops at the door if the visitor asked for less motion.
+    const breath =
+      p > 1.88 && !reducedMotion ? Math.sin(state.clock.elapsedTime * 0.42) * 0.035 : 0;
+
+    const scattered = filtered.current;
+    if (scattered) {
+      scattered.intensity = below * (0.72 / (1 + depth * 0.42)) * (1 + breath);
+    }
+
     const under = fill.current;
     if (under) {
-      const below = Math.min(1, Math.max(0, (LANDING_Y + 0.2 - state.camera.position.y) / 0.5));
-      under.intensity = below * 0.62;
-      under.position.copy(state.camera.position).add(new THREE.Vector3(0.9, 0.7, 0.2));
+      under.intensity = below * 0.3 * (1 + breath);
+      under.position.copy(state.camera.position).add(new THREE.Vector3(0.9, 0.5, 0.2));
       under.target.position.set(0, y, 0);
       under.target.updateMatrixWorld();
     }
@@ -75,6 +98,7 @@ export function Lighting() {
       <directionalLight position={[-2.4, 0.4, 1.3]} intensity={0.4} color="#CBBEAB" />
       <directionalLight position={[-1.0, 1.5, -2.4]} intensity={0.62} color="#FFE6C6" />
 
+      <hemisphereLight ref={filtered} intensity={0} color="#D3B187" groundColor="#0D0905" />
       <directionalLight ref={fill} intensity={0} color="#E4D2B6" />
     </>
   );

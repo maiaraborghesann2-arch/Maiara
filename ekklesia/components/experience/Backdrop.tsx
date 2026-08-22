@@ -95,7 +95,7 @@ export function Backdrop() {
      * sheet of paper rather than pressing into a material. Beginning the
      * transition a little before contact is what gives the entry a body.
      */
-    const below = LANDING_Y + 0.35 - camera.position.y;
+    const below = LANDING_Y + 0.55 - camera.position.y;
     // Short. Soil is opaque — a hand's breadth under the surface it is already
     // dark, and a long ramp leaves the frame in a pale grey nowhere for the
     // whole crossing instead of putting us inside a material.

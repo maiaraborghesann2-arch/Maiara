@@ -9,11 +9,20 @@ import { palette } from "@/lib/palette";
 import { stageProgress } from "@/lib/scroll/stage";
 import { LANDING_Y, soil as choreo } from "@/lib/scroll/choreography";
 import { createRockGeometries } from "./rockGeometry";
+import { createFilaments } from "./soilDetritus";
 
 const GRAIN_COUNT = 5200;
 /** Stones per shape family. Six families, so no silhouette repeats nearby. */
 const ROCK_SHAPES = 6;
 const ROCK_PER_SHAPE = 34;
+/**
+ * Stones in the corridor the lens travels down. These exist to be *out of
+ * focus*: real geometry passing centimetres from the camera, which the
+ * depth-of-field pass turns into soft occluding shapes on its own. The previous
+ * round faked this with dark sprites; with a real lens in the chain the fake is
+ * both unnecessary and doubled.
+ */
+const NEAR_COUNT = 40;
 /** How far down the volume extends. Deeper than the roots ever reach. */
 const FLOOR_Y = -8.5;
 /** Radius of the body of earth the descent happens inside. */
@@ -54,6 +63,8 @@ export function Soil() {
   const grains = useRef<THREE.Points>(null);
   const grainMaterial = useRef<THREE.ShaderMaterial>(null);
   const rocks = useRef<(THREE.InstancedMesh | null)[]>([]);
+  const near = useRef<THREE.InstancedMesh>(null);
+  const fibre = useRef<THREE.Mesh>(null);
   const height = useThree((state) => state.size.height);
 
   const fog = useMemo(() => new THREE.FogExp2(palette.soil, 0), []);
@@ -98,6 +109,21 @@ export function Soil() {
    */
   const shaftGeometry = useMemo(() => new THREE.SphereGeometry(SHAFT_R, 64, 44), []);
   const rockGeometries = useMemo(() => createRockGeometries(ROCK_SHAPES, 0x5710), []);
+  const filamentGeometry = useMemo(
+    () =>
+      createFilaments({
+        count: 170,
+        seed: 0x0f1b,
+        top: LANDING_Y - 0.05,
+        bottom: FLOOR_Y + 1.5,
+        radius: 5.2,
+        // Clear of the root system. Old growth crossing the living roots at the
+        // same value reads as debris on the lens, and worse, competes with the
+        // one thing the frame is about.
+        keepOut: 1.15,
+      }),
+    [],
+  );
 
   const grainGeometry = useMemo(() => {
     const random = mulberry32(0x5011);
@@ -213,6 +239,30 @@ export function Soil() {
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
+
+    const front = near.current;
+    if (front) {
+      for (let i = 0; i < NEAR_COUNT; i++) {
+        /*
+         * Off the centre line by construction — these are meant to graze the
+         * edges of the frame as the camera falls past them, not to sit in front
+         * of the subject. Spread along the whole corridor so something is
+         * always close to the lens at every depth.
+         */
+        const sign = random() < 0.5 ? -1 : 1;
+        position.set(
+          sign * (0.34 + random() * 1.7),
+          LANDING_Y - 0.1 - random() * 2.7,
+          0.55 + random() * 4.5,
+        );
+        euler.set(random() * 6.28, random() * 6.28, random() * 6.28);
+        quaternion.setFromEuler(euler);
+        const size = 0.014 + random() ** 1.8 * 0.062;
+        scale.set(size, size * (0.6 + random() * 0.55), size * (0.72 + random() * 0.5));
+        front.setMatrixAt(i, matrix.compose(position, quaternion, scale));
+      }
+      front.instanceMatrix.needsUpdate = true;
+    }
   }, []);
 
   useEffect(
@@ -222,6 +272,7 @@ export function Soil() {
       surfaceGeometry.dispose();
       shaftGeometry.dispose();
       for (const rock of rockGeometries) rock.dispose();
+      filamentGeometry.dispose();
       grainGeometry.dispose();
     },
     [
@@ -230,6 +281,7 @@ export function Soil() {
       surfaceGeometry,
       shaftGeometry,
       rockGeometries,
+      filamentGeometry,
       grainGeometry,
     ],
   );
@@ -257,6 +309,8 @@ export function Soil() {
     const under = camY < LANDING_Y - 0.01;
     if (shaft.current) shaft.current.visible = under;
     for (const mesh of rocks.current) if (mesh) mesh.visible = below > 0.01;
+    if (near.current) near.current.visible = below > 0.01;
+    if (fibre.current) fibre.current.visible = below > 0.01;
     if (grains.current) grains.current.visible = below > 0.01;
 
     if (grainMaterial.current) {
@@ -346,6 +400,29 @@ export function Soil() {
           />
         </instancedMesh>
       ))}
+
+      {/* The near field: real matter for the lens to be soft about. */}
+      <instancedMesh
+        ref={near}
+        args={[rockGeometries[0], undefined, NEAR_COUNT]}
+        visible={false}
+        frustumCulled={false}
+      >
+        <meshStandardMaterial
+          vertexColors
+          // Near enough to the lens to be lit like a subject if you let it.
+          // These are silhouettes; anything brighter reads as dirt on the glass.
+          color="#20140A"
+          roughness={1}
+          metalness={0}
+          envMapIntensity={0.15}
+        />
+      </instancedMesh>
+
+      {/* Old growth: dead rootlets and fibre threaded through the profile. */}
+      <mesh ref={fibre} geometry={filamentGeometry} visible={false} frustumCulled={false}>
+        <meshStandardMaterial color="#2A1F14" roughness={1} metalness={0} />
+      </mesh>
 
       <points ref={grains} geometry={grainGeometry} visible={false} frustumCulled={false}>
         <shaderMaterial

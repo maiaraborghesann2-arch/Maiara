@@ -165,3 +165,28 @@ export function beatProgress(beat: Beat, p: number): number {
   const t = (p - beat.start) / (beat.end - beat.start);
   return t < 0 ? 0 : t > 1 ? 1 : t;
 }
+
+/**
+ * Named stops on the stage clock, for review.
+ *
+ * These are not part of the choreography — nothing samples them. They exist so
+ * a specific moment in Act II can be named, jumped to and argued about, instead
+ * of being described as "somewhere around two thirds of the way down". The
+ * `?debug` panel lists them and scrolls to them on click.
+ */
+export type Checkpoint = {
+  id: string;
+  label: string;
+  note: string;
+  /** Where on the stage clock (0 → 2) this moment sits. */
+  at: number;
+};
+
+export const CHECKPOINTS: readonly Checkpoint[] = [
+  { id: "cp1", label: "01 superfície", note: "A semente toca a terra.", at: 1.26 },
+  { id: "cp2", label: "02 entrando", note: "A lente atravessa a superfície.", at: 1.31 },
+  { id: "cp3", label: "03 subterrâneo", note: "Ambiente completo, semente intacta.", at: 1.46 },
+  { id: "cp4", label: "04 germinação", note: "A casca abre, a primeira raiz.", at: 1.66 },
+  { id: "cp5", label: "05 sistema", note: "Principal + ramificações.", at: 1.88 },
+  { id: "cp6", label: "06 pausa", note: "Sistema completo e a frase.", at: 2.0 },
+] as const;

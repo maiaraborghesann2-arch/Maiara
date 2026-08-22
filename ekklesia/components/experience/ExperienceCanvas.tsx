@@ -7,13 +7,13 @@ import { palette } from "@/lib/palette";
 import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 import { Backdrop } from "./Backdrop";
 import { Grade } from "./Grade";
+import { Focus } from "./Focus";
 import { CameraRig } from "./CameraRig";
 import { Burst } from "./Burst";
 import { Lighting } from "./Lighting";
 import { Motes } from "./Motes";
 import { Roots } from "./Roots";
 import { Soil } from "./Soil";
-import { SoilBokeh } from "./SoilBokeh";
 import { GroundShadow } from "./GroundShadow";
 import { Seed } from "./Seed";
 import { LANDING_Y, dust } from "@/lib/scroll/choreography";
@@ -33,10 +33,19 @@ export function ExperienceCanvas() {
 
   return (
     <div className="stage" aria-hidden="true">
+      {/*
+        `near` is 0.02, not the usual tenth of a unit. The crossing takes the
+        lens to within a few centimetres of the ground plane, and at a tenth the
+        near plane slices the ground away across the lower third of the frame —
+        the shot opens onto whatever is behind it, which read as a hard straight
+        edge with the underground showing through. `far` comes in to match so
+        the depth buffer keeps its precision for the depth-of-field pass, which
+        reads it.
+      */}
       <Canvas
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: false }}
-        camera={{ fov: 34, near: 0.1, far: 100, position: [0, 0.3, 5.6] }}
+        camera={{ fov: 34, near: 0.02, far: 60, position: [0, 0.3, 5.6] }}
         onCreated={({ gl, scene }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.08;
@@ -51,7 +60,6 @@ export function ExperienceCanvas() {
         <GroundShadow />
         <Soil />
         <Roots />
-        <SoilBokeh />
 
         {/* Act I's landing, then Act II's planting. Same component, two beats. */}
         <Burst originY={LANDING_Y} amount={dust.impact} from={0.745} span={0.175} />
@@ -71,6 +79,8 @@ export function ExperienceCanvas() {
         <Backdrop />
         {/* Drawn over everything, so the vignette contains the soil too. */}
         <Grade />
+        {/* Takes over the render once the lens is under the surface. */}
+        <Focus />
       </Canvas>
     </div>
   );

@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { track } from "@/lib/math";
 import { sceneState } from "@/lib/scene/sharedState";
 import { stageProgress } from "@/lib/scroll/stage";
-import { GROUND_Y, seed as choreo } from "@/lib/scroll/choreography";
+import { GROUND_Y, germination, seed as choreo } from "@/lib/scroll/choreography";
 import { SEED_HALF_HEIGHT, createSeedGeometry, createSeedMaps } from "./seedGeometry";
 
 /**
@@ -24,6 +24,7 @@ import { SEED_HALF_HEIGHT, createSeedGeometry, createSeedMaps } from "./seedGeom
  */
 export function Seed({ reducedMotion }: { reducedMotion: boolean }) {
   const ref = useRef<THREE.Mesh>(null);
+  const split = useRef<{ uniforms: Record<string, { value: number }> } | null>(null);
   const geometry = useMemo(() => createSeedGeometry(), []);
   const maps = useMemo(() => createSeedMaps(), []);
 
@@ -65,6 +66,13 @@ export function Seed({ reducedMotion }: { reducedMotion: boolean }) {
     mesh.rotation.y = track(choreo.rotationY, p) + idle * time * 0.016;
     mesh.rotation.z = track(choreo.rotationZ, p) + idle * Math.cos(time * 0.27) * 0.014;
 
+    /*
+     * The shell parting. Zero everywhere in Act I — the uniform is driven off
+     * the germination track, which does not leave zero until 1.46 — so the
+     * grain Act I was approved on is bit-for-bit the closed one.
+     */
+    if (split.current) split.current.uniforms.uSplit.value = track(germination.aperture, p);
+
     // Publish for the backdrop's light pool and the shadow rig.
     sceneState.seedPosition.copy(mesh.position);
     sceneState.seedScale = scale;
@@ -81,6 +89,28 @@ export function Seed({ reducedMotion }: { reducedMotion: boolean }) {
         normalScale={new THREE.Vector2(1.15, 1.15)}
         metalness={0}
         envMapIntensity={0.55}
+        side={THREE.DoubleSide}
+        onBeforeCompile={(shader) => {
+          shader.uniforms.uSplit = { value: 0 };
+          split.current = shader as unknown as {
+            uniforms: Record<string, { value: number }>;
+          };
+
+          shader.vertexShader = "uniform float uSplit;\n" + shader.vertexShader;
+          /*
+           * A seam, not a hinge. The two halves draw apart along x below the
+           * equator and stay joined at the top, which is how a seed coat
+           * actually splits — and it opens exactly where the radicle leaves.
+           */
+          shader.vertexShader = shader.vertexShader.replace(
+            "#include <begin_vertex>",
+            `#include <begin_vertex>
+             float lower = smoothstep(0.1, -0.85, transformed.y);
+             float part = uSplit * lower * 0.2;
+             transformed.x += sign(transformed.x + 0.0001) * part;
+             transformed.y -= uSplit * lower * 0.04;`,
+          );
+        }}
       />
     </mesh>
   );

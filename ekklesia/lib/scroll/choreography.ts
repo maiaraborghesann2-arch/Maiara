@@ -459,6 +459,6 @@ export const germination = {
     { at: 1.78, value: 0.4 },
     { at: 1.88, value: 0.72 },
     { at: 1.96, value: 0.94 },
-    { at: 2.0, value: 1, ease: easing.outCubic },
+    { at: 2.0, value: 1.06, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };

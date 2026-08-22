@@ -474,7 +474,44 @@ button {
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: 0.62rem;
   letter-spacing: 0.02em;
+  /* The checkpoint buttons need clicks; the rest of the panel is inert. */
   pointer-events: none;
+}
+
+.readout__checkpoints {
+  display: grid;
+  gap: 1px;
+  margin-bottom: 0.6rem;
+  pointer-events: auto;
+}
+
+.readout__checkpoint {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.24rem 0.35rem;
+  border: 0;
+  border-radius: 2px;
+  background: rgba(230, 219, 201, 0.06);
+  color: rgba(230, 219, 201, 0.62);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.readout__checkpoint:hover {
+  background: rgba(230, 219, 201, 0.14);
+  color: #e6dbc9;
+}
+
+.readout__checkpoint[data-active="true"] {
+  background: var(--clay);
+  color: #fdf6ec;
+}
+
+.readout__at {
+  opacity: 0.6;
 }
 
 .readout__global {
