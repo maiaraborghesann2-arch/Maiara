@@ -1,4 +1,5 @@
 import {
+  ACT_FOUR_TRACK_VH,
   ACT_ONE_TRACK_VH,
   ACT_THREE_TRACK_VH,
   ACT_TWO_TRACK_VH,
@@ -26,19 +27,20 @@ export default function Page() {
       <ScrollDriver heightVh={ACT_ONE_TRACK_VH} chapter="one" />
       <ScrollDriver heightVh={ACT_TWO_TRACK_VH} chapter="two" />
       <ScrollDriver heightVh={ACT_THREE_TRACK_VH} chapter="three" />
+      <ScrollDriver heightVh={ACT_FOUR_TRACK_VH} chapter="four" />
 
       {/*
         Handoff. Act II ends with the camera at rest inside the soil and the
         root system fully out; frame 10 picks up from there.
       */}
       <section className="handoff">
-        <p className="handoff__eyebrow">Fase 1 · Atos I, II e III</p>
-        <h2 className="handoff__title">Agora, subimos.</h2>
+        <p className="handoff__eyebrow">Fase 1 · Atos I a IV</p>
+        <h2 className="handoff__title">Ela cresce.</h2>
         <p className="handoff__body">
-          O protótipo cobre os quadros 01 a 11 do storyboard. Termina com o
-          broto recém-saído da terra e as duas primeiras folhas se abrindo — é
-          daqui que o crescimento da planta continua, sem corte e sem recarregar
-          a cena.
+          O protótipo cobre os quadros 01 a 12 do storyboard. Termina com uma
+          planta jovem — mesmo eixo, da ponta da raiz à ponta da folha — ainda
+          pequena e ainda em escala macro. É daqui que a árvore continua, sem
+          corte e sem recarregar a cena.
         </p>
 
         <ol className="handoff__list">

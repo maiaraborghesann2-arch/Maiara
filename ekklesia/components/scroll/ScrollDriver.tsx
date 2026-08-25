@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { progressStore } from "@/lib/scroll/progressStore";
-import { actThreeStore, actTwoStore } from "@/lib/scroll/stage";
+import { actFourStore, actThreeStore, actTwoStore } from "@/lib/scroll/stage";
 
 type Props = {
   /** Length of the narrative track, in viewport heights. */
@@ -15,7 +15,7 @@ type Props = {
    * page is a Server Component, and an object full of functions cannot cross
    * that boundary.
    */
-  chapter: "one" | "two" | "three";
+  chapter: "one" | "two" | "three" | "four";
 };
 
 /**
@@ -30,7 +30,13 @@ type Props = {
  */
 export function ScrollDriver({ heightVh, chapter }: Props) {
   const store =
-    chapter === "one" ? progressStore : chapter === "two" ? actTwoStore : actThreeStore;
+    chapter === "one"
+      ? progressStore
+      : chapter === "two"
+        ? actTwoStore
+        : chapter === "three"
+          ? actThreeStore
+          : actFourStore;
   const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

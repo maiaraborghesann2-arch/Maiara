@@ -205,6 +205,18 @@ export const camera = {
     { at: 2.86, value: -1.82 },
     { at: 2.94, value: -1.56, ease: easing.outCubic },
     { at: 3.0, value: -1.44 },
+
+    /*
+     * Act IV. The lens rises with the growing tip and gives ground almost
+     * imperceptibly — a whole chapter to go from a metre and a half back to
+     * three. The note is "muito sutil", and a pull-back you can feel happening
+     * turns growth into a reveal, which is a different and much cheaper effect.
+     */
+    { at: 3.22, value: -1.4, ease: easing.inOutSine },
+    { at: 3.48, value: -1.33 },
+    { at: 3.72, value: -1.26 },
+    { at: 3.9, value: -1.2 },
+    { at: 4.0, value: -1.16, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /**
@@ -252,6 +264,12 @@ export const camera = {
     { at: 2.74, value: 0.6 },
     { at: 2.86, value: 0.95 },
     { at: 3.0, value: 1.45, ease: easing.outCubic },
+
+    { at: 3.22, value: 1.56, ease: easing.inOutSine },
+    { at: 3.48, value: 1.82 },
+    { at: 3.72, value: 2.2 },
+    { at: 3.9, value: 2.15 },
+    { at: 4.0, value: 2.4, ease: easing.outCubic },
   ] satisfies Keyframe[],
 
   /**
@@ -303,6 +321,13 @@ export const camera = {
     { at: 2.74, value: -2.06 },
     { at: 2.86, value: -1.7 },
     { at: 3.0, value: -1.56, ease: easing.outCubic },
+
+    // Climbs with the plant, staying just below the growing tip so the shot
+    // always has somewhere left to go.
+    { at: 3.22, value: -1.46, ease: easing.inOutSine },
+    { at: 3.48, value: -1.34 },
+    { at: 3.72, value: -1.24 },
+    { at: 4.0, value: -1.14, ease: easing.outCubic },
   ] satisfies Keyframe[],
 };
 
@@ -332,6 +357,7 @@ export const light = {
     { at: 2.7, value: 1.05 },
     { at: 2.86, value: 1.7 },
     { at: 3.0, value: 2.1, ease: easing.outCubic },
+    { at: 4.0, value: 2.35, ease: easing.inOutSine },
   ] satisfies Keyframe[],
 
   azimuth: [
@@ -340,6 +366,7 @@ export const light = {
     { at: 1.0, value: 0.24, ease: easing.outCubic },
     { at: 2.0, value: 0.08, ease: easing.inOutSine },
     { at: 3.0, value: 0.3, ease: easing.inOutSine },
+    { at: 4.0, value: 0.46, ease: easing.inOutSine },
   ] satisfies Keyframe[],
 };
 
@@ -414,6 +441,7 @@ export const backdrop = {
     { at: 2.0, value: 0.02 },
     { at: 2.7, value: 0.02 },
     { at: 3.0, value: 0.34, ease: easing.outCubic },
+    { at: 4.0, value: 0.4 },
   ] satisfies Keyframe[],
 
   /** Page-level cast shadow. Kept low — the grain now has a real contact
@@ -438,6 +466,7 @@ export const backdrop = {
     { at: 2.0, value: 0.06 },
     { at: 2.6, value: 0.06 },
     { at: 3.0, value: 0.26, ease: easing.outCubic },
+    { at: 4.0, value: 0.18 },
   ] satisfies Keyframe[],
 
   vignette: [
@@ -453,6 +482,7 @@ export const backdrop = {
     // Opens back up as we surface: the room stops being a room.
     { at: 2.6, value: 0.42 },
     { at: 3.0, value: 0.2, ease: easing.outCubic },
+    { at: 4.0, value: 0.17 },
   ] satisfies Keyframe[],
 
   /**
@@ -570,5 +600,40 @@ export const shoot = {
     { at: 2.86, value: 0 },
     { at: 2.95, value: 0.55, ease: easing.outCubic },
     { at: 3.0, value: 1, ease: easing.outCubic },
+  ] satisfies Keyframe[],
+};
+
+/**
+ * Act IV only.
+ *
+ * `growth` continues the shared timeline a third time: roots occupy `0..1` of
+ * it, the shoot `1.08..2.08`, and the plant `2.12..3.12`. One uniform, one mesh,
+ * root tip to leaf tip — which is why the stem that left the ground is provably
+ * the stem that carries the leaves, rather than a second model asserted to be
+ * the same one.
+ *
+ * Slow at the start: the first thing that has to happen is the axis simply
+ * getting longer, and leaves that arrive while it is still short read as a
+ * plant assembling rather than growing.
+ */
+export const plant = {
+  growth: [
+    { at: 3.0, value: 0 },
+    { at: 3.1, value: 0.04, ease: easing.outCubic },
+    { at: 3.34, value: 0.24 },
+    { at: 3.58, value: 0.5, ease: easing.inOutSine },
+    { at: 3.8, value: 0.76 },
+    { at: 3.94, value: 0.95, ease: easing.outCubic },
+    { at: 4.0, value: 1 },
+  ] satisfies Keyframe[],
+
+  /**
+   * The empty coat finally dropping off. It has been riding the node since the
+   * surface; a husk that stays on for the whole of the plant's growth reads as
+   * part of the plant, which is the one thing it is not.
+   */
+  shed: [
+    { at: 3.0, value: 0 },
+    { at: 3.2, value: 1, ease: easing.inOutSine },
   ] satisfies Keyframe[],
 };

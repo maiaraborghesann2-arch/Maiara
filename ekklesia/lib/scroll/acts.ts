@@ -113,7 +113,7 @@ export const STORYBOARD: readonly StoryboardFrame[] = [
 export type BeatId = "semente" | "despertar" | "queda" | "home";
 
 export type Beat = {
-  id: BeatId | ActTwoBeatId | ActThreeBeatId;
+  id: BeatId | ActTwoBeatId | ActThreeBeatId | ActFourBeatId;
   /** Start of the beat on the Act I track, 0..1. */
   start: number;
   /** End of the beat on the Act I track, 0..1. */
@@ -179,6 +179,23 @@ export const ACT_THREE: Record<ActThreeBeatId, Beat> = {
   broto: { id: "broto", start: 2.88, end: 3.0 },
 };
 
+/**
+ * Act IV. Long, because the note for it is "lentamente" four times over — a
+ * stem that gains its height in a third of a screen reads as a time-lapse, and
+ * the whole point of the beat is that it does not.
+ */
+export const ACT_FOUR_TRACK_VH = 1100;
+
+export type ActFourBeatId = "alongamento" | "primeira" | "segunda" | "ramos" | "jovem";
+
+export const ACT_FOUR: Record<ActFourBeatId, Beat> = {
+  alongamento: { id: "alongamento", start: 3.0, end: 3.3 },
+  primeira: { id: "primeira", start: 3.16, end: 3.48 },
+  segunda: { id: "segunda", start: 3.4, end: 3.68 },
+  ramos: { id: "ramos", start: 3.6, end: 3.88 },
+  jovem: { id: "jovem", start: 3.82, end: 4.0 },
+};
+
 /** Remaps global track progress into a beat's own 0..1 timeline. */
 export function beatProgress(beat: Beat, p: number): number {
   const t = (p - beat.start) / (beat.end - beat.start);
@@ -213,4 +230,8 @@ export const CHECKPOINTS: readonly Checkpoint[] = [
   { id: "cp9", label: "09 subida", note: "Subindo pelo caule, a luz volta.", at: 2.74 },
   { id: "cp10", label: "10 superfície", note: "O broto rompe a terra.", at: 2.9 },
   { id: "cp11", label: "11 broto", note: "Pausa: as duas primeiras folhas.", at: 3.0 },
+  { id: "cp12", label: "12 alongar", note: "O caule ganha altura.", at: 3.24 },
+  { id: "cp13", label: "13 folha", note: "A primeira folha se abre.", at: 3.46 },
+  { id: "cp14", label: "14 ramos", note: "Segunda folha e as ramificações.", at: 3.74 },
+  { id: "cp15", label: "15 jovem", note: "A planta jovem.", at: 4.0 },
 ] as const;

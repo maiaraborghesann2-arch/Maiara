@@ -10,6 +10,7 @@ import { stageProgress } from "@/lib/scroll/stage";
 import {
   GROUND_Y,
   germination,
+  plant,
   seed as choreo,
   shoot,
 } from "@/lib/scroll/choreography";
@@ -71,7 +72,12 @@ export function Seed({ reducedMotion }: { reducedMotion: boolean }) {
      * leaves spend the whole beat behind an opaque ball.
      */
     const shed = track(shoot.cotyledon, p);
-    mesh.scale.setScalar(scale * (1 - shed * 0.46));
+    // And then it falls off. A husk that rides the node through the plant's
+    // whole growth stops reading as a discarded coat and starts reading as part
+    // of the plant, which is the one thing it is not.
+    const dropped = track(plant.shed, p);
+    mesh.scale.setScalar(scale * (1 - shed * 0.46) * (1 - dropped));
+    mesh.visible = dropped < 0.995;
 
     // Resting height derives from the current scale, so the grain stays welded
     // to the ledge however the scale is retuned.

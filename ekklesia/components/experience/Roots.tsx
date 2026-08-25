@@ -8,10 +8,11 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 
 import { track } from "@/lib/math";
 import { stageProgress } from "@/lib/scroll/stage";
-import { SEED_PLANTED_Y, germination, shoot } from "@/lib/scroll/choreography";
+import { SEED_PLANTED_Y, germination, plant, shoot } from "@/lib/scroll/choreography";
 import { ROOT_DEPTH, buildRootGeometry } from "./rootSystem";
 import { createRockGeometries } from "./rockGeometry";
-import { SHOOT_GROW_FROM, buildShootGeometry, shootUniform } from "./shootSystem";
+import { SHOOT_GROW_FROM, buildShootGeometry } from "./shootSystem";
+import { axisUniform, buildPlantGeometry } from "./plantSystem";
 
 /**
  * Where the radicle starts — *inside* the grain, a few centimetres above the
@@ -37,18 +38,23 @@ function mulberry32(seed: number) {
 
 export function Roots() {
   /*
-   * Root and shoot, merged. Not a stylistic choice — the narration claims the
-   * thing descending and the thing rising are one organ, and the cheapest way
-   * to make that true rather than merely asserted is for them to be one mesh
-   * with one material and one growth attribute. There is no crossfade to get
-   * wrong because there are not two objects.
+   * Root, shoot and plant, merged into one.
+   *
+   * Not a stylistic choice. The narration claims the thing that went down and
+   * the thing that came up and the thing carrying the leaves are one organ, and
+   * the cheapest way to make that true rather than merely asserted is for them
+   * to be one mesh with one material and one growth attribute. There is no
+   * crossfade to get wrong because there are not two objects; there is nothing
+   * to keep in sync because there is one clock.
    */
   const { geometry, strands } = useMemo(() => {
     const roots = buildRootGeometry(ORIGIN);
     const stem = buildShootGeometry(SHOOT_GROW_FROM);
-    const merged = mergeGeometries([roots.geometry, stem], false)!;
+    const upper = buildPlantGeometry();
+    const merged = mergeGeometries([roots.geometry, stem, upper], false)!;
     roots.geometry.dispose();
     stem.dispose();
+    upper.dispose();
     return { geometry: merged, strands: roots.strands };
   }, []);
   const aperture = useRef<THREE.Mesh>(null);
@@ -118,7 +124,7 @@ export function Roots() {
   useFrame(() => {
     const p = stageProgress();
     const grow = track(germination.growth, p);
-    const rising = shootUniform(grow, track(shoot.growth, p));
+    const rising = axisUniform(grow, track(shoot.growth, p), track(plant.growth, p));
 
     if (injected.current) injected.current.uniforms.uGrow.value = rising;
 

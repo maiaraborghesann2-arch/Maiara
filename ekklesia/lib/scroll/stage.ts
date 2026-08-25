@@ -4,11 +4,14 @@ import { createProgressStore, progressStore, type Listener } from "./progressSto
 export const actTwoStore = createProgressStore();
 /** Act III. Same again — it begins where Act II's ends. */
 export const actThreeStore = createProgressStore();
+/** Act IV. And again. */
+export const actFourStore = createProgressStore();
 
 /**
  * The stage clock: one continuous number across the whole piece.
  *
- * `0 → 1` is Act I, `1 → 2` is Act II, `2 → 3` is Act III. Adjacent scroll
+ * `0 → 1` is Act I, `1 → 2` is Act II, `2 → 3` is Act III, `3 → 4` is Act IV.
+ * Adjacent scroll
  * tracks each report their own `0..1`, and summing them gives a value that
  * never jumps at a boundary — which is what lets the camera keep descending through the surface
  * without a cut.
@@ -20,7 +23,9 @@ export const actThreeStore = createProgressStore();
  * what it was before Act II existed.
  */
 export function stageProgress(): number {
-  return progressStore.get() + actTwoStore.get() + actThreeStore.get();
+  return (
+    progressStore.get() + actTwoStore.get() + actThreeStore.get() + actFourStore.get()
+  );
 }
 
 /** Subscribe to the stage clock. Fires when either chapter advances. */
@@ -29,9 +34,11 @@ export function subscribeStage(listener: Listener) {
   const offOne = progressStore.subscribe(emit);
   const offTwo = actTwoStore.subscribe(emit);
   const offThree = actThreeStore.subscribe(emit);
+  const offFour = actFourStore.subscribe(emit);
   return () => {
     offOne();
     offTwo();
     offThree();
+    offFour();
   };
 }

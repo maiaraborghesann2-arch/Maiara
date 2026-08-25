@@ -22,7 +22,7 @@ export function ScrollIndicator() {
       thumb.style.transform = `translate3d(0, ${clamp(progress / 2) * 62}px, 0)`;
     }
     // Steps aside once the Home has assembled — the page takes over from there.
-    element.style.opacity = String(window4(progress, -0.02, -0.005, 2.9, 3.0) * 0.9);
+    element.style.opacity = String(window4(progress, -0.02, -0.005, 3.9, 4.0) * 0.9);
   }, []);
 
   const ref = useProgressElement<HTMLDivElement>(apply);

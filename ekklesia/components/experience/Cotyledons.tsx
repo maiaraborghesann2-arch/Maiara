@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { track } from "@/lib/math";
 import { sceneState } from "@/lib/scene/sharedState";
 import { stageProgress } from "@/lib/scroll/stage";
-import { shoot } from "@/lib/scroll/choreography";
+import { plant, shoot } from "@/lib/scroll/choreography";
 
 /**
  * The first two leaves.
@@ -34,9 +34,18 @@ export function Cotyledons() {
     const node = group.current;
     if (!node) return;
 
-    const open = track(shoot.cotyledon, stageProgress());
+    const p = stageProgress();
+    const open = track(shoot.cotyledon, p);
     node.visible = open > 0.004;
     if (!node.visible) return;
+
+    /*
+     * The cotyledons stay — they are the plant's first leaves and they do not
+     * go anywhere while the true leaves come in above them. But the coat they
+     * came out of is gone by then, so they stop being anchored to it and hold
+     * the node the hypocotyl ended at.
+     */
+    const released = track(plant.shed, p);
 
     const { seedPosition, seedScale } = sceneState;
     // Sat on the grain's upper pole; the coat is what they are made of.
@@ -44,7 +53,11 @@ export function Cotyledons() {
      * Anchored above the coat, which is slipping down as they expand — so they
      * read as the thing pushing it off rather than as two ears behind a nut.
      */
-    node.position.set(seedPosition.x, seedPosition.y + seedScale * 0.5, seedPosition.z);
+    node.position.set(
+      seedPosition.x,
+      seedPosition.y + seedScale * 0.5 * (1 - released) + released * seedScale * 0.36,
+      seedPosition.z,
+    );
     node.scale.setScalar(0.55 + open * 0.65);
 
     /*
@@ -54,7 +67,8 @@ export function Cotyledons() {
      */
     // Barely apart. A pair opened wide reads as a plant that has been up for a
     // week; this one broke through a moment ago.
-    const angle = 0.07 + open * 0.38;
+    // They open a little further once nothing is holding them shut.
+    const angle = 0.07 + open * 0.38 + released * 0.34;
     if (left.current) left.current.rotation.z = angle;
     if (right.current) right.current.rotation.z = -angle;
   });
@@ -96,8 +110,8 @@ export function Cotyledons() {
 function createBlade() {
   const ALONG = 14;
   const ACROSS = 5;
-  const LENGTH = 0.125;
-  const HALF_WIDTH = 0.036;
+  const LENGTH = 0.1;
+  const HALF_WIDTH = 0.027;
 
   const position = new Float32Array((ALONG + 1) * (ACROSS + 1) * 3);
   const colour = new Float32Array((ALONG + 1) * (ACROSS + 1) * 3);

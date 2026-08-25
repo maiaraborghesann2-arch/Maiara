@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
+  ACT_FOUR,
   ACT_ONE,
   ACT_THREE,
   ACT_TWO,
@@ -29,6 +30,11 @@ const BEATS: Beat[] = [
   ACT_THREE.subida,
   ACT_THREE.superficie,
   ACT_THREE.broto,
+  ACT_FOUR.alongamento,
+  ACT_FOUR.primeira,
+  ACT_FOUR.segunda,
+  ACT_FOUR.ramos,
+  ACT_FOUR.jovem,
 ];
 
 const LABELS = [
@@ -46,6 +52,11 @@ const LABELS = [
   "12 subida",
   "13 superfície",
   "14 broto",
+  "15 alongar",
+  "16 folha",
+  "17 segunda",
+  "18 ramos",
+  "19 jovem",
 ];
 
 /**
@@ -107,24 +118,27 @@ export function BeatReadout() {
    */
   const jump = useCallback((at: number) => {
     const tracks = document.querySelectorAll<HTMLElement>("[data-scroll-track]");
-    if (tracks.length < 3) return;
+    if (tracks.length < 4) return;
     const vh = window.innerHeight;
     const oneEnd = tracks[0].getBoundingClientRect().height - vh;
     const twoEnd = oneEnd + tracks[1].getBoundingClientRect().height;
     const threeEnd = twoEnd + tracks[2].getBoundingClientRect().height;
+    const fourEnd = threeEnd + tracks[3].getBoundingClientRect().height;
     const y =
       at <= 1
         ? at * oneEnd
         : at <= 2
           ? oneEnd + (at - 1) * (twoEnd - vh - oneEnd)
-          : twoEnd - vh + (at - 2) * (threeEnd - vh - (twoEnd - vh));
+          : at <= 3
+            ? twoEnd - vh + (at - 2) * (threeEnd - twoEnd)
+            : threeEnd - vh + (at - 3) * (fourEnd - threeEnd);
     window.scrollTo({ top: Math.round(y), behavior: "smooth" });
   }, []);
 
   return (
     <div ref={ref} className="readout" style={{ display: enabled ? undefined : "none" }}>
       <div className="readout__global">
-        stage <span data-global>0.000</span> / 3 · abaixo{" "}
+        stage <span data-global>0.000</span> / 4 · abaixo{" "}
         <span data-depth>0.00</span>
       </div>
       <div className="readout__checkpoints">
