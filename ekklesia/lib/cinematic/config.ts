@@ -7,15 +7,30 @@
  * No component below this file contains a timing number.
  *
  * Measured from the file itself (`moov`/`mvhd`, not guessed): 15.042 s,
- * 1920×1080, 24 fps, H.264, no audio track.
+ * 24 fps, H.264, no audio track. The scrub master is 1440×810; the original
+ * is 1920×1080. Same 16:9, so nothing about the framing changes.
  */
 
-export const VIDEO_SRC = "/media/ekklesia-seed-to-tree.mp4";
+/*
+ * The scrub master, not the delivery master.
+ *
+ * Same footage, same duration, same framing — re-encoded for one reason: the
+ * original carried two keyframes across fifteen seconds, so an arbitrary seek
+ * cost the decoder up to 180 inter-frames and the picture lurched. This one has
+ * a keyframe on every frame (361 of 361, verified in the container), so any
+ * position the scroll asks for decodes exactly one frame.
+ *
+ * It is also a third of the size, because the original was Constrained
+ * Baseline at a flat 12.3 Mbps and High profile at the same visual quality is
+ * far more efficient. `ekklesia-seed-to-tree.mp4` stays alongside it as the
+ * untouched source.
+ */
+export const VIDEO_SRC = "/media/scrub.mp4";
 
 /** Read from the container. Only a fallback — the element's own `duration`
  *  wins as soon as metadata arrives. */
 export const VIDEO_DURATION = 15.042;
-export const VIDEO_ASPECT = 1920 / 1080;
+export const VIDEO_ASPECT = 16 / 9;
 
 /** How much scroll the opening occupies. */
 export const CINEMATIC_TRACK_VH = 500;

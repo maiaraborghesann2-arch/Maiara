@@ -52,7 +52,7 @@ let js = result.outputFiles[0].text;
  * outputs were allowed to disagree, the shared link ran two whole acts short of
  * the dev server and nothing caught it.
  */
-const VIDEO = resolve(root, "public/media/ekklesia-seed-to-tree.mp4");
+const VIDEO = resolve(root, "public/media/scrub.mp4");
 // Base64 inflates by four thirds, and the host caps a rendered artifact at
 // 16 MB. This leaves room for the bundle and the stylesheet on top.
 const INLINE_BUDGET = 10 * 1024 * 1024;
@@ -74,7 +74,7 @@ if (videoBytes > INLINE_BUDGET) {
       "    ffmpeg -i public/media/ekklesia-seed-to-tree.mp4 \\",
       "      -vf scale=1280:-2 -c:v libx264 -profile:v high -crf 26 \\",
       "      -g 1 -keyint_min 1 -sc_threshold 0 -an -movflags +faststart \\",
-      "      public/media/scrub.mp4",
+      "      public/media/scrub.mp4  # já é o arquivo em uso",
       "",
       "  Depois: mv public/media/scrub.mp4 public/media/ekklesia-seed-to-tree.mp4",
       "",
@@ -90,7 +90,7 @@ if (videoBytes > INLINE_BUDGET) {
 }
 
 const videoData = `data:video/mp4;base64,${readFileSync(VIDEO).toString("base64")}`;
-js = js.replaceAll("/media/ekklesia-seed-to-tree.mp4", videoData);
+js = js.replaceAll("/media/scrub.mp4", videoData);
 
 // Inline the stylesheet too — the artifact host allows no external requests
 // except Google Fonts.
