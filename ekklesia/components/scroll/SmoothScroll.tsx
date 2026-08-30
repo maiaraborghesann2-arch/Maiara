@@ -5,8 +5,7 @@ import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-import { progressStore } from "@/lib/scroll/progressStore";
-import { actFourStore, actThreeStore, actTwoStore } from "@/lib/scroll/stage";
+import { cinematicStore } from "@/lib/cinematic/store";
 import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
 /** How fast the damped progress chases the raw scroll position. */
@@ -17,10 +16,10 @@ const DAMP_LAMBDA = 7.5;
  *
  * Everything time-based hangs off GSAP's ticker here — Lenis' inertia,
  * ScrollTrigger's recalculation, and the progress damping — in that order.
- * Keeping them in a single loop is what guarantees the 3D scene and the HTML
- * overlay are reading the same progress value within the same frame; two
- * independent rAF loops would let them drift by a frame and the captions would
- * visibly lag the seed.
+ * Keeping them in a single loop is what guarantees the footage and the page are
+ * reading the same progress value within the same frame; two independent rAF
+ * loops would let them drift, and a video scrubbed off a second clock reads as
+ * lagging the scroll however smooth each half is on its own.
  */
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const reducedMotion = usePrefersReducedMotion();
@@ -43,23 +42,20 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 
     const tick = (time: number, deltaMs: number) => {
       lenis?.raf(time * 1000);
-      // Every chapter advances in the same tick, so the stage clock they sum
-      // to never sees one of its parts lag another by a frame.
+      /*
+       * The cinematic opening's progress is damped in the same tick that drives
+       * Lenis, so the value the video is scrubbed against and the position the
+       * page is actually at can never be a frame apart.
+       */
       const dt = Math.min(deltaMs, 50) / 1000;
-      progressStore.advance(dt, lambda);
-      actTwoStore.advance(dt, lambda);
-      actThreeStore.advance(dt, lambda);
-      actFourStore.advance(dt, lambda);
+      cinematicStore.advance(dt, lambda);
     };
 
     gsap.ticker.add(tick);
     // Without this, GSAP "catches up" after a stall and the scrub jumps.
     gsap.ticker.lagSmoothing(0);
 
-    progressStore.sync();
-    actTwoStore.sync();
-    actThreeStore.sync();
-    actFourStore.sync();
+    cinematicStore.sync();
 
     return () => {
       gsap.ticker.remove(tick);
