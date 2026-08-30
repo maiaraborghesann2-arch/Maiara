@@ -6,24 +6,46 @@
  * that curve is built around, and how the frame is cropped at each breakpoint.
  * No component below this file contains a timing number.
  *
- * Measured from the file itself (`moov`/`mvhd`, not guessed): 15.042 s,
- * 24 fps, H.264, no audio track. The scrub master is 1440×810; the original
- * is 1920×1080. Same 16:9, so nothing about the framing changes.
+ * All of the times below were measured off the footage, not chosen by eye. The
+ * film was sampled frame by frame for mean luminance and for inter-frame
+ * change, and the beat boundaries sit exactly where those two curves turn:
+ *
+ *   0.00–1.45 s  luma 80, motion 0.08   the seed hangs, effectively still
+ *   1.45–2.90 s  luma 80→65, motion 5.8 the fall
+ *   2.90–3.70 s  luma 65→30, motion 8.3 the surface — the film's largest change
+ *   3.70–6.00 s  luma 30→36, motion 0.9 under the earth, the quietest stretch
+ *   6.00–7.10 s  luma 44→120, motion 8.8 breaking through into the light
+ *   7.10–8.90 s  luma 130→124, motion 3.5 the crown fills
+ *   8.90–10.04 s luma 110, motion 0.3   the tree settles and stays
+ *
+ * Two of those are the film's own transitions, and both are continuous morphs
+ * inside the footage rather than cuts — verified frame by frame across the
+ * boundaries. Which is why nothing in this project fades, wipes or dissolves
+ * between stages: there is no discontinuity to cover, so the only instrument
+ * used is the rate at which the scroll walks the footage.
  */
 
 /*
- * The scrub master, not the delivery master.
+ * The scrub master.
  *
- * Same footage, same duration, same framing — re-encoded for one reason: the
- * original carried two keyframes across fifteen seconds, so an arbitrary seek
- * cost the decoder up to 180 inter-frames and the picture lurched. This one has
- * a keyframe on every frame (361 of 361, verified in the container), so any
- * position the scroll asks for decodes exactly one frame.
+ * Same footage, same framing, same duration as the 4K source — re-encoded for
+ * two reasons, both of them disqualifying rather than cosmetic:
  *
- * It is also a third of the size, because the original was Constrained
- * Baseline at a flat 12.3 Mbps and High profile at the same visual quality is
- * far more efficient. `ekklesia-seed-to-tree.mp4` stays alongside it as the
- * untouched source.
+ *   1. The source is H.264 High 10 (`yuv420p10le`). No browser decodes 10-bit
+ *      H.264, so the file could not have played at all.
+ *   2. It carried four keyframes across 241 frames, so an arbitrary seek cost
+ *      the decoder up to ninety inter-frames.
+ *
+ * This one is 8-bit High profile with a keyframe on every frame (241 of 241,
+ * verified in the container), so any position the scroll asks for decodes
+ * exactly one frame.
+ *
+ * It is 2560×1440 rather than 3840×2160, and that was measured too. Against the
+ * 4K source resampled to a 1440p display, 1440p scores SSIM 0.9919 and 2160p
+ * scores 0.9943 — a difference of 0.0024, because the source is itself an AI
+ * upscale and carries very little true detail past 1440p. It costs about half
+ * as much to decode per seek (109 ms against 212 ms, CPU-only), which is the
+ * difference between a scrub that tracks the scroll and one that lags it.
  */
 export const VIDEO_SRC = "/media/scrub.mp4";
 
@@ -40,12 +62,12 @@ export const BRAND_MARK_SRC: string | null = null;
 /**
  * Where the entrance ends up.
  *
- * Measured off the footage rather than picked: `#6E5235` is the mean colour of
+ * Measured off the footage rather than picked: `#6B5032` is the mean colour of
  * frame 0. The ivory travels to exactly that before the video is uncovered, so
  * the reveal is a dissolve between two surfaces of the same value instead of a
  * change of exposure.
  */
-export const FIRST_FRAME_TONE = "#6E5235";
+export const FIRST_FRAME_TONE = "#6B5032";
 
 /**
  * The entrance, in seconds. Under two and a half all in, and every step of it
@@ -69,15 +91,28 @@ export const INTRO = {
   maxHold: 4,
 } as const;
 
-/** Read from the container. Only a fallback — the element's own `duration`
- *  wins as soon as metadata arrives. */
-export const VIDEO_DURATION = 15.042;
+/** Read from the container (`mvhd`). Only a fallback — the element's own
+ *  `duration` wins as soon as metadata arrives. */
+export const VIDEO_DURATION = 10.042;
 export const VIDEO_ASPECT = 16 / 9;
 
-/** How much scroll the opening occupies. */
+/**
+ * How much scroll the opening occupies.
+ *
+ * Unchanged at 500vh, and deliberately so: the footage went from 15.0 s to
+ * 10.0 s over the same track, which is already a third more scroll for every
+ * second of film. The extra room the new cut needed came for free.
+ */
 export const CINEMATIC_TRACK_VH = 500;
 
-export type CinematicBeatId = "seed" | "descent" | "underground" | "growth" | "tree";
+export type CinematicBeatId =
+  | "seed"
+  | "descent"
+  | "soil"
+  | "underground"
+  | "emergence"
+  | "growth"
+  | "tree";
 
 export type CinematicBeat = {
   id: CinematicBeatId;
@@ -95,70 +130,110 @@ export type CinematicBeat = {
 };
 
 /**
- * The scroll-to-footage curve, as control points.
+ * The scroll-to-footage curve, as control points, in seconds of film.
  *
- * Deliberately *not* linear. A linear map spends scroll in proportion to
- * running time, which gives the quiet opening and the descent into the soil the
- * same weight as a transition that reads in half a second — the footage has its
- * own rhythm and the scroll should follow that, not the clock.
+ * Seconds rather than a normalised `0..1` because every one of these numbers
+ * was read off the footage, and the file is the thing they have to keep
+ * agreeing with.
  *
- * So: the seed and the crossing into the earth are stretched (a lot of scroll
- * for a little footage, so they can be dwelt on), the middle transitions run
- * closer to real time, and the last tenth of the section holds the finished
- * tree on screen without advancing at all.
+ * The rule behind the spacing: a stretch of film gets scroll in proportion to
+ * how much is *changing* in it, not to how long it runs. So the two moments
+ * where the picture transforms — the crossing into the soil and the break into
+ * the light — are walked at roughly half the speed of the fall around them,
+ * which is what makes them read as passages rather than as edits. The quiet
+ * stretches are walked faster in film-seconds and still feel slower, because
+ * almost nothing in them moves.
  *
- * `scroll` must run 0 → 1 and `video` must never go backwards. Everything else
+ * `scroll` must run 0 → 1 and `second` must never go backwards. Everything else
  * is a judgement call, and this is the one place to change it.
  */
-export const SCROLL_CURVE: readonly { scroll: number; video: number }[] = [
-  { scroll: 0.0, video: 0.0 },
-  // The seed: a sixth of the whole section for a fifteenth of the footage.
-  { scroll: 0.16, video: 0.07 },
-  // The descent picks up pace.
-  { scroll: 0.34, video: 0.27 },
-  // Entering the soil — the widest range in the piece.
-  { scroll: 0.6, video: 0.52 },
-  // Roots and the plant emerging.
-  { scroll: 0.8, video: 0.78 },
-  // The tree completes here, at nine tenths…
-  { scroll: 0.9, video: 1.0 },
-  // …and the last tenth is the hold. The footage does not advance; the frame
-  // simply stays, which is what gives the sequence its ending.
-  { scroll: 1.0, video: 1.0 },
+export const SCROLL_CURVE: readonly { scroll: number; second: number }[] = [
+  // The seed, suspended in the light. The first second of film is a held shot —
+  // it does not move at all — so it is walked at the fastest rate in the piece
+  // and *still* reads as the stillest. Walking it slowly would not make the
+  // seed more contemplative, it would only make the scroll feel disconnected.
+  { scroll: 0.0, second: 0.0 },
+  { scroll: 0.045, second: 1.0 },
+  // It lets go.
+  { scroll: 0.08, second: 1.45 },
+  // The fall — and the footage's own deceleration into the soil, which the
+  // curve leans into rather than fights.
+  { scroll: 0.22, second: 2.9 },
+  // The surface. Eight tenths of a second of film across nearly a fifth of the
+  // whole section: the slowest stretch in the piece, at less than half the rate
+  // of the fall on either side of it, because this is where the film changes
+  // world. Nothing is laid over it — the slowness *is* the transition.
+  { scroll: 0.4, second: 3.7 },
+  // Under the earth. The widest beat, and the one with the least happening in
+  // it — the roots are given the room to arrive rather than appear.
+  { scroll: 0.62, second: 6.0 },
+  // Out into the light. Slowed against the fall for the same reason the
+  // crossing is: it is the second place the whole frame changes at once.
+  { scroll: 0.76, second: 7.1 },
+  // The crown fills.
+  { scroll: 0.87, second: 8.9 },
+  // The tree completes — and the curve arrives here with its slope already
+  // falling away, so the film settles into its last frame instead of hitting
+  // it. That deceleration is the ending; there is no effect on top of it.
+  { scroll: 0.945, second: 10.042 },
+  // …and the last twentieth is the hold. The footage does not advance.
+  { scroll: 1.0, second: 10.042 },
 ];
 
 export const CINEMATIC_BEATS: readonly CinematicBeat[] = [
   {
     id: "seed",
     label: "A semente",
-    note: "Ela existe, e gira. Quieto, mínimo, sem pressa.",
-    scroll: [0.0, 0.16],
+    note: "Suspensa na luz. Nada se move — e é para ser assim.",
+    scroll: [0.0, 0.08],
   },
   {
     id: "descent",
     label: "A queda",
-    note: "Desce em direção à terra; o ambiente muda com ela.",
-    scroll: [0.16, 0.34],
+    note: "Desce, e o próprio filme desacelera antes do contato.",
+    scroll: [0.08, 0.22],
+  },
+  {
+    id: "soil",
+    label: "A travessia",
+    note: "A superfície. A passagem mais lenta da peça — outro mundo.",
+    scroll: [0.22, 0.4],
   },
   {
     id: "underground",
     label: "Sob a terra",
-    note: "A câmera atravessa a superfície. O momento mais importante.",
-    scroll: [0.34, 0.6],
+    note: "O trecho mais largo e o mais quieto. As raízes chegam.",
+    scroll: [0.4, 0.62],
+  },
+  {
+    id: "emergence",
+    label: "O rompimento",
+    note: "Rompe a superfície; a paisagem se abre atrás dela.",
+    scroll: [0.62, 0.76],
   },
   {
     id: "growth",
-    label: "Crescimento",
-    note: "As raízes se formam e a planta começa a emergir.",
-    scroll: [0.6, 0.8],
+    label: "A copa",
+    note: "O tronco se firma e a copa se enche, sem pressa.",
+    scroll: [0.76, 0.87],
   },
   {
     id: "tree",
     label: "A árvore",
     note: "Ela se completa — e permanece em quadro.",
-    scroll: [0.8, 1.0],
+    scroll: [0.87, 1.0],
   },
 ];
+
+/**
+ * Where the frame dissolves into the page.
+ *
+ * Over this range the ivory already present at the foot of the frame grows,
+ * so the ground under the tree becomes the page's own light before the first
+ * section of the site arrives. It is a change of light, not a wipe, and it is
+ * a pure function of scroll — scrolling back up puts it exactly where it was.
+ */
+export const HANDOFF_SCROLL: readonly [number, number] = [0.87, 1.0];
 
 /**
  * Where the crop is anchored, per breakpoint.
@@ -177,26 +252,79 @@ export const FOCUS = {
 /** Below this ratio the frame is treated as portrait. */
 export const PORTRAIT_BELOW = 1.0;
 
+/*
+ * Monotone cubic (Fritsch–Carlson) tangents for the curve above.
+ *
+ * The earlier cut was interpolated piecewise-linearly, which is fine when the
+ * control points are evenly paced. These are not: the crossing is walked at
+ * half the speed of the fall on either side of it, and a linear curve would
+ * change speed *instantly* at those joins. A step change in playback rate is
+ * precisely what reads as an edit, which is the one thing this sequence must
+ * not do — so the curve is C¹ instead, and the film accelerates and decelerates
+ * into each passage rather than switching gear at a boundary.
+ *
+ * Fritsch–Carlson specifically, because it is the cubic that cannot overshoot:
+ * the footage is guaranteed never to run backwards while the page scrolls
+ * forwards, which a natural cubic spline would not guarantee here.
+ */
+const TANGENTS: readonly number[] = (() => {
+  const n = SCROLL_CURVE.length;
+  const width: number[] = [];
+  const slope: number[] = [];
+  for (let i = 0; i < n - 1; i++) {
+    width[i] = SCROLL_CURVE[i + 1].scroll - SCROLL_CURVE[i].scroll;
+    slope[i] = (SCROLL_CURVE[i + 1].second - SCROLL_CURVE[i].second) / width[i];
+  }
+
+  const tangent: number[] = new Array(n);
+  tangent[0] = slope[0];
+  tangent[n - 1] = slope[n - 2];
+  for (let i = 1; i < n - 1; i++) {
+    // A flat or reversing join pins the tangent at zero — this is what makes
+    // the film settle to a stop at the final frame rather than arrive at speed.
+    if (slope[i - 1] * slope[i] <= 0) {
+      tangent[i] = 0;
+      continue;
+    }
+    const a = 2 * width[i] + width[i - 1];
+    const b = width[i] + 2 * width[i - 1];
+    tangent[i] = (a + b) / (a / slope[i - 1] + b / slope[i]);
+  }
+  return tangent;
+})();
+
 /**
  * Maps the section's scroll progress onto the footage, `0..1` in both.
  *
- * Piecewise linear on purpose. Easing *within* a segment would make the
- * footage speed up and slow down inside a beat, which reads as the video
- * stuttering rather than as the scroll being followed; all the smoothing this
- * needs already happens in the damped progress store upstream.
+ * Deterministic and stateless: the same scroll position always resolves to the
+ * same timestamp, in either direction. All of the smoothing in time — as
+ * opposed to the smoothing in shape this curve provides — happens upstream in
+ * the damped progress store.
  */
 export function videoProgressFor(scroll: number): number {
   const p = scroll < 0 ? 0 : scroll > 1 ? 1 : scroll;
+
   for (let i = 1; i < SCROLL_CURVE.length; i++) {
     const a = SCROLL_CURVE[i - 1];
     const b = SCROLL_CURVE[i];
-    if (p <= b.scroll) {
-      const span = b.scroll - a.scroll;
-      const t = span <= 0 ? 0 : (p - a.scroll) / span;
-      return a.video + (b.video - a.video) * t;
-    }
+    if (p > b.scroll) continue;
+
+    const width = b.scroll - a.scroll;
+    if (width <= 0) return b.second / VIDEO_DURATION;
+
+    const t = (p - a.scroll) / width;
+    const t2 = t * t;
+    const t3 = t2 * t;
+    const second =
+      (2 * t3 - 3 * t2 + 1) * a.second +
+      (t3 - 2 * t2 + t) * width * TANGENTS[i - 1] +
+      (-2 * t3 + 3 * t2) * b.second +
+      (t3 - t2) * width * TANGENTS[i];
+
+    return second / VIDEO_DURATION;
   }
-  return SCROLL_CURVE[SCROLL_CURVE.length - 1].video;
+
+  return SCROLL_CURVE[SCROLL_CURVE.length - 1].second / VIDEO_DURATION;
 }
 
 /** Which beat the section is in, for captions and for the debug readout. */
@@ -214,8 +342,8 @@ export function beatProgress(beat: CinematicBeat, scroll: number): number {
 }
 
 /**
- * The single frame shown to visitors who have asked for less motion. Chosen
- * inside the growth beat: it is the one moment that says what the whole
- * sequence is about without needing the sequence.
+ * The single frame shown to visitors who have asked for less motion. The
+ * completed tree: the one image that says what the whole sequence is about
+ * without needing the sequence.
  */
-export const REDUCED_MOTION_VIDEO_PROGRESS = 0.74;
+export const REDUCED_MOTION_VIDEO_PROGRESS = 0.97;

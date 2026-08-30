@@ -8,6 +8,7 @@ import {
   CINEMATIC_BEATS,
   CINEMATIC_TRACK_VH,
   FOCUS,
+  HANDOFF_SCROLL,
   PORTRAIT_BELOW,
   REDUCED_MOTION_VIDEO_PROGRESS,
   VIDEO_DURATION,
@@ -116,12 +117,10 @@ export function CinematicOpening() {
   /*
    * The scrub.
    *
-   * The obvious implementation — assign `currentTime` on every scroll frame —
-   * is wrong for this file, and measurably so: the master carries two keyframes
-   * in fifteen seconds, one every 7.5 s, so an arbitrary seek can cost the
-   * decoder up to 180 inter-frames. Asking for a new position while the last
-   * one is still resolving makes the browser drop the intermediate requests,
-   * and the picture freezes and then jumps.
+   * The master is all-intra, so every position decodes one frame — but a 1440p
+   * frame is still real work, and asking for a new position while the last one
+   * is unresolved makes the browser drop the requests in between, which shows
+   * up as the picture freezing and then jumping.
    *
    * So seeks are *coalesced* rather than queued: the target is updated every
    * frame, and a seek is only issued when the element is not already seeking.
@@ -158,8 +157,25 @@ export function CinematicOpening() {
       element.currentTime = wanted;
     };
 
+    /*
+     * The hand-over into the page, as a custom property rather than a class.
+     *
+     * It is written on the same frame as the seek and read only by CSS, so it
+     * costs one property write and no re-render — and because it is a pure
+     * function of scroll position, scrolling back up returns it exactly, which
+     * a transition or a one-way animation would not.
+     */
+    const stage = element.parentElement;
+    const [from, to] = HANDOFF_SCROLL;
+
     const stop = subscribeCinematic((scroll) => {
       target = videoProgressFor(scroll);
+
+      if (stage) {
+        const t = (scroll - from) / (to - from);
+        stage.style.setProperty("--handoff", (t < 0 ? 0 : t > 1 ? 1 : t).toFixed(3));
+      }
+
       // Hidden tabs still fire the ticker in some browsers; seeking there wakes
       // the decoder for a frame nobody is looking at.
       if (document.visibilityState === "visible") pump();
@@ -222,7 +238,9 @@ export function CinematicOpening() {
         {/*
           The barest possible grade. The footage arrives with its own treatment;
           this is a warm ivory breath at the very top and bottom so the frame
-          meets the page's own light instead of ending at a hard edge.
+          meets the page's own light instead of ending at a hard edge — and, at
+          the very end of the track, the breath at the foot of the frame grows
+          until the ground under the tree has become the page.
         */}
         <div className="cinematic__grade" aria-hidden="true" />
 

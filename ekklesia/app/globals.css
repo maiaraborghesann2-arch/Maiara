@@ -615,6 +615,13 @@ button {
   background: var(--sand-light);
   --focus-x: 50%;
   --focus-y: 50%;
+  /*
+   * How far the hand-over into the page has run, 0..1. Written per frame from
+   * the scroll position, read only by the grade below — the light at the foot
+   * of the frame grows into the page's own as the section ends, so the tree
+   * stays in shot while the ground beneath it becomes the site.
+   */
+  --handoff: 0;
 }
 
 .cinematic__video {
@@ -643,6 +650,18 @@ button {
   inset: 0;
   pointer-events: none;
   background:
+    /*
+     * The hand-over, and only this layer moves. It travels to `--sand`
+     * (#ecdacb) rather than to the frame's own ivory, because #ecdacb is the
+     * ground of the section that arrives next — so the foot of the picture is
+     * already the colour of the page by the time the page gets there.
+     */
+    linear-gradient(
+      to top,
+      rgba(236, 218, 203, calc(0.34 * var(--handoff, 0))),
+      transparent calc(2% + 24% * var(--handoff, 0))
+    ),
+    /* The resting breath, unchanged, at the top and foot of the frame. */
     linear-gradient(to bottom, rgba(246, 235, 224, 0.22), transparent 14%),
     linear-gradient(to top, rgba(246, 235, 224, 0.18), transparent 12%);
 }
