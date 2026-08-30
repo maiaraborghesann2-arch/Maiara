@@ -625,12 +625,11 @@ button {
   /* Cover, anchored by the config's focal point — cropped, never stretched. */
   object-fit: cover;
   object-position: var(--focus-x) var(--focus-y);
-  /* Under the veil until the first frame has actually decoded. */
-  opacity: 0;
-  transition: opacity 900ms var(--ease-out);
-}
-
-.cinematic__video[data-ready="true"] {
+  /*
+   * No fade of its own. The entrance sits on top and dissolves off it, and a
+   * second fade underneath that one is exactly what reads as a change of
+   * exposure at the hand-over.
+   */
   opacity: 1;
 }
 
@@ -648,46 +647,60 @@ button {
     linear-gradient(to top, rgba(246, 235, 224, 0.18), transparent 12%);
 }
 
-.cinematic__veil {
+.cinematic__failure {
   position: absolute;
-  inset: 0;
-  display: grid;
-  place-content: center;
-  gap: 1.2rem;
-  justify-items: center;
-  background: var(--sand-light);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 700ms var(--ease-out), visibility 700ms;
-}
-
-.cinematic__veil[data-open="true"] {
-  opacity: 1;
-  visibility: visible;
-}
-
-/*
- * Not a spinner. A single hairline ring drawing itself once — the same gesture
- * as a lens opening, at the same weight as the rest of the typography.
- */
-.cinematic__veilMark {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1px solid var(--ink-hairline);
-  border-top-color: var(--ink-faint);
-  animation: cinematic-open 2.4s var(--ease-out) infinite;
-}
-
-@keyframes cinematic-open {
-  0% { transform: rotate(0deg) scale(0.92); opacity: 0.35; }
-  50% { opacity: 1; }
-  100% { transform: rotate(360deg) scale(0.92); opacity: 0.35; }
-}
-
-.cinematic__veilNote {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   font-size: 0.78rem;
   letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+/* --------------------------------------------------------------- intro -- */
+
+/*
+ * Warm paper, over everything, that becomes the colour of the first frame and
+ * lifts off it. Fixed rather than absolute so a restored scroll position cannot
+ * leave a seam at an edge.
+ */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: var(--sand-light);
+  pointer-events: none;
+}
+
+.intro__mark {
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.5rem, 1.1vh, 0.85rem);
+}
+
+.intro__logo {
+  width: clamp(96px, 13vw, 168px);
+  height: auto;
+}
+
+.intro__word {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.9rem, 4.4vw, 3.1rem);
+  line-height: 1;
+  letter-spacing: 0.07em;
+  color: var(--ink);
+}
+
+.intro__sub {
+  font-size: clamp(0.56rem, 1.1vw, 0.7rem);
+  letter-spacing: 0.46em;
+  /* Tracking is applied to the right of every letter, so the word sits off
+     centre by half of it unless the last one is compensated. */
+  text-indent: 0.46em;
+  text-transform: uppercase;
   color: var(--ink-soft);
 }
 
@@ -743,12 +756,9 @@ button {
     height: 100vh !important;
   }
 
-  .cinematic__veilMark {
-    animation: none;
-  }
-
-  .cinematic__video {
-    transition: none;
+  /* No entrance either — it never mounts. */
+  .intro {
+    display: none;
   }
 }
 

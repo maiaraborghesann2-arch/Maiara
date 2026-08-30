@@ -16,6 +16,7 @@ import {
   videoProgressFor,
 } from "@/lib/cinematic/config";
 import { cinematicStore, subscribeCinematic } from "@/lib/cinematic/store";
+import { CinematicIntro } from "./CinematicIntro";
 import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
 /**
@@ -36,6 +37,7 @@ export function CinematicOpening() {
   const readout = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [entered, setEntered] = useState(false);
   const [debug, setDebug] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
 
@@ -93,6 +95,23 @@ export function CinematicOpening() {
 
   const onLoaded = useCallback(() => setReady(true), []);
   const onError = useCallback(() => setFailed(true), []);
+  const onEntered = useCallback(() => setEntered(true), []);
+
+  /*
+   * React's own `onError` is not enough here. The element has its `src` from
+   * the very first render, so a file that fails to demux can error *before*
+   * hydration attaches the handler — and the entrance then waits on a signal
+   * that already came and went. Reading `element.error` on mount closes that
+   * race; the listener catches everything after it.
+   */
+  useEffect(() => {
+    const element = video.current;
+    if (!element) return;
+    if (element.error) setFailed(true);
+    if (element.readyState >= 2) setReady(true);
+    element.addEventListener("error", onError);
+    return () => element.removeEventListener("error", onError);
+  }, [onError]);
 
   /*
    * The scrub.
@@ -208,18 +227,20 @@ export function CinematicOpening() {
         <div className="cinematic__grade" aria-hidden="true" />
 
         {/*
-          Loading. Ivory, not a spinner — the same surface the rest of the site
-          sits on, so the first frame arrives *into* the page rather than
-          replacing a placeholder.
+          The entrance. It is also the loading state — there is no second
+          overlay, because a brand moment that doubles as the wait is the whole
+          point. Under reduced motion it never mounts and the first frame is
+          simply there.
         */}
-        <div className="cinematic__veil" data-open={ready ? "false" : "true"} aria-hidden="true">
-          <span className="cinematic__veilMark" />
-          {failed ? (
-            <p className="cinematic__veilNote">
-              Não foi possível carregar a sequência de abertura.
-            </p>
-          ) : null}
-        </div>
+        {!entered && !reducedMotion ? (
+          <CinematicIntro ready={ready || failed} onDone={onEntered} />
+        ) : null}
+
+        {failed && entered ? (
+          <p className="cinematic__failure">
+            Não foi possível carregar a sequência de abertura.
+          </p>
+        ) : null}
 
         {/*
           Caption slots, on the same clock, rendered empty. Filling a beat's

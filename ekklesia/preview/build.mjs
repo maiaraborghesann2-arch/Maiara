@@ -52,7 +52,13 @@ let js = result.outputFiles[0].text;
  * outputs were allowed to disagree, the shared link ran two whole acts short of
  * the dev server and nothing caught it.
  */
-const VIDEO = resolve(root, "public/media/scrub.mp4");
+/*
+ * The bundle inlines the *lighter* cut, not the one the site serves. The
+ * artifact host caps a rendered page at 16 MB and the delivery master is 18 —
+ * so this preview is for reviewing the interaction, not the final image
+ * quality. Both come from the same footage and the same encode settings.
+ */
+const VIDEO = resolve(root, "public/media/preview.mp4");
 // Base64 inflates by four thirds, and the host caps a rendered artifact at
 // 16 MB. This leaves room for the bundle and the stylesheet on top.
 const INLINE_BUDGET = 10 * 1024 * 1024;
@@ -63,7 +69,7 @@ if (videoBytes > INLINE_BUDGET) {
   console.error(
     [
       "",
-      `A prévia compartilhável não pode ser gerada: ${mb(videoBytes)} MB de vídeo.`,
+      `A prévia compartilhável não pode ser gerada: ${mb(videoBytes)} MB em public/media/preview.mp4.`,
       "",
       "  O bundle é um HTML único, sem requisições externas — o vídeo precisa ir",
       `  embutido, e em base64 ele viraria ${mb((videoBytes * 4) / 3)} MB, acima do limite`,

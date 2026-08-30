@@ -27,6 +27,48 @@
  */
 export const VIDEO_SRC = "/media/scrub.mp4";
 
+/**
+ * The brand mark shown during the entrance.
+ *
+ * `null` falls back to the wordmark set in the identity's own display serif —
+ * which is the typography, not a redrawing of the tree symbol. Drop the real
+ * asset into `public/media/` (SVG for preference; PNG with transparency works)
+ * and point this at it. Nothing else needs to change.
+ */
+export const BRAND_MARK_SRC: string | null = null;
+
+/**
+ * Where the entrance ends up.
+ *
+ * Measured off the footage rather than picked: `#6E5235` is the mean colour of
+ * frame 0. The ivory travels to exactly that before the video is uncovered, so
+ * the reveal is a dissolve between two surfaces of the same value instead of a
+ * change of exposure.
+ */
+export const FIRST_FRAME_TONE = "#6E5235";
+
+/**
+ * The entrance, in seconds. Under two and a half all in, and every step of it
+ * can be cut short by the visitor touching the scroll.
+ */
+export const INTRO = {
+  markIn: 0.7,
+  stillness: 0.5,
+  markOut: 0.45,
+  /** The ivory travelling to the footage's own tone, then uncovering it. */
+  dissolve: 0.9,
+  /** How much faster it runs if the visitor starts scrolling. */
+  hurry: 4,
+  /**
+   * The longest the entrance will ever wait for the first frame.
+   *
+   * A held brand screen is the worst failure a hero can have, so past this it
+   * goes anyway. Revealing early is safe: the stage's own background is the
+   * same ivory, so an undecoded video shows warm paper rather than black.
+   */
+  maxHold: 4,
+} as const;
+
 /** Read from the container. Only a fallback — the element's own `duration`
  *  wins as soon as metadata arrives. */
 export const VIDEO_DURATION = 15.042;
