@@ -227,7 +227,9 @@ export function SiteHeader() {
             ))}
           </ul>
         </nav>
-        <p className="menu__note">{BRAND.tagline}</p>
+        {/* The descriptor, not the slogan. Someone opening the menu may still
+            not know what the company does; a slogan would not tell them. */}
+        <p className="menu__note">{BRAND.descriptor}</p>
       </div>
     </>
   );

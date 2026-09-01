@@ -1,24 +1,40 @@
 /**
  * Every word on the site, in one file.
  *
- * Two reasons it lives here rather than inside the components: the copy is
- * going to be rewritten by people who do not read TSX, and the layouts have to
- * survive that rewrite. Nothing below is measured in characters — every
- * container is built to take a longer or shorter line than the one it has.
+ * Two reasons it lives here rather than inside the components: the copy will be
+ * rewritten by people who do not read TSX, and the layouts have to survive that
+ * rewrite. Nothing below is measured in characters — every container is built
+ * to take a longer or shorter line than the one it has.
  *
- * ── On provenance ──────────────────────────────────────────────────────────
+ * ── On positioning ─────────────────────────────────────────────────────────
  *
- * The project materials are the storyboard (`docs/storyboard.png`) and the film.
- * Between them they establish the brand, the palette, the hero, the closing
- * call to action and fifteen narrative lines. They establish *nothing* about
- * what Ekklesia Connect offers as a product — no feature list, no resource
- * types, no pricing, no numbers.
+ * The strategic document is the source of truth here, and it says something the
+ * storyboard did not: Ekklesia Connect is a *technology consultancy* for
+ * churches and ministries — diagnosis, integration, and proportional custom
+ * development. Not a platform, not an app, not a church management system.
  *
- * So anything not in those materials is marked `placeholder: true` and reads as
- * structure rather than as a claim. Those blocks are deliberately written to be
- * true of the shape of the thing without asserting specifics: they say a
- * section exists and what it is for, and they wait. Search this file for
- * `placeholder` to find everything awaiting real copy.
+ * That overrode an earlier version of this file, which had been written from
+ * the storyboard and positioned the company as a content and formation
+ * platform. The two are not reconcilable, and the strategic document wins.
+ * What survived from the storyboard is the brand, the palette, the film, and
+ * the metaphor — which turns out to fit the consultancy better than it fit the
+ * platform: the seed is a need, the roots are the church's own context, and the
+ * tree is whatever solution that context actually justifies.
+ *
+ * ── On language ────────────────────────────────────────────────────────────
+ *
+ * Portuguese, because the document is `lang="pt-BR"`, the storyboard is
+ * Portuguese, and the slogan reads as a translation of "Tecnologia que conecta.
+ * Igreja que alcança." The strategic brief arrived in English; that is the
+ * brief's language, not the site's. Everything is in this one file, so changing
+ * that decision is a translation rather than a rebuild.
+ *
+ * ── On claims ──────────────────────────────────────────────────────────────
+ *
+ * Nothing here asserts a client, a metric, a testimonial, a partnership or an
+ * outcome, because the materials establish none. The one section that would
+ * want them — the case study — is marked `placeholder: true` and is built to
+ * hold a real record without being redesigned. Search for `placeholder`.
  */
 
 export type Placeheld<T> = T & {
@@ -26,157 +42,318 @@ export type Placeheld<T> = T & {
   placeholder?: true;
 };
 
-/* ─────────────────────────────────────────────────────────── navigation ── */
-
-export const NAV = [
-  { label: "Quem somos", href: "#quem-somos" },
-  { label: "Ecossistema", href: "#ecossistema" },
-  { label: "Recursos", href: "#recursos" },
-  { label: "Comunidade", href: "#comunidade" },
-  { label: "Como funciona", href: "#como-funciona" },
-] as const;
+/* ─────────────────────────────────────────────────────────────── brand ── */
 
 export const BRAND = {
   name: "Ekklesia",
   suffix: "Connect",
-  /** The storyboard's own description of the piece. */
-  tagline: "A jornada de uma semente que se torna árvore.",
+  /** The official slogan. Deliberately never used as the explanation of the
+   *  company — a visitor has to know what the company *does* before a line
+   *  like this can mean anything. It appears once, at the very end. */
+  slogan: "Tecnologia que conecta. Igreja que alcança.",
+  descriptor:
+    "Consultoria e desenvolvimento de tecnologia sob medida para igrejas e ministérios.",
 } as const;
 
-/* ────────────────────────────────────────────────────────────── sections ── */
+export const NAV = [
+  { label: "O problema", href: "#problema" },
+  { label: "Abordagem", href: "#abordagem" },
+  { label: "O que fazemos", href: "#o-que-fazemos" },
+  { label: "Casos", href: "#casos" },
+  { label: "Diagnóstico", href: "#diagnostico" },
+] as const;
 
-/** Frame 04 of the storyboard: the Home the seed lands in. All of it is real. */
-export const MANIFESTO = {
-  eyebrow: "Jornada de fé e conhecimento",
-  title: ["Pequenos começos.", "Grandes frutos."],
-  lede: "Conteúdo que transforma vidas e gera crescimento real.",
-  action: { label: "Explorar recursos", href: "#recursos" },
+export const ACTIONS = {
+  primary: { label: "Agendar um diagnóstico", href: "#diagnostico" },
+  secondary: { label: "Conte o que você precisa", href: "#diagnostico" },
 } as const;
 
-/**
- * What the organisation is. Held to what the materials actually say — the
- * storyboard asserts the metaphor and the promise, and no more than that, so
- * neither does this.
- */
-export const ABOUT = {
-  eyebrow: "Quem somos",
-  lead: "Ekklesia Connect existe para que o crescimento tenha raiz.",
-  body: [
-    "A imagem que abre esta página não é ilustração. É o modo como entendemos formação: uma semente que desce antes de subir, um processo que acontece longe dos olhos muito antes de dar fruto.",
-    "Conteúdo que transforma vidas e gera crescimento real — para quem constrói a igreja no dia a dia.",
+/* ──────────────────────────────────────────────────── 02 the proposition ── */
+
+/** The hand-over out of the film, and the whole positioning in four lines. */
+export const PROPOSITION = {
+  eyebrow: "Consultoria de tecnologia para igrejas",
+  title: ["Sua igreja não precisa", "se adaptar à tecnologia."],
+  counter: "A tecnologia deve se adaptar à sua igreja.",
+  lede: BRAND.descriptor,
+  body: "Diagnosticamos, integramos e desenvolvemos soluções adaptadas à identidade, aos processos e à missão da sua igreja.",
+} as const;
+
+/* ─────────────────────────────────────────────────────────── 03 problem ── */
+
+export const PROBLEM = {
+  eyebrow: "O problema",
+  title: "A tecnologia não deveria ditar como sua igreja funciona.",
+  lede: "Quando a ferramenta vira o limite, o problema raramente se resolve adicionando outra ferramenta.",
+  /**
+   * The fragments. Rendered as a set that starts misaligned and settles into a
+   * column as it is read — the section argues about disconnection, so the
+   * layout is the argument rather than a diagram of it.
+   */
+  fragments: [
+    "Uma planilha que virou sistema.",
+    "Formulários que ninguém consegue cruzar.",
+    "Três ferramentas guardando a mesma informação.",
+    "Um processo desenhado em volta do que o software permite.",
+    "Uma plataforma que entrega muito mais — ou muito menos — do que se precisa.",
   ],
+  close: "Nada disso é falta de esforço. É falta de encaixe.",
 } as const;
 
-/**
- * The pause. Every line here is project material: the first two are storyboard
- * frames 09 and 08, the third is the copy already written for the
- * contemplation beat of the earlier build.
- */
-export const DEPTH = {
-  lead: "Nem todo crescimento é imediatamente visível.",
-  body: "Antes de romper a superfície, existe um processo silencioso acontecendo por baixo.",
-  note: "Raízes que descem. Fundamentos que sustentam.",
-} as const;
+/* ────────────────────────────────────────────────────────── 04 approach ── */
 
 /**
- * The platform. Structural — the three columns describe the *shape* of an
- * ecosystem for formation without claiming what is inside it. Replace the
- * bodies; the headings are safe.
+ * The methodology, and the reason the word "consultoria" is not decoration.
+ * Set on the dark ground: this is the part of the work that happens below the
+ * surface, and the film spends its widest beat down there for the same reason.
  */
-export const ECOSYSTEM: Placeheld<{
-  eyebrow: string;
-  title: string;
-  lede: string;
-  items: readonly { index: string; label: string; body: string }[];
-}> = {
-  placeholder: true,
-  eyebrow: "O ecossistema",
-  title: "Um lugar para o que sustenta.",
-  lede: "Formação, comunidade e prática reunidas — para que cada etapa do crescimento tenha onde se apoiar.",
-  items: [
+export const APPROACH = {
+  eyebrow: "A abordagem",
+  title: "Antes de construir, entender.",
+  lede: "Uma solução digital forte não começa pela tecnologia. Começa por entender o que precisa crescer.",
+  stages: [
     {
       index: "01",
-      label: "Formação",
-      body: "Trilhas de estudo pensadas para profundidade, não para volume.",
+      label: "Entender",
+      body: "A igreja, as pessoas, a missão, os processos, a metodologia e a tecnologia que já existe.",
     },
     {
       index: "02",
-      label: "Prática",
-      body: "O que se aprende encontra onde ser aplicado, na vida da comunidade.",
+      label: "Diagnosticar",
+      body: "Identificar o problema real, em vez de tratar o sintoma visível.",
     },
     {
       index: "03",
-      label: "Acompanhamento",
-      body: "Crescimento acompanhado ao longo do tempo, e não medido num único momento.",
+      label: "Aconselhar",
+      body: "Avaliar os caminhos possíveis e recomendar a direção mais adequada.",
+    },
+    {
+      index: "04",
+      label: "Construir",
+      body: "Construir apenas o que realmente precisa ser construído.",
+    },
+    {
+      index: "05",
+      label: "Evoluir",
+      body: "Sustentar, manter, melhorar e adaptar a solução ao longo do tempo.",
+    },
+  ],
+} as const;
+
+/* ───────────────────────────────────────────────────────── 05 the paths ── */
+
+/**
+ * The differentiator. Four outcomes of one decision, not four services —
+ * rendered as branches off a single stem, which is the same shape the film
+ * shows underground.
+ */
+export const PATHS = {
+  eyebrow: "O caminho",
+  title: "Nem todo problema precisa de um software novo.",
+  lede: "Às vezes a resposta é comprar. Às vezes é integrar. Às vezes é adaptar. E às vezes precisa ser construído do zero.",
+  options: [
+    {
+      label: "Comprar",
+      body: "Já existe algo bom o suficiente no mercado. O trabalho é escolher bem e implantar direito.",
+    },
+    {
+      label: "Integrar",
+      body: "As ferramentas certas já estão na casa — só não conversam entre si.",
+    },
+    {
+      label: "Adaptar",
+      body: "O que existe chega perto. Falta ajustá-lo ao jeito da igreja.",
+    },
+    {
+      label: "Construir",
+      body: "Nada disponível sustenta o processo. Aí sim vale construir — e só o necessário.",
+    },
+  ],
+  close:
+    "Não temos um produto para defender. A recomendação é a que serve à igreja, inclusive quando ela não passa por nós.",
+} as const;
+
+/* ──────────────────────────────────────────────────────── 06 capability ── */
+
+/**
+ * The services, and deliberately downstream of the method. They are the
+ * consequence of the approach, not the identity of the company, so they are set
+ * as a hairline index rather than given a section of their own weight.
+ */
+export const CAPABILITIES = {
+  eyebrow: "O que fazemos",
+  title: "As frentes de trabalho.",
+  lede: "Consequência do método, não o contrário. O diagnóstico é que diz qual delas se aplica.",
+  items: [
+    {
+      label: "Estratégia de tecnologia",
+      body: "Diagnóstico, avaliação do que já existe e direção estratégica.",
+    },
+    {
+      label: "Integrações e automação",
+      body: "Conectar ferramentas em uso, sincronizar dados e reduzir trabalho manual.",
+    },
+    {
+      label: "Soluções digitais sob medida",
+      body: "Aplicações, portais, sistemas internos e experiências digitais — quando o que existe não dá conta.",
+    },
+    {
+      label: "IA em contexto",
+      body: "Assistentes, conteúdo, busca e análise sobre fontes definidas, com limites, metodologia, privacidade e revisão humana.",
+    },
+    {
+      label: "Implementação e evolução",
+      body: "Implantação, manutenção, segurança, monitoramento, hospedagem, suporte e melhoria contínua.",
+    },
+  ],
+} as const;
+
+/* ─────────────────────────────────────────────────────────── 07 adapts ── */
+
+export const ADAPTS = {
+  eyebrow: "Personalização real",
+  title: "Cada igreja tem seu próprio jeito de fazer as coisas.",
+  counter: "Sua tecnologia deveria entender isso.",
+  lede: "Personalizar não é trocar cores, logo e textos. É o sistema aceitar o modo como o ministério já funciona.",
+  dimensions: [
+    "metodologia do ministério",
+    "contexto teológico",
+    "linguagem e terminologia",
+    "processos e fluxos de trabalho",
+    "estrutura ministerial",
+    "papéis e permissões",
+    "integrações",
+    "jornadas de uso",
+    "critérios e governança de IA",
+  ],
+  close: "A infraestrutura pode ser compartilhada. O contexto ministerial, não.",
+} as const;
+
+/* ────────────────────────────────────────────────────── 08 the problems ── */
+
+/**
+ * Situations rather than services. Each is a sentence a church leader would
+ * actually say, followed by the direction it points to — and none of them
+ * promises that the direction is something we build.
+ */
+export const SITUATIONS = {
+  eyebrow: "Situações",
+  title: "Talvez você reconheça alguma destas.",
+  items: [
+    {
+      quote: "Nossas equipes fazem o mesmo trabalho em três sistemas diferentes.",
+      answer: "Costuma ser um problema de integração, não de plataforma nova.",
+    },
+    {
+      quote: "As ferramentas funcionam — mas não conversam entre si.",
+      answer: "Aqui o trabalho é conectar e sincronizar o que já está pago e em uso.",
+    },
+    {
+      quote: "Temos um processo ministerial que nenhuma plataforma existente sustenta.",
+      answer: "Este é um dos poucos casos em que construir do zero se justifica.",
+    },
+    {
+      quote: "Queremos usar IA sem perder o controle dos dados e do contexto teológico.",
+      answer: "Fontes definidas, limites claros, governança e revisão humana — antes do modelo.",
+    },
+    {
+      quote: "Não sabemos se devemos comprar, integrar, adaptar ou construir.",
+      answer: "Essa é exatamente a pergunta que o diagnóstico responde.",
+    },
+  ],
+} as const;
+
+/* ──────────────────────────────────────────────────────────── 09 a case ── */
+
+/**
+ * Built to hold a real record, holding none yet.
+ *
+ * The strategic document names the EBD project as a future case study, and
+ * there are no EBD assets in this repository — no brief, no numbers, no
+ * screenshots. So the structure is here and the content is honestly empty:
+ * every field says what belongs in it. Filling them in is an edit to this
+ * object, and the section is designed to take several of these.
+ */
+export const CASES: Placeheld<{
+  eyebrow: string;
+  title: string;
+  lede: string;
+  entries: readonly {
+    name: string;
+    fields: readonly { label: string; body: string }[];
+  }[];
+}> = {
+  placeholder: true,
+  eyebrow: "Casos",
+  title: "O trabalho, registrado.",
+  lede: "Cada caso é publicado com o problema, o contexto e — principalmente — as decisões. Inclusive as de não construir.",
+  entries: [
+    {
+      name: "EBD",
+      fields: [
+        { label: "Problema", body: "A descrever a partir do material do projeto." },
+        { label: "Contexto", body: "A descrever a partir do material do projeto." },
+        { label: "Abordagem", body: "A descrever a partir do material do projeto." },
+        { label: "Tecnologia", body: "A descrever a partir do material do projeto." },
+        { label: "Decisões", body: "A descrever a partir do material do projeto." },
+        { label: "Resultado", body: "A registrar quando houver resultado verificado." },
+      ],
     },
   ],
 };
 
-/**
- * Resources. The hero's call to action points here, so the section has to
- * exist and has to be navigable. The four kinds below are structural.
- */
-export const RESOURCES: Placeheld<{
-  eyebrow: string;
-  title: string;
-  lede: string;
-  items: readonly { label: string; body: string }[];
-}> = {
-  placeholder: true,
-  eyebrow: "Recursos",
-  title: "O que fica disponível.",
-  lede: "Material para estudar, para ensinar e para conduzir — organizado por onde você está, não por formato.",
-  items: [
-    { label: "Estudos", body: "Conteúdo em profundidade, para leitura e para preparo." },
-    { label: "Encontros", body: "Material para conduzir conversas em grupo." },
-    { label: "Ferramentas", body: "Apoio prático para o trabalho da semana." },
-    { label: "Acervo", body: "O que já foi publicado, sempre acessível." },
+/* ───────────────────────────────────────────────────── 10 responsibility ── */
+
+export const RESPONSIBILITY = {
+  eyebrow: "Tecnologia responsável",
+  title: "Nem todo pedido vira entrega.",
+  lede: "Quando algo é desnecessário, desproporcional, inseguro, antiético ou prejudicial, dizemos — e apresentamos alternativas. É para isso que se contrata um parceiro, e não um executor.",
+  principles: [
+    "Integridade",
+    "Simplicidade",
+    "Segurança",
+    "Transparência",
+    "Responsabilidade",
+    "Excelência",
+    "Inovação com propósito",
+    "Cuidado com as pessoas",
   ],
-};
-
-/** Community. Structural, but built on the metaphor the materials establish. */
-export const COMMUNITY: Placeheld<{
-  eyebrow: string;
-  quote: string;
-  body: string;
-}> = {
-  placeholder: true,
-  eyebrow: "Comunidade",
-  quote: "Nenhuma árvore cresce sozinha.",
-  body: "Pessoas, igrejas e histórias que se encontram em torno da mesma jornada — porque o que sustenta o crescimento raramente é individual.",
-};
-
-/** How it works. Three steps, structural. */
-export const HOW: Placeheld<{
-  eyebrow: string;
-  title: string;
-  steps: readonly { index: string; label: string; body: string }[];
-}> = {
-  placeholder: true,
-  eyebrow: "Como funciona",
-  title: "Três passos, e o resto é caminho.",
-  steps: [
-    { index: "01", label: "Você entra", body: "Cria seu acesso e diz de onde está partindo." },
-    { index: "02", label: "Você encontra", body: "Recebe o que faz sentido para o momento em que está." },
-    { index: "03", label: "Você cresce", body: "Avança no seu tempo, com a comunidade por perto." },
-  ],
-};
-
-/** The closing panel of the storyboard. Real. */
-export const CLOSING = {
-  title: ["Sua jornada de fé e conhecimento", "começa aqui."],
-  action: { label: "Começar jornada", href: "#" },
 } as const;
 
+/* ──────────────────────────────────────────────────────── 11 diagnosis ── */
+
+export const DIAGNOSIS = {
+  eyebrow: "Próximo passo",
+  title: "Comece por um diagnóstico.",
+  lede: "Conte o que você está tentando resolver. A gente ajuda a entender o que deve vir depois.",
+  steps: [
+    { index: "01", body: "Você conta o que está acontecendo." },
+    { index: "02", body: "Entendemos o seu contexto." },
+    { index: "03", body: "Revisamos a necessidade." },
+    { index: "04", body: "Recomendamos a direção adequada." },
+    { index: "05", body: "Você decide o que vem depois." },
+  ],
+  note: "O diagnóstico é o começo de uma conversa. Não é a porta de entrada de um produto já decidido.",
+} as const;
+
+/* ─────────────────────────────────────────────────────────── 12 mission ── */
+
+export const MISSION = {
+  title: ["A tecnologia não é o destino."],
+  body: "É o que ajuda a missão a avançar.",
+  slogan: BRAND.slogan,
+} as const;
+
+/* ──────────────────────────────────────────────────────────────── footer ── */
+
 export const FOOTER = {
-  /** The storyboard's own summary of the piece. */
-  note: "Cada etapa desta página é conduzida pelo scroll — uma jornada, e não uma sequência de telas.",
+  note: BRAND.descriptor,
   columns: [
     { title: "Navegar", links: NAV },
     {
       title: "Ekklesia",
       links: [
-        { label: "Contato", href: "#" },
+        { label: "Contato", href: "#diagnostico" },
         { label: "Privacidade", href: "#" },
       ],
     },

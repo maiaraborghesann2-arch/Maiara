@@ -24,6 +24,18 @@
   /* Accents */
   --clay: #a2502b;
   --clay-hover: #8b4222;
+
+  /*
+   * The accent, as *text*, at the two grounds the page uses.
+   *
+   * `--clay` itself is a surface colour — it passes as a button fill, and it
+   * fails as type. Measured against the sand it reaches 4.16:1 where small text
+   * needs 4.5, and against the soil only 3.3:1. These two are the same hue
+   * moved far enough to clear it: 5.2:1 on the light grounds, 5.3:1 on the
+   * dark. Use these anywhere clay carries a word.
+   */
+  --clay-ink: #8b4222;
+  --clay-ink-light: #c9714a;
   --olive: #4a5537;
   --olive-soft: #6b7550;
   --olive-hairline: rgba(74, 85, 55, 0.32);

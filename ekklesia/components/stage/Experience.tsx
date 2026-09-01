@@ -5,14 +5,17 @@ import { SmoothScroll } from "@/components/scroll/SmoothScroll";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import {
-  About,
-  Closing,
-  Community,
-  Depth,
-  Ecosystem,
-  How,
-  Manifesto,
-  Resources,
+  Adapts,
+  Approach,
+  Capabilities,
+  Cases,
+  Diagnosis,
+  Mission,
+  Paths,
+  Problem,
+  Proposition,
+  Responsibility,
+  Situations,
 } from "@/components/site/Sections";
 import { useReveal } from "@/lib/site/useReveal";
 
@@ -46,15 +49,23 @@ export function Experience() {
       <div id="inicio" />
       <CinematicOpening />
 
+      {/*
+        The order is the company's own method: understand the problem, clarify
+        the situation, show the possible paths, and only then say what we do.
+        A visitor who reads it in order has been walked through a diagnosis.
+      */}
       <main>
-        <Manifesto />
-        <About />
-        <Depth />
-        <Ecosystem />
-        <Resources />
-        <Community />
-        <How />
-        <Closing />
+        <Proposition />
+        <Problem />
+        <Approach />
+        <Paths />
+        <Capabilities />
+        <Adapts />
+        <Situations />
+        <Cases />
+        <Responsibility />
+        <Diagnosis />
+        <Mission />
       </main>
 
       <SiteFooter />

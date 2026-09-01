@@ -18,9 +18,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Ekklesia Connect — Pequenos começos. Grandes frutos.",
+  title: "Ekklesia Connect — Consultoria de tecnologia para igrejas",
   description:
-    "Conteúdo que transforma vidas e gera crescimento real. Uma jornada de fé e conhecimento.",
+    "Consultoria e desenvolvimento de tecnologia sob medida para igrejas e ministérios. Diagnosticamos, integramos e desenvolvemos soluções adaptadas à identidade, aos processos e à missão da sua igreja.",
 };
 
 export const viewport: Viewport = {

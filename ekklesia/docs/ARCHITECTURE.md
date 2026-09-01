@@ -1,201 +1,97 @@
-# Arquitetura da experiência
+# Arquitetura
 
-> Referência de direção: `docs/storyboard.png` (Fase 1 — Storyboard da
-> Experiência, 15 quadros). **O arquivo ainda não está versionado neste
-> repositório** — este protótipo foi construído a partir da imagem fornecida na
-> conversa. Commite o PNG em `docs/` para que a referência fique junto do
-> código.
-
-O storyboard não é para ser reproduzido literalmente. Ele define a narrativa, o
-ritmo e a paleta; a implementação decide como cada quadro vira movimento.
+Duas coisas rodam nesta página: um filme controlado pelo scroll, e um site
+comum. Elas se encontram uma vez, no fim da abertura, e não compartilham
+sistema nenhum além do scroll suave.
 
 ---
 
-## O princípio: o scroll é o tempo
+## 1. A abertura
 
-Não existe timeline que "toca". Existe **um número**, `0..1`, que diz onde a
-narrativa está. A rolagem escreve esse número; tudo o mais o lê. Rolar para
-trás roda a narrativa para trás, porque não há estado acumulado em lugar
-nenhum — toda posição, rotação e opacidade é uma função pura do progresso.
-
-Isso vale inclusive para o pó da queda (`Dust.tsx`): as partículas têm posição
-em forma fechada, não simulada. Um sistema de partículas com estado ficaria
-preso no ar assim que o usuário rolasse para cima.
+O princípio: **o scroll é o tempo**. Não existe timeline que "toca" — existe um
+número, `0..1`, que diz onde a narrativa está. A rolagem escreve esse número; o
+vídeo o lê. Rolar para trás roda o filme para trás, porque a posição é função
+pura do progresso e não há estado acumulado em lugar nenhum.
 
 ```
 rolagem
    │
    ▼
-ScrollTrigger (scrub)  ──escreve──▶  progressStore.raw
+ScrollTrigger (scrub)  ──escreve──▶  cinematicStore.raw
                                           │
-                     ticker do GSAP ──amortece──▶ progressStore.progress
+                     ticker do GSAP ──amortece──▶ .progress
                                           │
-                    ┌─────────────────────┴─────────────────────┐
-                    ▼                                           ▼
-            useFrame (WebGL)                         subscribe (DOM)
-        semente, câmera, pó, sombra              legendas, hero, header
+                                    subscribe (DOM)
+                                          │
+                          videoProgressFor(scroll) × duration
+                                          │
+                                  video.currentTime
 ```
 
-### Por que `ref` e não `useState`
+**Um único ticker.** Lenis, ScrollTrigger e o amortecimento rodam no mesmo
+`gsap.ticker` (`SmoothScroll.tsx`). Dois loops de `requestAnimationFrame`
+independentes ficariam defasados em um quadro.
 
-O scrub escreve um valor novo a cada quadro. Passar isso por estado do React
-re-renderizaria a árvore inteira ~60 vezes por segundo. `progressStore` é um
-objeto mutável: a camada 3D **puxa** o valor dentro de `useFrame`, a camada DOM
-**recebe** via `subscribe` e escreve `style` direto no elemento. Nenhuma
-reconciliação no caminho quente.
+**Nada de `useState` no caminho quente.** O scrub escreve um valor novo a cada
+quadro; passar isso por estado do React re-renderizaria a árvore ~60 vezes por
+segundo. `cinematicStore` é um objeto mutável e o componente escreve
+`currentTime` direto no elemento.
 
-### Por que um único ticker
+**Buscas são coalescidas, não enfileiradas.** O alvo é atualizado todo quadro,
+mas uma busca só é emitida quando o elemento não está buscando. Pedir uma nova
+posição enquanto a anterior não resolveu faz o navegador descartar as
+intermediárias — a imagem congela e depois pula.
 
-Lenis, ScrollTrigger e o amortecimento rodam no mesmo `gsap.ticker`
-(`SmoothScroll.tsx`). Dois loops de `requestAnimationFrame` independentes
-deixariam DOM e WebGL defasados em um quadro — o suficiente para a legenda
-"atrasar" visivelmente em relação à semente.
+**O palco é `position: sticky`.** É todo o mecanismo de fixação: sem
+`position: fixed`, sem pin em JS, nada para o navegador recalcular no resize.
 
----
+### Trocar o filme
 
-## Decisões estruturais
-
-**Um `<Canvas>` que nunca desmonta.** A jornada dos 15 quadros é um único
-movimento de câmera: semente → solo → raízes → caule → copa. Montar um canvas
-por seção destruiria a continuidade justamente na transição mais importante
-(quadro 10, a raiz percebida como caule). Capítulos futuros adicionam objetos a
-*esta* cena.
-
-**A câmera nunca reseta.** O Ato I termina com ela já descendo e apontada para
-o solo (`choreography.ts` → `camera`). É exatamente a posição de que o quadro 06
-("a câmera atravessa a superfície") precisa para continuar sem corte.
-
-**Sem `pin`.** O palco é `position: fixed` e simplesmente nunca se move; o
-`ScrollDriver` é uma coluna vazia cuja única função é ter altura. Nada para o
-navegador fixar, nada para recalcular no resize.
-
-**Híbrido de verdade.** O hero do quadro 04 é HTML real — `<h1>`, `<button>`,
-foco, seleção de texto, indexação. A semente ao lado é a malha do canvas
-compartilhado. Cada camada faz o que faz bem.
+`lib/cinematic/config.ts` é o contrato inteiro. `VIDEO_SRC` e
+`AUTHORED_DURATION`, e nada mais no projeto sabe qual filme está tocando. Um
+filme de outra duração mapeia proporcionalmente sozinho, porque a curva é
+normalizada pela duração autorada e reexpandida contra a duração real do
+elemento. O arquivo traz a receita de ffmpeg e os dois requisitos que não são
+negociáveis: **8 bits** (nenhum navegador decodifica H.264 10 bits) e
+**keyframe em todo quadro** (scrubbing busca posições arbitrárias).
 
 ---
 
-## Mapa dos arquivos
+## 2. O site
 
-| Arquivo | Papel |
-| --- | --- |
-| `lib/scroll/progressStore.ts` | O número. Fonte única de verdade. |
-| `lib/scene/sharedState.ts` | Posição da semente, publicada para o backdrop. |
-| `lib/scroll/choreography.ts` | **A lista de planos.** Todos os keyframes do Ato I. |
-| `lib/scroll/acts.ts` | Os 15 quadros do storyboard + faixas de scroll do Ato I. |
-| `lib/math.ts` | `track()`, `window4()`, easings, `damp()`. |
-| `components/scroll/SmoothScroll.tsx` | Lenis + ticker único + amortecimento. |
-| `components/scroll/ScrollDriver.tsx` | A trilha de rolagem e o ScrollTrigger. |
-| `components/experience/ExperienceCanvas.tsx` | O palco persistente. |
-| `components/experience/CameraRig.tsx` | Câmera contínua + fundo. |
-| `components/experience/Backdrop.tsx` | Fundo iluminado: wash, light pool, sombra projetada, grão. |
-| `components/experience/StudioEnvironment.tsx` | Environment map gerado (PMREM), sem asset externo. |
-| `components/experience/Lighting.tsx` | Key com deriva de azimute + fill + rim. |
-| `components/experience/GroundShadow.tsx` | Sombras de contato projetadas nas duas superfícies. |
-| `components/experience/Motes.tsx` | Partículas ambientes, para dar paralaxe ao vazio. |
-| `components/experience/Seed.tsx` | Coreografia da semente. |
-| `components/experience/seedGeometry.ts` | Grão procedural + mapas de cor/rugosidade/AO/normal. |
-| `components/stage/Overlay.tsx` | Camada HTML fixa. |
-| `components/stage/Caption.tsx` | Narração em itálico dos quadros. |
-| `components/stage/Hero.tsx` | Quadro 04, em HTML acessível, reveal em máscara. |
-| `components/stage/ScrollIndicator.tsx` | Indicador de scroll discreto. |
-| `components/stage/BeatReadout.tsx` | Leitura de progresso, só com `?debug`. |
+Tudo abaixo da abertura é HTML rolando normalmente. O único script que o toca é
+`useReveal`, que escreve um atributo por elemento, uma vez, e para.
 
-**Para retimar qualquer coisa, edite `choreography.ts`.** Os componentes só
-amostram tracks; nenhum deles contém números de tempo.
+**Reveals são IntersectionObserver + CSS, nunca GSAP.** A abertura já tem um
+ScrollTrigger, o Lenis e o único ticker; um segundo sistema de animação no mesmo
+scroll só teria chances de discordar do primeiro no resize. O que o conteúdo
+precisa é de uma flag "isto já foi visto", e é isso que ele tem.
+
+Uma armadilha registrada no código: o atributo vai no **invólucro** das linhas
+mascaradas, nunca na linha. A linha se esconde transladando para fora de um
+`overflow: hidden`, então um observer olhando para ela a veria como
+permanentemente recortada por um ancestral e nunca dispararia.
+
+**O cabeçalho não mede nada por quadro.** Ele inverte sobre as seções escuras
+por `IntersectionObserver` (um elemento fixo não herda de quem ele cobre), e sai
+do caminho na descida com um listener passivo que difere a leitura para um
+quadro.
+
+**Todo o texto mora em `lib/site/content.ts`.** Os layouts são construídos para
+aceitar linhas mais longas ou mais curtas do que as que estão lá. O que não vem
+dos materiais do projeto está marcado `placeholder: true`.
 
 ---
 
-## Direção visual do Ato I
+## 3. O que não roda mais
 
-Cinco decisões carregam a imagem, e nenhuma delas é "mais elementos":
+`components/experience/*`, `lib/scroll/choreography.ts`, os stores de ato em
+`lib/scroll/stage.ts`, os componentes em `components/stage/` além de
+`Experience.tsx`, e os estilos de tudo isso em `styles/legacy.css`.
 
-1. **A escala aparente é trabalho de lente, não de escala.** A semente tem
-   tamanho constante; quem muda é a câmera — abre larga (5% da altura do
-   quadro), avança em macro para o giro, recua na queda. Objetos reais não
-   crescem, e deixar a lente fazer esse trabalho é a maior parte do motivo pelo
-   qual a sequência lê como fotografada.
-
-2. **A trajetória é uma reta vertical, do primeiro quadro ao último.** A semente
-   nunca sai do eixo central. Ela cai, toca a terra e fica parada; o que abre a
-   composição da Home é o `targetY` — a lente mira mais alto depois do impacto,
-   o que faz o grão parado assentar no terço inferior e libera a coluna de areia
-   acima dele para o título. O movimento continua a direção que a queda já
-   estabeleceu, em vez de cortá-la. Um dolly lateral leria como troca de
-   assunto mesmo com o objeto imóvel.
-
-3. **O fundo é uma superfície fotografada.** Wash vertical, poça de luz que
-   segue a semente, névoa atmosférica, vinheta e uma textura de fibra esticada
-   sob tudo. Tire qualquer uma e o quadro volta a ser "janela de navegador
-   vazia".
-
-4. **A sombra conta a distância.** Duas superfícies — o parapeito e a terra —
-   cada uma com sua própria autoridade. Opacidade, espalhamento e deslocamento
-   na direção da luz derivam do *vão* entre a semente e cada superfície. A do
-   parapeito se dissolve enquanto a da terra resolve de um borrão enorme até um
-   contato fechado. É a sombra dizendo ao olho quanto de queda ainda falta.
-
-   A câmera também desce **mais devagar que o grão** durante a queda. Essa
-   defasagem é a sensação de gravidade: alvo e objeto descem juntos e mesmo
-   assim o grão afunda de logo acima do centro até o terço inferior, porque
-   está ganhando da lente.
-
-5. **O chão recua até a altura do olho, não até o ponto de contato.** Um plano
-   horizontal tem sua linha de fuga no nível da câmera; projetar o ponto sob a
-   semente coloca a borda do chão abaixo de onde a superfície realmente lê, e
-   o grão fica pousado no ar com uma faixa de terra por baixo. A densidade
-   cresce com o quadrado da distância abaixo do horizonte — nada na linha de
-   fuga, inconfundível aos seus pés.
-
-6. **A rede de ranhuras precisa de domínio deformado.** `min` dos três campos de
-   ridge (não a soma) produz uma rede de linhas em vez de manchas isoladas; e
-   avaliar esses campos em coordenadas retas dá uma regularidade de cestaria.
-   Deformar o espaço antes de medir é o que torna a rede orgânica.
-
-**Sobre o shadow map:** foi tentado e descartado. VSM é o único tipo nativo que
-respeita `shadow.radius`, mas sangra quando a luz acompanha um objeto em queda
-por um frustum apertado — deixava um oval cinza solto na areia durante o pouso.
-Num objeto que lê com sessenta pixels de altura, o detalhe de silhueta que o
-mapa compra é invisível; o artefato não era. As sombras são desenhadas
-diretamente, o que também elimina um passe de render por quadro.
-
-O quadro 01 não tem texto: só areia, luz e o objeto. A narração entra com o
-giro. Para restaurar a legenda de abertura, basta um `<Caption>` para
-`semente` em `Overlay.tsx`.
-
-## Estado atual
-
-Construído: quadros **01 → 04** (semente, despertar, queda, home).
-Planejado: quadros 05 → 15.
-
-Rode com `?debug` na URL para ver o progresso global e o progresso local de
-cada beat enquanto rola — indispensável para ajustar keyframes.
-
-## Como estender para o Ato II
-
-1. Acrescente as faixas dos novos beats em `acts.ts` e aumente
-   `ACT_ONE_TRACK_VH` (ou crie uma segunda trilha com seu próprio
-   `ScrollDriver` e um segundo store, se preferir capítulos independentes).
-2. Escreva os tracks em `choreography.ts`, continuando de onde a câmera parou
-   (`y ≈ -1.02`, `targetY ≈ -1.30`, descendo).
-3. Adicione os objetos novos (solo, raízes) dentro do `<Canvas>` existente,
-   cada um lendo `progressStore` no seu próprio `useFrame`. A ordem de leitura
-   não importa: o store só é atualizado pelo ticker, então todos os
-   consumidores enxergam o mesmo valor no mesmo quadro.
-
-O quadro 10 — raiz virando caule — é o ponto que decide a arquitetura do Ato
-II. A leitura recomendada é uma geometria só, com a câmera invertendo o sentido
-da subida, e não dois objetos com crossfade.
-
----
-
-## Acessibilidade
-
-- `prefers-reduced-motion` desliga a inércia do Lenis, o amortecimento, a
-  deriva ociosa e o pó. A experiência continua dirigida pelo scroll, que é
-  controlada pelo usuário por definição.
-- As legendas e o hero são texto real, disponíveis para leitores de tela.
-- O hero usa `inert` até chegar de fato — o CTA não entra na ordem de tabulação
-  antes de estar visível.
-- Sem JavaScript, um bloco `<noscript>` devolve a página como conteúdo estático
-  legível em vez de uma tela creme vazia.
+Era a experiência procedural em Three.js/R3F que precedeu o filme: semente,
+solo, raízes e broto construídos com shaders e geometria. Foi substituída, mas
+nada foi apagado — nenhum desses arquivos é importado, então estão fora do
+bundle além de estarem fora do quadro. Existe exatamente **um** sistema visual
+rodando. `styles/legacy.css` não é importado por ninguém; uma linha em
+`globals.css` o traria de volta junto com os componentes.

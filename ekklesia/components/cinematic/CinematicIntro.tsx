@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 
+import { Mark } from "@/components/brand/Mark";
 import { BRAND_MARK_SRC, FIRST_FRAME_TONE, INTRO } from "@/lib/cinematic/config";
 
 type Props = {
@@ -122,10 +123,17 @@ export function CinematicIntro({ ready, onDone }: Props) {
   return (
     <div ref={root} className="intro" aria-hidden="true">
       <div ref={mark} className="intro__mark">
+        {/*
+          The mark, not a word set in a serif. `Mark` is the vector already in
+          the repository — the canopy over a trunk — and an entrance that shows
+          only type is an entrance without the brand in it. `BRAND_MARK_SRC`
+          still wins when the official file lands.
+        */}
         {BRAND_MARK_SRC ? (
           <img className="intro__logo" src={BRAND_MARK_SRC} alt="" draggable={false} />
         ) : (
           <>
+            <Mark size={54} />
             <span className="intro__word">Ekklesia</span>
             <span className="intro__sub">Connect</span>
           </>
