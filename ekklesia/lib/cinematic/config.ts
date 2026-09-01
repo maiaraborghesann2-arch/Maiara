@@ -25,29 +25,66 @@
  * used is the rate at which the scroll walks the footage.
  */
 
-/*
- * The scrub master.
+/* ═══════════════════════════════════════════════════════════════════════
+ *  REPLACING THE FILM
+ * ═══════════════════════════════════════════════════════════════════════
  *
- * Same footage, same framing, same duration as the 4K source — re-encoded for
- * two reasons, both of them disqualifying rather than cosmetic:
+ * These two constants are the whole contract. Drop a new file into
+ * `public/media/`, point `VIDEO_SRC` at it, set `AUTHORED_DURATION` to its
+ * length in seconds, and re-author `SCROLL_CURVE` against the new footage.
+ * Nothing outside this file knows which film is playing — not the opening
+ * component, not the page, not the rest of the site.
  *
- *   1. The source is H.264 High 10 (`yuv420p10le`). No browser decodes 10-bit
- *      H.264, so the file could not have played at all.
- *   2. It carried four keyframes across 241 frames, so an arbitrary seek cost
- *      the decoder up to ninety inter-frames.
+ * A new film of a *different length* needs no code change at all: the curve is
+ * normalised against `AUTHORED_DURATION` and re-expanded against the element's
+ * own `duration` at runtime, so the mapping stays proportional automatically.
+ * Re-authoring the curve is then a matter of taste, not of correctness — and
+ * `assertDurationMatches` below says so out loud in development if the two
+ * durations have drifted apart.
  *
- * This one is 8-bit High profile with a keyframe on every frame (241 of 241,
- * verified in the container), so any position the scroll asks for decodes
- * exactly one frame.
+ * What a replacement file needs, learned from the last one the hard way:
+ *   • 8-bit H.264 (`yuv420p`, High profile). 10-bit — `yuv420p10le`, which is
+ *     what Firefly hands you — does not decode in any browser.
+ *   • A keyframe on every frame. Scrubbing seeks to arbitrary positions, and a
+ *     sparse GOP makes each one cost the whole distance back to the last one.
  *
- * It is 2560×1440 rather than 3840×2160, and that was measured too. Against the
- * 4K source resampled to a 1440p display, 1440p scores SSIM 0.9919 and 2160p
- * scores 0.9943 — a difference of 0.0024, because the source is itself an AI
- * upscale and carries very little true detail past 1440p. It costs about half
- * as much to decode per seek (109 ms against 212 ms, CPU-only), which is the
- * difference between a scrub that tracks the scroll and one that lags it.
+ *     ffmpeg -i <new>.mp4 -vf "zscale=w=2560:h=1440:filter=lanczos:\
+ *       dither=error_diffusion,format=yuv420p" -c:v libx264 -preset slow \
+ *       -tune film -profile:v high -crf 24 -g 1 -keyint_min 1 \
+ *       -sc_threshold 0 -x264-params aq-mode=3:aq-strength=1.1 \
+ *       -movflags +faststart -an public/media/scrub.mp4
+ *
+ * The file in place now is 2560×1440, 8-bit High profile, 241 of 241
+ * keyframes, CRF 24, 19.5 MB.
  */
 export const VIDEO_SRC = "/media/scrub.mp4";
+
+/**
+ * The length of the film `SCROLL_CURVE` was written against.
+ *
+ * This is *not* a guess at the runtime duration — it is the denominator that
+ * turns the curve's authored seconds into fractions of the film. It also
+ * stands in as the duration before the element reports its own.
+ */
+export const AUTHORED_DURATION = 10.042;
+
+/**
+ * Warns, in development only, when the loaded film is not the one the curve was
+ * written for. The mapping still works — it scales proportionally — but the
+ * beats will no longer sit on the moments they were placed on, and that is
+ * worth knowing about rather than discovering by eye.
+ */
+export function assertDurationMatches(actual: number): void {
+  if (process.env.NODE_ENV === "production") return;
+  if (!Number.isFinite(actual) || actual <= 0) return;
+  if (Math.abs(actual - AUTHORED_DURATION) < 0.25) return;
+  console.warn(
+    `[cinematic] O filme carregado dura ${actual.toFixed(2)}s, mas SCROLL_CURVE ` +
+      `foi escrita para ${AUTHORED_DURATION}s. O mapeamento continua ` +
+      `proporcional, mas os beats saíram dos momentos em que foram colocados. ` +
+      `Reescreva SCROLL_CURVE e AUTHORED_DURATION em lib/cinematic/config.ts.`,
+  );
+}
 
 /**
  * The brand mark shown during the entrance.
@@ -91,9 +128,6 @@ export const INTRO = {
   maxHold: 4,
 } as const;
 
-/** Read from the container (`mvhd`). Only a fallback — the element's own
- *  `duration` wins as soon as metadata arrives. */
-export const VIDEO_DURATION = 10.042;
 export const VIDEO_ASPECT = 16 / 9;
 
 /**
@@ -310,7 +344,7 @@ export function videoProgressFor(scroll: number): number {
     if (p > b.scroll) continue;
 
     const width = b.scroll - a.scroll;
-    if (width <= 0) return b.second / VIDEO_DURATION;
+    if (width <= 0) return b.second / AUTHORED_DURATION;
 
     const t = (p - a.scroll) / width;
     const t2 = t * t;
@@ -321,10 +355,10 @@ export function videoProgressFor(scroll: number): number {
       (-2 * t3 + 3 * t2) * b.second +
       (t3 - t2) * width * TANGENTS[i];
 
-    return second / VIDEO_DURATION;
+    return second / AUTHORED_DURATION;
   }
 
-  return SCROLL_CURVE[SCROLL_CURVE.length - 1].second / VIDEO_DURATION;
+  return SCROLL_CURVE[SCROLL_CURVE.length - 1].second / AUTHORED_DURATION;
 }
 
 /** Which beat the section is in, for captions and for the debug readout. */

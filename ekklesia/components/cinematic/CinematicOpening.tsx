@@ -10,9 +10,10 @@ import {
   FOCUS,
   HANDOFF_SCROLL,
   PORTRAIT_BELOW,
+  AUTHORED_DURATION,
   REDUCED_MOTION_VIDEO_PROGRESS,
-  VIDEO_DURATION,
   VIDEO_SRC,
+  assertDurationMatches,
   beatAt,
   videoProgressFor,
 } from "@/lib/cinematic/config";
@@ -110,8 +111,18 @@ export function CinematicOpening() {
     if (!element) return;
     if (element.error) setFailed(true);
     if (element.readyState >= 2) setReady(true);
+
+    // Says so out loud if the film in place is not the one the curve was
+    // written for — the mapping still scales, but the beats have moved.
+    const check = () => assertDurationMatches(element.duration);
+    if (element.readyState >= 1) check();
+    else element.addEventListener("loadedmetadata", check, { once: true });
+
     element.addEventListener("error", onError);
-    return () => element.removeEventListener("error", onError);
+    return () => {
+      element.removeEventListener("error", onError);
+      element.removeEventListener("loadedmetadata", check);
+    };
   }, [onError]);
 
   /*
@@ -134,7 +145,7 @@ export function CinematicOpening() {
 
     if (reducedMotion) {
       const settle = () => {
-        element.currentTime = REDUCED_MOTION_VIDEO_PROGRESS * (element.duration || VIDEO_DURATION);
+        element.currentTime = REDUCED_MOTION_VIDEO_PROGRESS * (element.duration || AUTHORED_DURATION);
       };
       if (element.readyState >= 1) settle();
       else element.addEventListener("loadedmetadata", settle, { once: true });
@@ -145,7 +156,7 @@ export function CinematicOpening() {
     let applied = -1;
 
     const pump = () => {
-      const duration = element.duration || VIDEO_DURATION;
+      const duration = element.duration || AUTHORED_DURATION;
       if (!Number.isFinite(duration) || duration <= 0) return;
       // A hair inside the end: seeking to exactly `duration` lands past the
       // last sample on some browsers and shows a blank frame.
@@ -198,7 +209,7 @@ export function CinematicOpening() {
 
     return subscribeCinematic((scroll) => {
       const beat = beatAt(scroll);
-      const time = videoProgressFor(scroll) * (video.current?.duration || VIDEO_DURATION);
+      const time = videoProgressFor(scroll) * (video.current?.duration || AUTHORED_DURATION);
       const scrollCell = element.querySelector<HTMLElement>("[data-scroll]");
       const timeCell = element.querySelector<HTMLElement>("[data-time]");
       const beatCell = element.querySelector<HTMLElement>("[data-beat]");

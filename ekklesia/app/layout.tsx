@@ -32,22 +32,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" className={`${cormorant.variable} ${inter.variable}`}>
       <head>
         {/*
-          The narrative beats are revealed by JavaScript writing opacity. With
-          scripting off nothing would ever reveal them, so hand the page back as
-          static, readable content instead of a blank cream screen.
+          Reveals are switched on by an IntersectionObserver writing one
+          attribute. With scripting off nothing would ever write it, so hand the
+          page back as static, readable content instead of a blank cream screen.
+          The opening collapses to its first frame, which is the honest thing to
+          show when the scrub cannot run.
         */}
         <noscript>
           <style>{`
-            .beat, .hero__line, .hero__kicker, .hero__lede, .hero__actions, .hero__descender, .contemplation__lead, .contemplation__note { opacity: 1 !important; visibility: visible !important; transform: none !important; }
-            .hero__mask { overflow: visible; }
-            .caption { position: static; margin: 2rem auto; }
-            .hero { position: static; min-height: 60vh; }
-            .contemplation { position: static; padding: 4rem 2rem; background: var(--soil); }
-            .contemplation::before { display: none; }
-            .site-header { position: static; }
-            .scroll-indicator { display: none; }
-            .overlay { position: static; pointer-events: auto; background: var(--sand); }
-            .stage { display: none; }
+            [data-reveal], .mask__line { opacity: 1 !important; transform: none !important; }
+            .cinematic { height: 100vh !important; }
+            .intro { display: none !important; }
+            .site-header__menu { display: none !important; }
           `}</style>
         </noscript>
       </head>

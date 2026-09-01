@@ -2,6 +2,19 @@
 
 import { CinematicOpening } from "@/components/cinematic/CinematicOpening";
 import { SmoothScroll } from "@/components/scroll/SmoothScroll";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import {
+  About,
+  Closing,
+  Community,
+  Depth,
+  Ecosystem,
+  How,
+  Manifesto,
+  Resources,
+} from "@/components/site/Sections";
+import { useReveal } from "@/lib/site/useReveal";
 
 /**
  * The page, in one place.
@@ -10,29 +23,41 @@ import { SmoothScroll } from "@/components/scroll/SmoothScroll";
  * preview bundle — and for a while each assembled this tree itself. They
  * drifted twice without anyone noticing, so neither composes it any more.
  *
- * The opening is now the supplied footage, scrubbed by the scroll. The
- * procedural seed-to-plant scene that used to live here is still in the
- * repository — `components/experience/*`, `lib/scroll/choreography.ts` and the
- * act stores in `lib/scroll/stage.ts` — but nothing imports it, so it is out of
- * the bundle as well as out of the frame. There is exactly one visual system
- * running.
+ * The opening is the supplied footage, scrubbed by the scroll, and it is closed
+ * work: `CinematicOpening` takes no props and reads everything it needs from
+ * `lib/cinematic/config.ts`. Replacing the film touches that file and nothing
+ * here. The procedural seed-to-plant scene it replaced is still in the
+ * repository — `components/experience/*`, `lib/scroll/choreography.ts`, the act
+ * stores, and the styles for all of it in `styles/legacy.css` — but nothing
+ * imports any of it, so it is out of the bundle as well as out of the frame.
+ * There is exactly one visual system running.
+ *
+ * Everything below the opening is ordinary scrolling HTML. The only script that
+ * touches it is `useReveal`, which sets one attribute per element once and then
+ * stops.
  */
 export function Experience() {
+  useReveal();
+
   return (
     <SmoothScroll>
+      <SiteHeader />
+
+      <div id="inicio" />
       <CinematicOpening />
 
-      <main className="chapter" id="conteudo">
-        <p className="chapter__eyebrow">Ekklesia Connect</p>
-        <h1 className="chapter__title">Pequenos começos. Grandes frutos.</h1>
-        <p className="chapter__body">
-          Conteúdo que transforma vidas e gera crescimento real — formação,
-          comunidade e prática para quem constrói a igreja no dia a dia.
-        </p>
-        <a className="chapter__cta" href="#recursos">
-          Explorar recursos
-        </a>
+      <main>
+        <Manifesto />
+        <About />
+        <Depth />
+        <Ecosystem />
+        <Resources />
+        <Community />
+        <How />
+        <Closing />
       </main>
+
+      <SiteFooter />
     </SmoothScroll>
   );
 }

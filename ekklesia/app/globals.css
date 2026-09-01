@@ -48,56 +48,6 @@ button {
   outline-offset: 3px;
 }
 
-/* ---------------------------------------------------------------- stage -- */
-
-.stage {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-}
-
-.stage canvas {
-  display: block;
-}
-
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-/*
- * Beats start invisible and are revealed imperatively by the progress store.
- * Without JavaScript nothing would ever set that opacity, so the noscript rule
- * in `layout.tsx` hands the page back as plain, readable content.
- */
-.beat {
-  opacity: 0;
-  will-change: opacity, transform;
-}
-
-/* -------------------------------------------------------------- caption -- */
-
-.caption {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 14vh;
-  text-align: center;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 300;
-  font-size: clamp(1rem, 1.35vw, 1.28rem);
-  line-height: 1.9;
-  letter-spacing: 0.01em;
-  color: var(--ink-soft);
-}
-
-.caption span {
-  display: block;
-}
-
 /* --------------------------------------------------------------- header -- */
 
 .site-header {
@@ -170,427 +120,6 @@ button {
   width: 24px;
   height: 1.2px;
   background: var(--ink);
-}
-
-/* ----------------------------------------------------------------- hero -- */
-
-/*
- * Anchored to the top rather than centred. The grain rests in the lower third
- * of the frame — that position is set by the camera, not by CSS — and the text
- * column has to sit clear above it on the same axis.
- */
-.hero {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15vh var(--gutter) 0;
-  text-align: center;
-  pointer-events: none;
-}
-
-.hero__column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: min(52rem, 82vw);
-}
-
-.hero__kicker {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  margin-bottom: clamp(1.5rem, 2.8vw, 2.4rem);
-  font-size: 0.58rem;
-  font-weight: 500;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--olive-soft);
-  opacity: 0;
-}
-
-.hero__rule {
-  display: block;
-  width: clamp(22px, 3.4vw, 44px);
-  height: 1px;
-  background: var(--olive-hairline);
-}
-
-.hero__title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: var(--font-display);
-  font-weight: 300;
-  font-size: clamp(2.3rem, 5.4vw, 4.7rem);
-  line-height: 1.06;
-  letter-spacing: -0.024em;
-  color: var(--ink);
-}
-
-/*
- * The clipping box for the wipe. Padding restores room for descenders (the q of
- * "Pequenos", the cedilla of "começos") that `overflow: hidden` would otherwise
- * shear off, and the negative margin gives that room back to the layout so the
- * lines still set tight.
- */
-.hero__mask {
-  display: block;
-  overflow: hidden;
-  padding-bottom: 0.16em;
-  margin-bottom: -0.16em;
-}
-
-.hero__line {
-  display: block;
-  /* Each mask is one deliberate line of the storyboard's break. */
-  white-space: nowrap;
-  transform: translate3d(0, 104%, 0);
-  opacity: 0;
-  will-change: transform, opacity;
-}
-
-.hero__lede {
-  margin-top: clamp(1.5rem, 2.6vw, 2.2rem);
-  max-width: 46rem;
-  font-size: clamp(0.88rem, 1.02vw, 1rem);
-  line-height: 1.8;
-  color: var(--ink-soft);
-  opacity: 0;
-}
-
-.hero__actions {
-  margin-top: clamp(1.9rem, 3vw, 2.7rem);
-  opacity: 0;
-}
-
-.hero__cta {
-  padding: 1rem 1.9rem;
-  background: var(--clay);
-  color: #f8f2e9;
-  font-size: 0.66rem;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  border-radius: 2px;
-  pointer-events: auto;
-  transition: background 0.4s var(--ease-out);
-}
-
-.hero__cta:hover {
-  background: var(--clay-hover);
-}
-
-.hero__descender {
-  display: block;
-  width: 1px;
-  height: clamp(2.5rem, 7vh, 5rem);
-  margin-top: clamp(1.6rem, 3vh, 2.6rem);
-  background: linear-gradient(to bottom, var(--olive-hairline), transparent);
-  opacity: 0;
-}
-
-/* ------------------------------------------------------- contemplation -- */
-
-/*
- * Frame 09. Set as a page of a book, not a section of a site: no rule, no
- * eyebrow, no button.
- *
- * And set in the *negative space*, not over the subject. The closing shot puts
- * the grain a third of the way down and the whole organism below it, which
- * leaves the top of frame as bare soil; the words go there. Laid across the
- * middle they were reading as a text layer dropped onto a picture — two things
- * competing for the same area — however soft the scrim behind them was.
- */
-.contemplation {
-  --scrim: 0;
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 11vh var(--gutter) 0;
-  text-align: center;
-  pointer-events: none;
-}
-
-/*
- * Pale roots crossing display serif would cut the strokes apart. Dimming the
- * roots instead would remove the thing being contemplated, so the type gets a
- * scrim soft enough to go unnoticed.
- */
-.contemplation::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: min(70rem, 100vw);
-  height: 38vh;
-  transform: translateX(-50%);
-  /* Barely there. The words now sit over open soil, so the scrim only has to
-     keep the finest grain from breaking up the strokes. */
-  background: linear-gradient(
-    to bottom,
-    rgba(12, 9, 6, 0.34) 0%,
-    rgba(12, 9, 6, 0.24) 50%,
-    rgba(12, 9, 6, 0) 100%
-  );
-  opacity: var(--scrim);
-}
-
-.contemplation__lead,
-.contemplation__note {
-  position: relative;
-  opacity: 0;
-}
-
-.contemplation__lead {
-  max-width: 26ch;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 300;
-  /* A pause in the narration, not the subject of the frame. */
-  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
-  line-height: 1.34;
-  letter-spacing: 0.004em;
-  color: var(--on-soil);
-  text-wrap: balance;
-}
-
-.contemplation__note {
-  margin-top: clamp(1rem, 2vh, 1.5rem);
-  max-width: 44ch;
-  font-size: clamp(0.7rem, 0.76vw, 0.82rem);
-  line-height: 1.9;
-  letter-spacing: 0.03em;
-  color: var(--on-soil-soft);
-  text-wrap: balance;
-}
-
-/* ----------------------------------------------------- scroll indicator -- */
-
-.scroll-indicator {
-  position: absolute;
-  right: clamp(1.1rem, 2.6vw, 2.6rem);
-  top: 50%;
-  margin-top: -42px;
-  width: 1px;
-  height: 84px;
-}
-
-.scroll-indicator__rail,
-.scroll-indicator__thumb {
-  position: absolute;
-  left: 0;
-  width: 1px;
-}
-
-.scroll-indicator__rail {
-  top: 0;
-  height: 84px;
-  background: var(--ink-hairline);
-}
-
-.scroll-indicator__thumb {
-  top: 0;
-  height: 22px;
-  background: rgba(43, 33, 23, 0.34);
-}
-
-/* --------------------------------------------------------------- handoff -- */
-
-.handoff {
-  position: relative;
-  z-index: 2;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: clamp(4rem, 12vh, 9rem) var(--gutter);
-  background: var(--soil);
-  color: var(--on-soil);
-}
-
-.handoff__eyebrow {
-  font-size: 0.6rem;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--on-soil-soft);
-}
-
-.handoff__title {
-  margin-top: 1.4rem;
-  max-width: 16ch;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 300;
-  font-size: clamp(2rem, 4.6vw, 3.6rem);
-  line-height: 1.1;
-}
-
-.handoff__body {
-  margin-top: 1.6rem;
-  max-width: 46ch;
-  font-size: 0.95rem;
-  line-height: 1.75;
-  color: var(--on-soil-soft);
-}
-
-.handoff__list {
-  margin-top: clamp(2.5rem, 6vh, 4rem);
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 0.9rem 1.5rem;
-  border-top: 1px solid rgba(230, 219, 201, 0.14);
-  padding-top: 1.6rem;
-}
-
-.handoff__list li {
-  display: flex;
-  align-items: baseline;
-  gap: 0.7rem;
-  font-size: 0.78rem;
-  color: var(--on-soil-soft);
-}
-
-.handoff__index {
-  font-variant-numeric: tabular-nums;
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
-  color: rgba(230, 219, 201, 0.34);
-}
-
-.handoff__label {
-  letter-spacing: 0.06em;
-  text-transform: lowercase;
-}
-
-/* --------------------------------------------------------------- readout -- */
-
-.readout {
-  position: fixed;
-  left: 1rem;
-  bottom: 1rem;
-  z-index: 5;
-  width: 232px;
-  padding: 0.75rem 0.85rem;
-  background: rgba(23, 18, 12, 0.86);
-  color: #e6dbc9;
-  border-radius: 4px;
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.02em;
-  /* The checkpoint buttons need clicks; the rest of the panel is inert. */
-  pointer-events: none;
-}
-
-.readout__checkpoints {
-  display: grid;
-  gap: 1px;
-  margin-bottom: 0.6rem;
-  pointer-events: auto;
-}
-
-.readout__checkpoint {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.24rem 0.35rem;
-  border: 0;
-  border-radius: 2px;
-  background: rgba(230, 219, 201, 0.06);
-  color: rgba(230, 219, 201, 0.62);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: background 160ms ease, color 160ms ease;
-}
-
-.readout__checkpoint:hover {
-  background: rgba(230, 219, 201, 0.14);
-  color: #e6dbc9;
-}
-
-.readout__checkpoint[data-active="true"] {
-  background: var(--clay);
-  color: #fdf6ec;
-}
-
-.readout__at {
-  opacity: 0.6;
-}
-
-.readout__global {
-  margin-bottom: 0.55rem;
-  color: rgba(230, 219, 201, 0.55);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-}
-
-.readout__global span {
-  color: #e6dbc9;
-}
-
-.readout__row {
-  display: grid;
-  grid-template-columns: 74px 1fr 28px;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.14rem 0;
-}
-
-.readout__track {
-  display: block;
-  height: 2px;
-  background: rgba(230, 219, 201, 0.16);
-  overflow: hidden;
-}
-
-.readout__bar {
-  display: block;
-  height: 100%;
-  background: var(--clay);
-  transform: scaleX(0);
-  transform-origin: left center;
-}
-
-.readout__value {
-  text-align: right;
-  color: rgba(230, 219, 201, 0.6);
-}
-
-@media (max-aspect-ratio: 9 / 10) {
-  .hero {
-    padding-top: 13vh;
-  }
-
-  .hero__title {
-    font-size: clamp(1.9rem, 8.6vw, 3rem);
-  }
-
-  .hero__line {
-    /* The break has to give on a phone; the masks stay one line each. */
-    white-space: normal;
-  }
-
-  .hero__descender {
-    height: clamp(1.6rem, 4vh, 3rem);
-  }
-
-  .site-header__menu-label {
-    display: none;
-  }
-}
-
-/* ------------------------------------------------------------ a11y paths -- */
-
-@media (prefers-reduced-motion: reduce) {
-  .hero__cta {
-    transition: none;
-  }
 }
 
 /* ----------------------------------------------------- cinematic opening -- */
@@ -781,58 +310,930 @@ button {
   }
 }
 
-/* ------------------------------------------------------------- chapter -- */
+/* ═══════════════════════════════════════════════════════════════ the site ══
+ *
+ * Everything below the opening.
+ *
+ * Three ideas carry the whole thing and are worth stating before the rules:
+ *
+ * 1. THE GROUND MOVES. The page runs sand → soil → light → soil, which is the
+ *    film's own sequence of light. Only three changes in eight sections, each
+ *    one placed where the argument turns rather than wherever a layout wanted
+ *    contrast. Consecutive sections that share a ground are separated by a
+ *    hairline or by nothing at all — a seam between two identical creams is a
+ *    seam for no reason.
+ *
+ * 2. ALMOST NOTHING IS A CARD. Sections are columns, rules and space. Where
+ *    items genuinely enumerate they get a hairline and an index, never a box
+ *    with a radius and a shadow. There is exactly one border-radius in this
+ *    stylesheet and it belongs to a button.
+ *
+ * 3. HIERARCHY COMES FROM SCALE AND AIR. The display serif goes large and the
+ *    functional sans stays small and widely tracked; between those two there is
+ *    no third size doing decorative work.
+ */
 
-.chapter {
-  position: relative;
-  z-index: 2;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: clamp(4rem, 12vh, 9rem) var(--gutter);
-  background: var(--sand);
-  color: var(--ink);
+/* ------------------------------------------------------------ scaffolding -- */
+
+/*
+ * The page's vertical rhythm, in one place. Sections are tall because the
+ * content is sparse on purpose — the brief asks for calm, and calm is mostly
+ * distance.
+ */
+:root {
+  --section-y: clamp(6rem, 15vh, 11rem);
+  --measure: 34rem;
 }
 
-.chapter__eyebrow {
-  font-size: 0.6rem;
-  letter-spacing: 0.3em;
+.skip {
+  position: absolute;
+  left: var(--gutter);
+  top: 0;
+  z-index: 40;
+  padding: 0.75rem 1.1rem;
+  background: var(--soil);
+  color: var(--on-soil);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transform: translateY(-140%);
+  transition: transform 0.2s var(--ease-out);
+}
+
+.skip:focus-visible {
+  transform: translateY(0.6rem);
+}
+
+main > section {
+  position: relative;
+  z-index: 2;
+  padding: var(--section-y) var(--gutter);
+}
+
+/*
+ * Anchor targets stop clear of the header rather than under it. Sections carry
+ * enough top padding that this rarely shows, but a jump from the menu lands on
+ * the section's box, not on its first line.
+ */
+main > section[id] {
+  scroll-margin-top: clamp(4.5rem, 9vh, 6.5rem);
+}
+
+/* ---------------------------------------------------------------- reveal -- */
+
+/*
+ * One transition, driven by one attribute, set once per element by an
+ * IntersectionObserver. `--d` staggers a group without needing a timeline.
+ */
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 0.9s var(--ease-out) var(--d, 0ms),
+    transform 0.9s var(--ease-out) var(--d, 0ms);
+}
+
+[data-reveal][data-shown="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/*
+ * Display serif fades badly at size — the strokes go grey and muddy halfway —
+ * so the big lines are wiped up out of a clipped box instead, which keeps every
+ * weight crisp the whole way in.
+ */
+/*
+ * The wrapper carries the observer's attribute but does not move itself — the
+ * generic reveal above would otherwise slide the clipping box as well as the
+ * line inside it, and the two motions fight.
+ */
+.mask[data-reveal] {
+  display: block;
+  overflow: hidden;
+  opacity: 1;
+  transform: none;
+  transition: none;
+  /* Descenders sit below the baseline; without this the box clips the tail of
+     every g and p at rest, not just in motion. */
+  padding-bottom: 0.1em;
+}
+
+.mask[data-reveal] .mask__line {
+  display: block;
+  opacity: 0;
+  transform: translate3d(0, 106%, 0);
+  transition:
+    opacity 0.5s linear var(--d, 0ms),
+    transform 1.05s var(--ease-out) var(--d, 0ms);
+}
+
+.mask[data-reveal][data-shown="true"] .mask__line {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  .mask[data-reveal] .mask__line {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------ typography -- */
+
+.display {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2rem, 4.4vw, 3.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--ink-soft);
 }
 
-.chapter__title {
-  margin-top: 1.6rem;
-  max-width: 18ch;
-  font-family: var(--font-display);
-  font-weight: 300;
-  font-size: clamp(2.2rem, 5.4vw, 4.2rem);
-  line-height: 1.06;
-  letter-spacing: -0.015em;
-}
-
-.chapter__body {
-  margin-top: 1.8rem;
-  max-width: 44ch;
-  font-size: 1rem;
+.prose {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: clamp(0.98rem, 1.05vw, 1.08rem);
   line-height: 1.75;
   color: var(--ink-soft);
 }
 
-.chapter__cta {
-  margin-top: clamp(2rem, 5vh, 3rem);
-  align-self: flex-start;
-  padding: 0.95rem 1.7rem;
-  background: var(--clay);
-  color: #fdf6ec;
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: background 220ms var(--ease-out);
+.prose--lead {
+  font-size: clamp(1.05rem, 1.35vw, 1.25rem);
+  color: var(--ink);
 }
 
-.chapter__cta:hover {
+.rule {
+  display: inline-block;
+  width: 2.2rem;
+  height: 1px;
+  margin-right: 0.9rem;
+  vertical-align: middle;
+  background: var(--ink-faint);
+}
+
+/*
+ * The editorial spread: a narrow label column and a wide text column. On
+ * anything below a tablet it collapses to one column — the label reads as a
+ * standfirst above the text, which is what it would be in print anyway.
+ */
+.spread {
+  display: grid;
+  gap: clamp(1.6rem, 4vw, 4.5rem);
+  align-items: start;
+}
+
+.spread__body {
+  display: grid;
+  gap: 1.6rem;
+  max-width: 46rem;
+}
+
+@media (min-width: 860px) {
+  .spread {
+    grid-template-columns: minmax(8rem, 1fr) minmax(0, 3fr);
+  }
+
+  .spread > .eyebrow {
+    /* Optically aligned with the cap height of the heading beside it rather
+       than its box, which sits noticeably high. */
+    padding-top: 0.5em;
+  }
+}
+
+/* --------------------------------------------------------------- buttons -- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.85rem 1.7rem;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.32s var(--ease-out),
+    color 0.32s var(--ease-out),
+    border-color 0.32s var(--ease-out);
+}
+
+.button:hover {
+  background: var(--ink);
+  color: var(--sand-light);
+}
+
+.button:active {
+  background: var(--soil);
+  border-color: var(--soil);
+}
+
+.button--solid {
+  border-color: var(--clay);
+  background: var(--clay);
+  color: var(--sand-light);
+}
+
+.button--solid:hover {
+  border-color: var(--clay-hover);
   background: var(--clay-hover);
+  color: var(--sand-light);
+}
+
+.button--solid:active {
+  border-color: var(--clay-hover);
+  background: var(--clay-hover);
+}
+
+/* ---------------------------------------------------------- 02 manifesto -- */
+
+/*
+ * The hand-over.
+ *
+ * The ground is `--sand` because that is the exact colour the film's foot has
+ * already travelled to by the time this arrives (see `--handoff` above) — so
+ * there is no edge between the two, only the canopy leaving the top of a
+ * surface that was already this colour.
+ *
+ * The top padding is heavier than the bottom on purpose: it keeps the first
+ * line low enough in the viewport that the tree is still in shot as the words
+ * come up.
+ */
+.manifesto {
+  background: var(--sand);
+  padding-top: clamp(7rem, 20vh, 14rem) !important;
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+}
+
+.manifesto__column {
+  display: grid;
+  gap: clamp(1.3rem, 2.6vh, 2rem);
+  justify-items: start;
+  max-width: 52rem;
+}
+
+.manifesto__eyebrow {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.manifesto__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.7rem, 7.2vw, 5.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.022em;
+}
+
+.manifesto__lede {
+  margin: 0;
+  max-width: 30rem;
+  font-size: clamp(1.02rem, 1.3vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+/* -------------------------------------------------------------- 03 about -- */
+
+/* Same ground as the manifesto — deliberately no seam. The two are one
+   movement: the promise, and then who is making it. */
+.about {
+  background: var(--sand);
+  padding-bottom: clamp(8rem, 20vh, 13rem) !important;
+}
+
+.about__lead {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(1.5rem, 2.9vw, 2.3rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+/* -------------------------------------------------------------- 04 depth -- */
+
+/*
+ * The one dark section, and the page's structural spine.
+ *
+ * The soil arrives through a gradient rather than at an edge. A hard line
+ * between cream and near-black would be the single most template-like moment on
+ * the page; the film changes worlds by changing light, and so does this.
+ */
+.depth {
+  background: var(--soil);
+  color: var(--on-soil);
+  padding-top: clamp(9rem, 22vh, 15rem) !important;
+  padding-bottom: clamp(9rem, 22vh, 15rem) !important;
+}
+
+.depth::before,
+.depth::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: clamp(4rem, 9vh, 7rem);
+  pointer-events: none;
+}
+
+.depth::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--sand), transparent);
+}
+
+.depth::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--sand-light), transparent);
+}
+
+.depth__column {
+  position: relative;
+  display: grid;
+  gap: 1.7rem;
+  max-width: 40rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.depth__lead {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.9rem, 4.6vw, 3.3rem);
+  line-height: 1.15;
+  letter-spacing: -0.014em;
+  text-wrap: balance;
+}
+
+.depth__body {
+  margin: 0;
+  font-size: clamp(0.98rem, 1.05vw, 1.06rem);
+  line-height: 1.75;
+  color: var(--on-soil-soft);
+}
+
+.depth__note {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  line-height: 1.5;
+  color: var(--on-soil-soft);
+}
+
+/* ---------------------------------------------------- 05 ecosystem / 06 -- */
+
+/* Emerging into the light, the way the film does. Everything from here to the
+   closing shares this ground; the sections are told apart by hairlines. */
+.ecosystem,
+.resources,
+.community,
+.how,
+.closing {
+  background: var(--sand-light);
+}
+
+.ecosystem {
+  padding-top: clamp(8rem, 19vh, 13rem) !important;
+}
+
+/*
+ * The enumerated list. A rule above each item, an index in the functional sans,
+ * and nothing else — no border, no fill, no radius.
+ */
+.ledger {
+  display: grid;
+  gap: clamp(2.2rem, 4vw, 3rem);
+  margin: clamp(3.5rem, 8vh, 6rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ledger > li {
+  display: grid;
+  gap: 0.7rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ink-hairline);
+}
+
+.ledger__index {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  color: var(--clay);
+}
+
+.ledger__label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.3rem, 2.1vw, 1.75rem);
+  line-height: 1.2;
+}
+
+.ledger__body {
+  margin: 0;
+  max-width: 26rem;
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+@media (min-width: 800px) {
+  .ledger {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------- 06 resources -- */
+
+.index {
+  display: grid;
+  gap: 0;
+  margin: clamp(3rem, 7vh, 5rem) 0 0;
+}
+
+.index > div {
+  display: grid;
+  gap: 0.45rem;
+  padding: clamp(1.5rem, 3vh, 2.1rem) 0;
+  border-top: 1px solid var(--ink-hairline);
+}
+
+.index > div:last-child {
+  border-bottom: 1px solid var(--ink-hairline);
+}
+
+.index dt {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.index dd {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+@media (min-width: 800px) {
+  .index > div {
+    grid-template-columns: minmax(10rem, 1fr) minmax(0, 2.4fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    align-items: baseline;
+  }
+}
+
+/* ---------------------------------------------------------- 07 community -- */
+
+/*
+ * A held line, centred, with a great deal of nothing around it. This is the
+ * page taking a breath before it starts explaining itself again.
+ */
+.community {
+  padding-top: clamp(8rem, 20vh, 13rem) !important;
+  padding-bottom: clamp(8rem, 20vh, 13rem) !important;
+}
+
+.community__column {
+  display: grid;
+  gap: 1.5rem;
+  justify-items: center;
+  max-width: 44rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.community__quote {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(1.9rem, 4.6vw, 3.2rem);
+  line-height: 1.14;
+  letter-spacing: -0.014em;
+  text-wrap: balance;
+}
+
+.community .prose {
+  margin-inline: auto;
+}
+
+/* ---------------------------------------------------------------- 08 how -- */
+
+.steps {
+  display: grid;
+  gap: clamp(2.2rem, 4vw, 3rem);
+  margin: clamp(3.5rem, 8vh, 6rem) 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.steps > li {
+  display: grid;
+  gap: 0.7rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ink-hairline);
+}
+
+.steps__index {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  font-weight: 300;
+  line-height: 1;
+  /* Decorative — the label beside it carries the meaning — but it still has to
+     be legible. `--ink-faint` at 0.38 disappeared entirely against the ivory. */
+  color: var(--clay);
+  opacity: 0.55;
+}
+
+.steps__label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.steps__body {
+  margin: 0;
+  max-width: 24rem;
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+@media (min-width: 800px) {
+  .steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ------------------------------------------------------------ 09 closing -- */
+
+.closing {
+  display: grid;
+  gap: clamp(2rem, 5vh, 3.2rem);
+  justify-items: center;
+  text-align: center;
+  padding-top: clamp(9rem, 22vh, 15rem) !important;
+  padding-bottom: clamp(9rem, 22vh, 15rem) !important;
+}
+
+.closing__title {
+  margin: 0;
+  max-width: 20ch;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.1rem, 5.4vw, 4rem);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+}
+
+/* --------------------------------------------------------------- footer -- */
+
+/*
+ * Back to soil — the ground the whole thing grew out of, and the one place the
+ * mark is set in light on dark, as the storyboard's own closing panel has it.
+ */
+.footer {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(3rem, 7vh, 5rem);
+  padding: clamp(5rem, 12vh, 8rem) var(--gutter) clamp(2.5rem, 5vh, 3.5rem);
+  background: var(--soil);
+  color: var(--on-soil);
+}
+
+.footer__top {
+  display: grid;
+  gap: 1.8rem;
+}
+
+.footer__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--on-soil);
+}
+
+.footer__note {
+  margin: 0;
+  max-width: 30rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.1rem, 1.8vw, 1.45rem);
+  line-height: 1.5;
+  color: var(--on-soil-soft);
+}
+
+.footer__columns {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.footer__heading {
+  margin: 0 0 1rem;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--on-soil-soft);
+}
+
+.footer ul {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer a {
+  color: var(--on-soil);
+  font-size: 0.92rem;
+  text-decoration: none;
+  transition: color 0.28s var(--ease-out);
+}
+
+.footer a:hover {
+  color: var(--sand-light);
+}
+
+.footer__legal {
+  margin: 0;
+  padding-top: clamp(1.5rem, 3vh, 2.2rem);
+  border-top: 1px solid rgba(230, 219, 201, 0.14);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--on-soil-soft);
+}
+
+@media (min-width: 700px) {
+  .footer__top {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: start;
+  }
+
+  .footer__columns {
+    grid-template-columns: repeat(2, minmax(0, 12rem));
+    gap: clamp(2rem, 6vw, 5rem);
+  }
+}
+
+/* ------------------------------------------------------- header & menu -- */
+
+/*
+ * Fixed, but not a bar. No background, no border, no shadow — during the
+ * opening it is two small marks in the corners of the film, which is what the
+ * storyboard shows.
+ *
+ * `--header-ink` lets a section invert it: the footer and the dark beat set it
+ * to the light ink and the mark follows, without the header ever measuring
+ * scroll position or observing anything.
+ */
+.site-header {
+  position: fixed;
+  z-index: 30;
+  color: var(--header-ink, var(--ink));
+  transition: transform 0.45s var(--ease-out), opacity 0.35s var(--ease-out);
+}
+
+/* Out of the way while reading down. Returns the moment the reader goes back
+   up, which is when they are looking for it. */
+.site-header[data-hidden="true"] {
+  transform: translate3d(0, -110%, 0);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    transition-duration: 0s;
+  }
+}
+
+/*
+ * The veil. Present only past the opening, and only ever the page's own colour
+ * fading to nothing — no blur, no border, no bar. It exists so that a line of
+ * type sliding under a fixed header does not collide with it.
+ */
+.site-header::before {
+  content: "";
+  position: absolute;
+  inset: -1px 0 auto;
+  /*
+   * Sized to the header's own box and faded out well inside it. An earlier
+   * version ran to 190% and held solid for a third of that, which washed out
+   * any heading that happened to sit in the top two hundred pixels — the veil
+   * was protecting a band far larger than the one it needed to.
+   */
+  height: 108%;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--veil, var(--sand-light)),
+    color-mix(in srgb, var(--veil, var(--sand-light)) 55%, transparent) 46%,
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out);
+}
+
+.site-header[data-veiled="true"]::before {
+  opacity: 1;
+}
+
+.site-header[data-light="true"] {
+  --veil: var(--soil);
+}
+
+/* The brand and the control sit on top of it. */
+.site-header__brand,
+.site-header__menu {
+  position: relative;
+}
+
+.site-header__brand,
+.site-header__menu-label {
+  color: inherit;
+}
+
+.site-header__menu-icon span {
+  background: currentColor;
+  transition:
+    transform 0.36s var(--ease-out),
+    opacity 0.24s var(--ease-out);
+}
+
+/* Two rules into a cross. The gap is 5px and each rule is 1.2px, so half the
+   distance between their centres is 3.1px. */
+.site-header__menu-icon[data-open="true"] span:first-child {
+  transform: translateY(3.1px) rotate(45deg);
+}
+
+.site-header__menu-icon[data-open="true"] span:last-child {
+  transform: translateY(-3.1px) rotate(-45deg);
+}
+
+.site-header__brand,
+.site-header__menu {
+  border-radius: 2px;
+}
+
+.site-header__menu {
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.site-header__brand:hover .site-header__word strong,
+.site-header__menu:hover .site-header__menu-label {
+  color: var(--clay);
+}
+
+.site-header__word strong,
+.site-header__word em,
+.site-header__menu-label {
+  transition: color 0.28s var(--ease-out);
+}
+
+/*
+ * The menu. One panel at every breakpoint — a five-item nav does not need a
+ * horizontal arrangement on desktop and a drawer on mobile, and one panel is
+ * also one set of focus rules to get right instead of two.
+ */
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  align-content: center;
+  gap: clamp(2rem, 6vh, 4rem);
+  padding: clamp(5rem, 14vh, 9rem) var(--gutter) var(--gutter);
+  background: var(--sand-light);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.45s var(--ease-out),
+    visibility 0s linear 0.45s;
+}
+
+.menu[data-open="true"] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.45s var(--ease-out),
+    visibility 0s;
+}
+
+.menu__nav ul {
+  display: grid;
+  gap: clamp(0.6rem, 1.6vh, 1.1rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu__nav a {
+  display: inline-block;
+  padding: 0.2em 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.014em;
+  color: var(--ink);
+  text-decoration: none;
+  /* Staggered in behind the panel's own fade. `--i` is the item's position. */
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity 0.5s var(--ease-out),
+    transform 0.6s var(--ease-out),
+    color 0.28s var(--ease-out);
+}
+
+.menu[data-open="true"] .menu__nav a {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(120ms + var(--i) * 55ms), calc(120ms + var(--i) * 55ms), 0s;
+}
+
+.menu__nav a:hover {
+  color: var(--clay);
+}
+
+.menu__note {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+  color: var(--ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu,
+  .menu__nav a,
+  .site-header__menu-icon span {
+    transition-duration: 0s;
+  }
+
+  .menu__nav a {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Inverted over the dark sections. Set by the header itself from an
+ * IntersectionObserver — a fixed element cannot inherit from what it covers.
+ * Never inverted while the menu is open: that panel is ivory.
+ */
+.site-header[data-light="true"] {
+  --header-ink: var(--on-soil);
+}
+
+.site-header[data-light="true"] .site-header__word em {
+  color: var(--on-soil-soft);
 }
