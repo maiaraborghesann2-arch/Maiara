@@ -8,18 +8,20 @@ import {
   CINEMATIC_BEATS,
   CINEMATIC_TRACK_VH,
   FOCUS,
-  HANDOFF_SCROLL,
-  HEADLINE_SCROLL,
+  EXIT_SCROLL,
+  HERO_STEPS,
   PORTRAIT_BELOW,
   AUTHORED_DURATION,
   REDUCED_MOTION_VIDEO_PROGRESS,
   VIDEO_SRC,
   assertDurationMatches,
   beatAt,
+  filmScroll,
   videoProgressFor,
 } from "@/lib/cinematic/config";
 import { cinematicStore, subscribeCinematic } from "@/lib/cinematic/store";
-import { CINEMATIC_HEADLINE } from "@/lib/site/content";
+import { Mark } from "@/components/brand/Mark";
+import { ACTIONS, BRAND, CINEMATIC_HEADLINE } from "@/lib/site/content";
 import { CinematicIntro } from "./CinematicIntro";
 import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
@@ -149,8 +151,9 @@ export function CinematicOpening() {
       // The stage shows one held frame, so the words belong to it already —
       // there is no arrival to animate, only a composition to present.
       const stage = element.parentElement;
-      stage?.style.setProperty("--handoff", "1");
-      HEADLINE_SCROLL.forEach((_, i) => stage?.style.setProperty(`--line-${i}`, "1"));
+      stage?.style.setProperty("--exit", "0");
+      HERO_STEPS.forEach((_, i) => stage?.style.setProperty(`--hero-${i}`, "1"));
+      document.documentElement.dataset.heroBrand = "on";
 
       const settle = () => {
         element.currentTime = REDUCED_MOTION_VIDEO_PROGRESS * (element.duration || AUTHORED_DURATION);
@@ -185,24 +188,67 @@ export function CinematicOpening() {
      * a transition or a one-way animation would not.
      */
     const stage = element.parentElement;
-    const [from, to] = HANDOFF_SCROLL;
+    const actions = stage?.querySelector<HTMLElement>("[data-hero-actions]");
+    const [exitFrom, exitTo] = EXIT_SCROLL;
     const clamp01 = (n: number) => (n < 0 ? 0 : n > 1 ? 1 : n);
+    let reachable: boolean | null = null;
+    let branded: boolean | null = null;
 
     const stop = subscribeCinematic((scroll) => {
-      target = videoProgressFor(scroll);
+      // The curve is authored across the *film*, and the film is only the first
+      // `FILM_SHARE` of the track. The rest is the hero holding on the last
+      // frame, which is why this rescale exists and why `SCROLL_CURVE` did not
+      // have to be rewritten to make room for it.
+      target = videoProgressFor(filmScroll(scroll));
 
       if (stage) {
-        stage.style.setProperty("--handoff", clamp01((scroll - from) / (to - from)).toFixed(3));
+        /*
+         * The hero, on the same clock as the footage. Each element gets its own
+         * overlapping range, which is what composes the block in order — a
+         * `transition-delay` would have decoupled it from the scroll and made
+         * things finish arriving after the visitor had stopped.
+         */
+        HERO_STEPS.forEach(([a, b], i) => {
+          stage.style.setProperty(`--hero-${i}`, clamp01((scroll - a) / (b - a)).toFixed(3));
+        });
+
+        stage.style.setProperty(
+          "--exit",
+          clamp01((scroll - exitFrom) / (exitTo - exitFrom)).toFixed(3),
+        );
 
         /*
-         * The headline, on the same clock as everything else. Each line gets
-         * its own overlapping range, which is what produces the stagger — a
-         * `transition-delay` would have decoupled the words from the scroll and
-         * made them finish arriving after the visitor had stopped.
+         * The action is a real link inside a block that spends most of the
+         * track translated out of sight. Left alone it would be tabbable from
+         * the top of the page while invisible, so it is inert until it has
+         * actually arrived — written only when the answer changes, not every
+         * frame.
          */
-        HEADLINE_SCROLL.forEach(([a, b], i) => {
-          stage.style.setProperty(`--line-${i}`, clamp01((scroll - a) / (b - a)).toFixed(3));
-        });
+        if (actions) {
+          const open = scroll > HERO_STEPS[4][0];
+          if (open !== reachable) {
+            reachable = open;
+            actions.inert = !open;
+          }
+        }
+
+        /*
+         * One brand mark on screen at a time.
+         *
+         * The header carries the mark in the top-left and the hero carries it
+         * again lower in the same column — stacked on one axis they read as a
+         * duplication rather than as design. So the hero's arrival stands the
+         * header's brand down, and its exit brings it back. A flag on the root
+         * element rather than a prop, because the header is a sibling of this
+         * section and cannot read anything from inside it; one attribute,
+         * written only when the answer changes.
+         */
+        const owns = Number(stage.style.getPropertyValue("--hero-0")) > 0.4 &&
+          Number(stage.style.getPropertyValue("--exit")) < 0.6;
+        if (owns !== branded) {
+          branded = owns;
+          document.documentElement.dataset.heroBrand = owns ? "on" : "off";
+        }
       }
 
       // Hidden tabs still fire the ticker in some browsers; seeking there wakes
@@ -216,6 +262,7 @@ export function CinematicOpening() {
     return () => {
       stop();
       element.removeEventListener("seeked", pump);
+      delete document.documentElement.dataset.heroBrand;
     };
   }, [reducedMotion]);
 
@@ -226,8 +273,9 @@ export function CinematicOpening() {
     if (!element) return;
 
     return subscribeCinematic((scroll) => {
-      const beat = beatAt(scroll);
-      const time = videoProgressFor(scroll) * (video.current?.duration || AUTHORED_DURATION);
+      const film = filmScroll(scroll);
+      const beat = beatAt(film);
+      const time = videoProgressFor(film) * (video.current?.duration || AUTHORED_DURATION);
       const scrollCell = element.querySelector<HTMLElement>("[data-scroll]");
       const timeCell = element.querySelector<HTMLElement>("[data-time]");
       const beatCell = element.querySelector<HTMLElement>("[data-beat]");
@@ -280,6 +328,10 @@ export function CinematicOpening() {
         */}
         <div className="cinematic__grade" aria-hidden="true" />
 
+        {/* The footage's own shadow, deepened under the hero. A gradient, not a
+            plate — it has no edge anywhere and fades out below the canopy. */}
+        <div className="cinematic__vignette" aria-hidden="true" />
+
         {/*
           The entrance. It is also the loading state — there is no second
           overlay, because a brand moment that doubles as the wait is the whole
@@ -297,29 +349,56 @@ export function CinematicOpening() {
         ) : null}
 
         {/*
-          The headline — the page's `<h1>`, and part of the last shot rather
-          than a section underneath it.
-          
-          It sits in the film's own negative space: the bottom third of the
-          final frame is empty and uniformly dark at every crop this design
-          supports (measured, 24×15 luminance grid, both the 1440×900 and the
-          390×844 window), so light type reads there with no card, no scrim and
-          no background of any kind. The tree stays the protagonist; the words
-          are what the visitor is already thinking.
-          
-          Each line rises out of a clipped box rather than fading. Deliberately
-          no `opacity` on the text: an `opacity: 0` heading is ambiguous to
-          assistive technology, and the page's `h1` should never be in doubt.
-          Translation inside `overflow: hidden` hides it visually while leaving
-          it plainly in the accessibility tree.
+          The hero — and it lives here, inside the stage, layered over the
+          footage. That is the whole point of this structure: the film is the
+          hero's background rather than a section that precedes it, so the mark,
+          the title, the line and the action are siblings of the video and share
+          its stacking context.
+
+          Where it sits was measured, not chosen. A 24×15 luminance sample of
+          the final frame puts the bottom third at near-black across the full
+          width, at both the 1440×900 crop and the 390×844 one — which are very
+          different crops, since a phone shows barely a quarter of the master's
+          width. The canopy stays entirely above and clear of it.
+
+          The block is left-aligned to the page's own gutter, so the hero shares
+          the grid every section below it uses. It is a title card, not a
+          centred banner.
         */}
-        <h1 className="cinematic__headline">
-          {CINEMATIC_HEADLINE.lines.map((line, i) => (
-            <span className="cinematic__headline-mask" key={line} style={{ "--i": i } as React.CSSProperties}>
-              <span className="cinematic__headline-line">{line}</span>
+        <div className="hero">
+          <p className="hero__mark" data-hero="0">
+            <Mark size={30} />
+            <span className="hero__wordmark">
+              <strong>{BRAND.name}</strong>
+              <em>{BRAND.suffix}</em>
             </span>
-          ))}
-        </h1>
+          </p>
+
+          {/*
+            Each line rises out of a clipped box rather than fading.
+            Deliberately no `opacity` on the title: an `opacity: 0` heading is
+            ambiguous to assistive technology, and the page's `h1` should never
+            be in doubt. Translation inside `overflow: hidden` hides it from the
+            eye while leaving it plainly in the accessibility tree.
+          */}
+          <h1 className="hero__title">
+            {CINEMATIC_HEADLINE.lines.map((line, i) => (
+              <span className="hero__mask" key={line} data-hero={i + 1}>
+                <span className="hero__line">{line}</span>
+              </span>
+            ))}
+          </h1>
+
+          <p className="hero__lede" data-hero="3">
+            {BRAND.descriptor}
+          </p>
+
+          <div className="hero__actions" data-hero="4" data-hero-actions>
+            <a className="button button--solid" href={ACTIONS.primary.href}>
+              {ACTIONS.primary.label}
+            </a>
+          </div>
+        </div>
 
         {/*
           Caption slots, on the same clock, rendered empty. Filling a beat's
@@ -336,6 +415,11 @@ export function CinematicOpening() {
             ) : null,
           )}
         </div>
+
+        {/* The hand-over: the stage becomes the ground of the section below it,
+            so that section emerges from this composition instead of replacing
+            it. */}
+        <div className="cinematic__exit" aria-hidden="true" />
 
         {debug ? (
           <div ref={readout} className="cinematic__readout">

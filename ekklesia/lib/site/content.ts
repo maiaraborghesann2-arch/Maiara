@@ -88,12 +88,18 @@ export const CINEMATIC_HEADLINE = {
 
 /* ──────────────────────────────────────────────────── 02 the proposition ── */
 
-/** The hand-over out of the film, and the whole positioning in four lines. */
+/**
+ * The strategic claim, and the first section after the film.
+ *
+ * It no longer carries the descriptor or the primary action — both moved up
+ * into the hero, which now lives inside the film. What is left is the thing
+ * this section was always for: the positioning, stated once, to a visitor who
+ * has already been told who the company is and what it does.
+ */
 export const PROPOSITION = {
-  eyebrow: "Consultoria de tecnologia para igrejas",
+  eyebrow: "O princípio",
   title: ["Sua igreja não precisa", "se adaptar à tecnologia."],
   counter: "A tecnologia deve se adaptar à sua igreja.",
-  lede: BRAND.descriptor,
   body: "Diagnosticamos, integramos e desenvolvemos soluções adaptadas à identidade, aos processos e à missão da sua igreja.",
 } as const;
 

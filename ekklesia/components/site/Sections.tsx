@@ -51,12 +51,11 @@ import {
 /* ──────────────────────────────────────────────────── 02 the proposition ── */
 
 /**
- * The hand-over.
+ * The strategic claim.
  *
- * This is the section the tree dissolves into, so it is built to sit *under*
- * the film rather than after it: same ground the frame's foot has already
- * travelled to, first line low enough in the viewport that the canopy is still
- * leaving as the words arrive.
+ * The film's stage veils to this exact ground before the sticky track releases,
+ * so this section does not arrive — it is already there, underneath, and the
+ * cinematic layer simply stops being in front of it.
  *
  * The claim and its answer are one sentence broken across two type sizes — the
  * negative large, the positive small and set in the functional sans directly
@@ -94,13 +93,12 @@ export function Proposition() {
         </p>
 
         <p className="proposition__lede" data-reveal style={{ "--d": "320ms" } as React.CSSProperties}>
-          {PROPOSITION.lede}
+          {PROPOSITION.body}
         </p>
 
+        {/* The primary action lives in the hero now, inside the film. Repeating
+            it a screen later would just be two of the same button. */}
         <div className="actions" data-reveal style={{ "--d": "400ms" } as React.CSSProperties}>
-          <a className="button button--solid" href={ACTIONS.primary.href}>
-            {ACTIONS.primary.label}
-          </a>
           <a className="button button--quiet" href={ACTIONS.secondary.href}>
             {ACTIONS.secondary.label}
           </a>

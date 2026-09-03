@@ -253,52 +253,101 @@ button {
 }
 
 /*
- * The headline, over the last shot.
+ * The hero, inside the film.
  *
- * Placed in the lower third and left-aligned to the page's own gutter, because
- * that is where the frame is empty: a 24×15 luminance sample of the final frame
- * puts the bottom 27% at near-black across the full width, at both the 1440×900
- * crop and the 390×844 one. So the type needs no card, no scrim and no plate —
- * the film already provides the ground.
+ * Not text placed on a video — the composition and the picture are one layer
+ * stack inside the same sticky stage, which is why they arrive together, hold
+ * together and leave together.
  *
- * It is inside the sticky stage, which means it leaves *with* the tree when the
- * section releases. Words and picture arrive together and depart together; they
- * are one composition, not a caption bolted under a video.
+ * Left-aligned to the page's own gutter so the hero sits on the same grid every
+ * section below it uses, and anchored to the bottom because that is where the
+ * frame is empty: a 24×15 luminance sample of the final frame puts the bottom
+ * third at near-black across the full width, at both crops this design serves.
+ * The canopy stays entirely above it.
  */
-.cinematic__headline {
+.hero {
   position: absolute;
   left: var(--gutter);
   right: var(--gutter);
-  bottom: clamp(2.6rem, 8vh, 5.5rem);
-  margin: 0;
-  max-width: 22ch;
-  font-family: var(--font-display);
-  font-weight: 300;
-  font-size: clamp(2rem, 5.2vw, 4.3rem);
-  line-height: 1.04;
-  letter-spacing: -0.02em;
+  bottom: clamp(2.6rem, 7vh, 5rem);
+  display: grid;
+  justify-items: start;
+  gap: clamp(0.85rem, 2vh, 1.35rem);
+  max-width: 34rem;
   color: var(--on-soil);
+  /* Only the action takes clicks; the rest must not sit over the picture and
+     swallow them. */
   pointer-events: none;
-  /*
-   * The frame's own ground is dark here, but the hand-over lifts it toward the
-   * page's sand as the section ends. This is a hair of depth so the words hold
-   * their edge across that change — far too soft to read as a shadow, and the
-   * only reason it exists is that the ground underneath is moving.
-   */
-  text-shadow: 0 1px 24px rgba(12, 8, 4, 0.34);
+}
+
+.hero__actions {
+  pointer-events: auto;
 }
 
 /*
- * No film, no dark foreground. The stage falls back to its own ivory, and ivory
- * type on it would be invisible — so the words take the page's ink instead, and
- * lose the shadow that only existed to hold an edge against moving ground.
+ * Every element rides its own `--hero-N`, written straight off the scroll by
+ * the same subscription that seeks the video. No transition: a transition would
+ * smooth over the scrub and let things keep arriving after the visitor stopped.
  */
-.cinematic__stage[data-failed="true"] .cinematic__headline {
-  color: var(--ink);
-  text-shadow: none;
+.hero > [data-hero] {
+  margin: 0;
 }
 
-.cinematic__headline-mask {
+.hero > [data-hero="0"] { --p: var(--hero-0, 0); }
+.hero > [data-hero="3"] { --p: var(--hero-3, 0); }
+.hero > [data-hero="4"] { --p: var(--hero-4, 0); }
+
+.hero > [data-hero="0"],
+.hero > [data-hero="3"],
+.hero > [data-hero="4"] {
+  opacity: var(--p);
+  transform: translate3d(0, calc((1 - var(--p)) * 1.1rem), 0);
+}
+
+.hero__mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: clamp(0.2rem, 1vh, 0.6rem);
+}
+
+.hero__wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.hero__wordmark strong,
+.hero__wordmark em {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.hero__wordmark em {
+  font-weight: 400;
+  font-size: 0.52rem;
+  letter-spacing: 0.34em;
+  opacity: 0.68;
+}
+
+.hero__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.05rem, 5.4vw, 4.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+}
+
+/*
+ * No `opacity` on the title. An `opacity: 0` heading is ambiguous to assistive
+ * technology and this is the page's `h1`; translating it inside a clipped box
+ * hides it from the eye while leaving it plainly in the accessibility tree.
+ */
+.hero__mask {
   display: block;
   overflow: hidden;
   /* Descenders sit below the baseline; without this the box clips the tail of
@@ -306,27 +355,122 @@ button {
   padding-bottom: 0.09em;
 }
 
-/*
- * Driven straight off the scroll — `--line-0` and `--line-1` are written by the
- * same subscription that seeks the video, so the words are as reversible as the
- * footage is. No transition: a transition would smooth over the scrub and let
- * the line keep moving after the visitor stopped.
- *
- * No `opacity` either. An `opacity: 0` heading is ambiguous to assistive
- * technology and this is the page's `h1`; translating it inside a clipped box
- * hides it from the eye while leaving it plainly in the accessibility tree.
- */
-.cinematic__headline-line {
+.hero__mask[data-hero="1"] { --p: var(--hero-1, 0); }
+.hero__mask[data-hero="2"] { --p: var(--hero-2, 0); }
+
+.hero__line {
   display: block;
-  transform: translate3d(0, calc((1 - var(--line, 0)) * 108%), 0);
+  transform: translate3d(0, calc((1 - var(--p, 0)) * 108%), 0);
 }
 
-.cinematic__headline-mask:nth-child(1) .cinematic__headline-line {
-  --line: var(--line-0, 0);
+.hero__lede {
+  max-width: 26rem;
+  font-size: clamp(0.95rem, 1.15vw, 1.06rem);
+  line-height: 1.6;
+  color: rgba(230, 219, 201, 0.82);
 }
 
-.cinematic__headline-mask:nth-child(2) .cinematic__headline-line {
-  --line: var(--line-1, 0);
+/* Over the film the outline button would disappear into the picture, so the
+   hero's single action is the solid one. */
+.hero .button--solid {
+  border-color: var(--clay);
+}
+
+/*
+ * The frame's own darkness, deepened.
+ *
+ * The bottom third is already near-black, but the hero needs more room than a
+ * third and the type has to hold across the whole block. So: a gradient of the
+ * footage's own shadow rising out of the bottom edge — no rectangle, no card,
+ * no blur, nothing with an edge you could point at. It is the vignette a title
+ * card has always used, and it fades out well before the canopy.
+ */
+.cinematic__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(14, 10, 6, 0.72),
+    rgba(14, 10, 6, 0.52) 18%,
+    rgba(14, 10, 6, 0.22) 38%,
+    transparent 58%
+  );
+  /* Present only once the hero is composing itself — during the seed, the
+     descent and the roots the picture carries itself and wants nothing. */
+  opacity: var(--hero-1, 0);
+}
+
+/*
+ * The hand-over.
+ *
+ * The stage veils to `--sand` — the exact ground of the section below — while
+ * the hero lifts away. By the time the sticky track releases there is nothing
+ * left to see a seam in: the next section is already the colour the film ended
+ * on, so it emerges from the composition rather than replacing it.
+ */
+.cinematic__exit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--sand);
+  opacity: var(--exit, 0);
+}
+
+.hero {
+  /* Leaves with the picture it belongs to, slightly ahead of it, so the words
+     are gone before the ground is fully cream rather than fading on top of it. */
+  translate: 0 calc(var(--exit, 0) * -2.5rem);
+}
+
+/*
+ * The exit fades the block as a whole, and only the block. An opacity on the
+ * title as well would compound with this one and take the words out at twice
+ * the rate of the line beneath them — the title should be the last thing to go,
+ * not the first.
+ *
+ * At rest `--exit` is 0, so this is `opacity: 1` and the `h1` stays plainly in
+ * the accessibility tree for the whole of the page above the fold.
+ */
+.hero {
+  opacity: calc(1 - var(--exit, 0));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__line,
+  .hero > [data-hero] {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/*
+ * No film, no dark foreground.
+ *
+ * If the footage never decodes the stage falls back to its own ivory, and the
+ * hero — which is ivory because it sits on the film's shadow — would be ivory
+ * on ivory. So it takes the page's ink instead, and the vignette that existed
+ * only to deepen the footage's shadow goes with it.
+ *
+ * This is not hypothetical: a browser without an H.264 decoder lands here, and
+ * an earlier version of this rule was lost in a refactor, which is exactly how
+ * an invisible hero ships.
+ */
+.cinematic__stage[data-failed="true"] .hero {
+  color: var(--ink);
+}
+
+.cinematic__stage[data-failed="true"] .hero__lede {
+  color: var(--ink-soft);
+}
+
+.cinematic__stage[data-failed="true"] .hero__wordmark em {
+  opacity: 1;
+  color: var(--ink-soft);
+}
+
+.cinematic__stage[data-failed="true"] .cinematic__vignette {
+  display: none;
 }
 
 .cinematic__captions {
@@ -706,10 +850,14 @@ main > section[id] {
  * Top padding heavier than bottom on purpose: it keeps the first line low
  * enough in the viewport that the tree is still in shot as the words come up.
  */
+/*
+ * The ground the film's stage veils to. Not a section that follows the opening —
+ * the section the opening dissolves into, which is why the two share a colour
+ * exactly and why there is no gradient between them to soften.
+ */
 .proposition {
   background: var(--sand);
-  padding-top: clamp(7rem, 20vh, 14rem) !important;
-  min-height: 94vh;
+  min-height: 86vh;
   display: flex;
   align-items: center;
 }
@@ -1670,6 +1818,21 @@ main > section[id] {
 .site-header__brand,
 .site-header__menu {
   position: relative;
+}
+
+/*
+ * While the hero owns the brand, the header stands its own down — two identical
+ * marks stacked in the same column read as a duplication. The menu control
+ * stays, so the header is never absent, only quieter.
+ */
+html[data-hero-brand="on"] .site-header__brand {
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out);
+  pointer-events: none;
+}
+
+.site-header__brand {
+  transition: opacity 0.5s var(--ease-out);
 }
 
 .site-header__brand,

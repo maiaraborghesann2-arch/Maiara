@@ -131,13 +131,38 @@ export const INTRO = {
 export const VIDEO_ASPECT = 16 / 9;
 
 /**
- * How much scroll the opening occupies.
+ * How much scroll the opening occupies — the film *and* the hero that lives
+ * inside it.
  *
- * Unchanged at 500vh, and deliberately so: the footage went from 15.0 s to
- * 10.0 s over the same track, which is already a third more scroll for every
- * second of film. The extra room the new cut needed came for free.
+ * It was 500vh when the section held only the film, and that was the whole
+ * problem: the sticky stage releases when the track's bottom meets the stage's
+ * bottom, which on a 900px viewport was scroll 3600 — while the footage only
+ * reached its last frame at 4252. Two hundred and fifty pixels, a quarter of a
+ * viewport, between the tree completing and the stage being scrolled away. That
+ * gap is why the opening read as "video, then a beige section".
+ *
+ * So the track carries the film in its first `FILM_SHARE` and a real hero dwell
+ * in the rest: the tree finishes, the hero composes itself over it, and the
+ * whole thing is held for most of a viewport before anything begins to leave.
  */
-export const CINEMATIC_TRACK_VH = 500;
+export const CINEMATIC_TRACK_VH = 640;
+
+/**
+ * How much of the track the film itself walks.
+ *
+ * 500 of the 640, so the film keeps exactly the pacing it was authored with and
+ * `SCROLL_CURVE` below needs no rewriting — its numbers now mean "across the
+ * film" rather than "across the section", which is what they always described.
+ * Everything after this share is the hero: the footage holds its last frame,
+ * and the scroll is spent on the composition instead of on the picture.
+ */
+export const FILM_SHARE = 500 / 640;
+
+/** The track's `0..1` expressed in the film's own `0..1`. */
+export function filmScroll(track: number): number {
+  const t = track / FILM_SHARE;
+  return t < 0 ? 0 : t > 1 ? 1 : t;
+}
 
 export type CinematicBeatId =
   | "seed"
@@ -267,26 +292,41 @@ export const CINEMATIC_BEATS: readonly CinematicBeat[] = [
  * section of the site arrives. It is a change of light, not a wipe, and it is
  * a pure function of scroll — scrolling back up puts it exactly where it was.
  */
-export const HANDOFF_SCROLL: readonly [number, number] = [0.87, 1.0];
+/**
+ * The hero, arriving over the finished tree — one range per element, in the
+ * track's own `0..1`.
+ *
+ * The film reaches its last frame at track 0.738 (`0.945 × FILM_SHARE`), so
+ * nothing here starts before the picture has settled. They overlap, which is
+ * what composes the block in order — mark, then the two lines of the title,
+ * then the copy, then the action — without a timeline anywhere. Each stays a
+ * pure function of scroll position, so the whole composition runs backwards
+ * exactly as it ran forwards.
+ *
+ * Everything is in by 0.83, and nothing begins to leave until 0.92. That gap is
+ * the point of the rebuild: most of a viewport where the tree and the hero are
+ * simply *there*, together, and the visitor is looking at a page rather than
+ * waiting for one.
+ */
+export const HERO_STEPS: readonly (readonly [number, number])[] = [
+  [0.680, 0.740], // the mark
+  [0.700, 0.762], // "Pequenos começos."
+  [0.720, 0.782], // "Grandes frutos."
+  [0.748, 0.808], // the supporting line
+  [0.772, 0.832], // the action
+];
 
 /**
- * When the headline arrives over the tree, per line.
+ * Where the cinematic layer gives way.
  *
- * The words are part of the film's last shot, not a section under it, so their
- * timing lives here with the rest of the film's timing rather than in a
- * component. Each line has its own range off the same scroll, overlapping —
- * that is what gives the pair a stagger without a timeline, and it stays a pure
- * function of scroll position, so it runs backwards exactly.
- *
- * The first line starts as the crown finishes filling (the footage reaches its
- * last frame at 0.945) and the second settles just before the hold. Both are
- * fully in with a stretch of scroll left over, so the composition — tree and
- * words together — is what the visitor rests on before the page moves on.
+ * Not a scroll-away: the stage veils to `--sand`, the exact ground the section
+ * below it is painted in, while the hero lifts. By the time the sticky stage
+ * releases there is nothing left to see a seam in — the next section is already
+ * the colour the film ended on, so it emerges from the composition instead of
+ * replacing it.
  */
-export const HEADLINE_SCROLL: readonly (readonly [number, number])[] = [
-  [0.885, 0.945],
-  [0.905, 0.965],
-];
+export const EXIT_SCROLL: readonly [number, number] = [0.92, 1.0];
+
 
 /**
  * Where the crop is anchored, per breakpoint.
