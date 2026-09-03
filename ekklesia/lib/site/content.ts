@@ -68,6 +68,24 @@ export const ACTIONS = {
   secondary: { label: "Conte o que você precisa", href: "#diagnostico" },
 } as const;
 
+/* ────────────────────────────────────────────── 01 over the final frame ── */
+
+/**
+ * The headline, and the page's `<h1>`.
+ *
+ * It lives *inside* the film — set over the mature tree in the last shot, not
+ * in a section beneath it. That is the whole reason it reads: the sentence is
+ * the emotional reading of what the visitor has just watched happen, and it
+ * only means anything while the tree is still on screen.
+ *
+ * From the storyboard's own home frame, and kept deliberately. The strategic
+ * headline about technology follows it, further down, where it can be a claim
+ * rather than a first impression.
+ */
+export const CINEMATIC_HEADLINE = {
+  lines: ["Pequenos começos.", "Grandes frutos."],
+} as const;
+
 /* ──────────────────────────────────────────────────── 02 the proposition ── */
 
 /** The hand-over out of the film, and the whole positioning in four lines. */

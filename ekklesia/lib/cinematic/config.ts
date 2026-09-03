@@ -270,6 +270,25 @@ export const CINEMATIC_BEATS: readonly CinematicBeat[] = [
 export const HANDOFF_SCROLL: readonly [number, number] = [0.87, 1.0];
 
 /**
+ * When the headline arrives over the tree, per line.
+ *
+ * The words are part of the film's last shot, not a section under it, so their
+ * timing lives here with the rest of the film's timing rather than in a
+ * component. Each line has its own range off the same scroll, overlapping —
+ * that is what gives the pair a stagger without a timeline, and it stays a pure
+ * function of scroll position, so it runs backwards exactly.
+ *
+ * The first line starts as the crown finishes filling (the footage reaches its
+ * last frame at 0.945) and the second settles just before the hold. Both are
+ * fully in with a stretch of scroll left over, so the composition — tree and
+ * words together — is what the visitor rests on before the page moves on.
+ */
+export const HEADLINE_SCROLL: readonly (readonly [number, number])[] = [
+  [0.885, 0.945],
+  [0.905, 0.965],
+];
+
+/**
  * Where the crop is anchored, per breakpoint.
  *
  * A 16:9 master shown on a tall phone loses two thirds of its width, and which

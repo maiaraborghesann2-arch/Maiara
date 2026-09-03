@@ -72,7 +72,9 @@ export function Proposition() {
           {PROPOSITION.eyebrow}
         </p>
 
-        <h1 className="proposition__title" id="proposition-titulo">
+        {/* An `h2`: the page's `h1` is the headline set over the tree at the
+            end of the film. This is the strategic claim that follows it. */}
+        <h2 className="proposition__title" id="proposition-titulo">
           {PROPOSITION.title.map((line, i) => (
             /*
              * `data-reveal` sits on the wrapper, never on the line inside it.
@@ -85,7 +87,7 @@ export function Proposition() {
               <span className="mask__line">{line}</span>
             </span>
           ))}
-        </h1>
+        </h2>
 
         <p className="proposition__counter" data-reveal style={{ "--d": "240ms" } as React.CSSProperties}>
           {PROPOSITION.counter}

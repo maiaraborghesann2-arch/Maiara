@@ -252,6 +252,83 @@ button {
   color: var(--ink-soft);
 }
 
+/*
+ * The headline, over the last shot.
+ *
+ * Placed in the lower third and left-aligned to the page's own gutter, because
+ * that is where the frame is empty: a 24×15 luminance sample of the final frame
+ * puts the bottom 27% at near-black across the full width, at both the 1440×900
+ * crop and the 390×844 one. So the type needs no card, no scrim and no plate —
+ * the film already provides the ground.
+ *
+ * It is inside the sticky stage, which means it leaves *with* the tree when the
+ * section releases. Words and picture arrive together and depart together; they
+ * are one composition, not a caption bolted under a video.
+ */
+.cinematic__headline {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: clamp(2.6rem, 8vh, 5.5rem);
+  margin: 0;
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2rem, 5.2vw, 4.3rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--on-soil);
+  pointer-events: none;
+  /*
+   * The frame's own ground is dark here, but the hand-over lifts it toward the
+   * page's sand as the section ends. This is a hair of depth so the words hold
+   * their edge across that change — far too soft to read as a shadow, and the
+   * only reason it exists is that the ground underneath is moving.
+   */
+  text-shadow: 0 1px 24px rgba(12, 8, 4, 0.34);
+}
+
+/*
+ * No film, no dark foreground. The stage falls back to its own ivory, and ivory
+ * type on it would be invisible — so the words take the page's ink instead, and
+ * lose the shadow that only existed to hold an edge against moving ground.
+ */
+.cinematic__stage[data-failed="true"] .cinematic__headline {
+  color: var(--ink);
+  text-shadow: none;
+}
+
+.cinematic__headline-mask {
+  display: block;
+  overflow: hidden;
+  /* Descenders sit below the baseline; without this the box clips the tail of
+     every g and ç at rest, not just in motion. */
+  padding-bottom: 0.09em;
+}
+
+/*
+ * Driven straight off the scroll — `--line-0` and `--line-1` are written by the
+ * same subscription that seeks the video, so the words are as reversible as the
+ * footage is. No transition: a transition would smooth over the scrub and let
+ * the line keep moving after the visitor stopped.
+ *
+ * No `opacity` either. An `opacity: 0` heading is ambiguous to assistive
+ * technology and this is the page's `h1`; translating it inside a clipped box
+ * hides it from the eye while leaving it plainly in the accessibility tree.
+ */
+.cinematic__headline-line {
+  display: block;
+  transform: translate3d(0, calc((1 - var(--line, 0)) * 108%), 0);
+}
+
+.cinematic__headline-mask:nth-child(1) .cinematic__headline-line {
+  --line: var(--line-0, 0);
+}
+
+.cinematic__headline-mask:nth-child(2) .cinematic__headline-line {
+  --line: var(--line-1, 0);
+}
+
 .cinematic__captions {
   position: absolute;
   inset: 0;
@@ -307,6 +384,11 @@ button {
   /* No entrance either — it never mounts. */
   .intro {
     display: none;
+  }
+
+  /* One held frame, so the words belong to it already — nothing to arrive. */
+  .cinematic__headline-line {
+    transform: none;
   }
 }
 
@@ -650,11 +732,13 @@ main > section[id] {
   color: var(--ink-soft);
 }
 
+/* A step below the headline over the tree, which is the page's `h1`. Two
+   statements at the same size would compete for the same job. */
 .proposition__title {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: clamp(2.4rem, 6.4vw, 5.2rem);
+  font-size: clamp(2rem, 5vw, 4.1rem);
   line-height: 1.03;
   letter-spacing: -0.022em;
 }

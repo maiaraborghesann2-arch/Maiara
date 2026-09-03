@@ -9,6 +9,7 @@ import {
   CINEMATIC_TRACK_VH,
   FOCUS,
   HANDOFF_SCROLL,
+  HEADLINE_SCROLL,
   PORTRAIT_BELOW,
   AUTHORED_DURATION,
   REDUCED_MOTION_VIDEO_PROGRESS,
@@ -18,6 +19,7 @@ import {
   videoProgressFor,
 } from "@/lib/cinematic/config";
 import { cinematicStore, subscribeCinematic } from "@/lib/cinematic/store";
+import { CINEMATIC_HEADLINE } from "@/lib/site/content";
 import { CinematicIntro } from "./CinematicIntro";
 import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
@@ -144,6 +146,12 @@ export function CinematicOpening() {
     if (!element) return;
 
     if (reducedMotion) {
+      // The stage shows one held frame, so the words belong to it already —
+      // there is no arrival to animate, only a composition to present.
+      const stage = element.parentElement;
+      stage?.style.setProperty("--handoff", "1");
+      HEADLINE_SCROLL.forEach((_, i) => stage?.style.setProperty(`--line-${i}`, "1"));
+
       const settle = () => {
         element.currentTime = REDUCED_MOTION_VIDEO_PROGRESS * (element.duration || AUTHORED_DURATION);
       };
@@ -178,13 +186,23 @@ export function CinematicOpening() {
      */
     const stage = element.parentElement;
     const [from, to] = HANDOFF_SCROLL;
+    const clamp01 = (n: number) => (n < 0 ? 0 : n > 1 ? 1 : n);
 
     const stop = subscribeCinematic((scroll) => {
       target = videoProgressFor(scroll);
 
       if (stage) {
-        const t = (scroll - from) / (to - from);
-        stage.style.setProperty("--handoff", (t < 0 ? 0 : t > 1 ? 1 : t).toFixed(3));
+        stage.style.setProperty("--handoff", clamp01((scroll - from) / (to - from)).toFixed(3));
+
+        /*
+         * The headline, on the same clock as everything else. Each line gets
+         * its own overlapping range, which is what produces the stagger — a
+         * `transition-delay` would have decoupled the words from the scroll and
+         * made them finish arriving after the visitor had stopped.
+         */
+        HEADLINE_SCROLL.forEach(([a, b], i) => {
+          stage.style.setProperty(`--line-${i}`, clamp01((scroll - a) / (b - a)).toFixed(3));
+        });
       }
 
       // Hidden tabs still fire the ticker in some browsers; seeking there wakes
@@ -227,7 +245,14 @@ export function CinematicOpening() {
       data-cinematic-track
       aria-label="Abertura: da semente à árvore"
     >
-      <div className="cinematic__stage">
+      {/*
+        `data-failed` matters for exactly one thing: the headline is ivory
+        because it sits on the film's dark foreground, and if the film never
+        decodes the stage falls back to its own ivory — ivory on ivory. The
+        attribute lets the words switch to dark ink for that case rather than
+        vanishing.
+      */}
+      <div className="cinematic__stage" data-failed={failed ? "true" : "false"}>
         <video
           ref={video}
           className="cinematic__video"
@@ -270,6 +295,31 @@ export function CinematicOpening() {
             Não foi possível carregar a sequência de abertura.
           </p>
         ) : null}
+
+        {/*
+          The headline — the page's `<h1>`, and part of the last shot rather
+          than a section underneath it.
+          
+          It sits in the film's own negative space: the bottom third of the
+          final frame is empty and uniformly dark at every crop this design
+          supports (measured, 24×15 luminance grid, both the 1440×900 and the
+          390×844 window), so light type reads there with no card, no scrim and
+          no background of any kind. The tree stays the protagonist; the words
+          are what the visitor is already thinking.
+          
+          Each line rises out of a clipped box rather than fading. Deliberately
+          no `opacity` on the text: an `opacity: 0` heading is ambiguous to
+          assistive technology, and the page's `h1` should never be in doubt.
+          Translation inside `overflow: hidden` hides it visually while leaving
+          it plainly in the accessibility tree.
+        */}
+        <h1 className="cinematic__headline">
+          {CINEMATIC_HEADLINE.lines.map((line, i) => (
+            <span className="cinematic__headline-mask" key={line} style={{ "--i": i } as React.CSSProperties}>
+              <span className="cinematic__headline-line">{line}</span>
+            </span>
+          ))}
+        </h1>
 
         {/*
           Caption slots, on the same clock, rendered empty. Filling a beat's
