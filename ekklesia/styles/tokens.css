@@ -36,6 +36,16 @@
    */
   --clay-ink: #8b4222;
   --clay-ink-light: #c9714a;
+
+  /*
+   * Ink on the green field.
+   *
+   * `--on-soil-soft` is 58% ivory, which lands at 3.06:1 over `--olive` and
+   * fails for body text. These are measured against #4a5537: 5.74:1 full and
+   * 4.88:1 soft, so both clear the floor for small text.
+   */
+  --on-olive: #e6dbc9;
+  --on-olive-soft: rgba(230, 219, 201, 0.88);
   --olive: #4a5537;
   --olive-soft: #6b7550;
   --olive-hairline: rgba(74, 85, 55, 0.32);

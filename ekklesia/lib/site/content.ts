@@ -1,5 +1,5 @@
 /**
- * Every word on the site, in one file.
+ * Every word on the homepage, in one file.
  *
  * Two reasons it lives here rather than inside the components: the copy will be
  * rewritten by people who do not read TSX, and the layouts have to survive that
@@ -8,48 +8,39 @@
  *
  * ── On positioning ─────────────────────────────────────────────────────────
  *
- * The strategic document is the source of truth here, and it says something the
- * storyboard did not: Ekklesia Connect is a *technology consultancy* for
- * churches and ministries — diagnosis, integration, and proportional custom
- * development. Not a platform, not an app, not a church management system.
+ * Ekklesia Connect is a *technology consultancy* for churches and ministries —
+ * diagnosis, integration, and proportional custom development. Not a platform,
+ * not an app, not a church management system. The metaphor the film carries
+ * belongs to that: the seed is a need, the roots are the church's own context,
+ * and the tree is whatever solution that context actually justifies.
  *
- * That overrode an earlier version of this file, which had been written from
- * the storyboard and positioned the company as a content and formation
- * platform. The two are not reconcilable, and the strategic document wins.
- * What survived from the storyboard is the brand, the palette, the film, and
- * the metaphor — which turns out to fit the consultancy better than it fit the
- * platform: the seed is a need, the roots are the church's own context, and the
- * tree is whatever solution that context actually justifies.
+ * ── On discipline ──────────────────────────────────────────────────────────
+ *
+ * Six ideas, six sections, and each idea appears exactly once. An earlier
+ * version of this file said "technology should adapt to the church" in four
+ * different places — as a proposition, as a problem, as an adaptation section
+ * and as a philosophy. It is one idea. It now has one moment, in the section
+ * built for it, and everything that only restated it was deleted rather than
+ * rephrased.
+ *
+ * There is no About section: that becomes its own page. There are no cases,
+ * no testimonials, no logos, no numbers — the company has not finished work it
+ * can show yet, and a placeholder case study is worse than an absent one.
  *
  * ── On language ────────────────────────────────────────────────────────────
  *
- * Portuguese, because the document is `lang="pt-BR"`, the storyboard is
- * Portuguese, and the slogan reads as a translation of "Tecnologia que conecta.
- * Igreja que alcança." The strategic brief arrived in English; that is the
- * brief's language, not the site's. Everything is in this one file, so changing
- * that decision is a translation rather than a rebuild.
- *
- * ── On claims ──────────────────────────────────────────────────────────────
- *
- * Nothing here asserts a client, a metric, a testimonial, a partnership or an
- * outcome, because the materials establish none. The one section that would
- * want them — the case study — is marked `placeholder: true` and is built to
- * hold a real record without being redesigned. Search for `placeholder`.
+ * Portuguese, because the document is `lang="pt-BR"` and the slogan reads as a
+ * translation of "Tecnologia que conecta. Igreja que alcança." Everything is in
+ * this one file, so changing that decision is a translation, not a rebuild.
  */
-
-export type Placeheld<T> = T & {
-  /** True where the words are structural stand-ins, not project material. */
-  placeholder?: true;
-};
 
 /* ─────────────────────────────────────────────────────────────── brand ── */
 
 export const BRAND = {
   name: "Ekklesia",
   suffix: "Connect",
-  /** The official slogan. Deliberately never used as the explanation of the
-   *  company — a visitor has to know what the company *does* before a line
-   *  like this can mean anything. It appears once, at the very end. */
+  /** Used once, at the very end. A slogan cannot explain a company to someone
+   *  who does not yet know what it does. */
   slogan: "Tecnologia que conecta. Igreja que alcança.",
   descriptor:
     "Consultoria e desenvolvimento de tecnologia sob medida para igrejas e ministérios.",
@@ -58,8 +49,8 @@ export const BRAND = {
 export const NAV = [
   { label: "O problema", href: "#problema" },
   { label: "Abordagem", href: "#abordagem" },
+  { label: "O caminho", href: "#caminho" },
   { label: "O que fazemos", href: "#o-que-fazemos" },
-  { label: "Casos", href: "#casos" },
   { label: "Diagnóstico", href: "#diagnostico" },
 ] as const;
 
@@ -68,78 +59,64 @@ export const ACTIONS = {
   secondary: { label: "Conte o que você precisa", href: "#diagnostico" },
 } as const;
 
-/* ────────────────────────────────────────────── 01 over the final frame ── */
+/* ─────────────────────────────────────────────── 01 over the final frame ── */
 
 /**
- * The headline, and the page's `<h1>`.
- *
- * It lives *inside* the film — set over the mature tree in the last shot, not
- * in a section beneath it. That is the whole reason it reads: the sentence is
- * the emotional reading of what the visitor has just watched happen, and it
- * only means anything while the tree is still on screen.
- *
- * From the storyboard's own home frame, and kept deliberately. The strategic
- * headline about technology follows it, further down, where it can be a claim
- * rather than a first impression.
+ * The headline, and the page's `<h1>`. It lives inside the film, set over the
+ * mature tree in the last shot — the emotional reading of what the visitor has
+ * just watched happen, while it is still on screen.
  */
 export const CINEMATIC_HEADLINE = {
   lines: ["Pequenos começos.", "Grandes frutos."],
 } as const;
 
-/* ──────────────────────────────────────────────────── 02 the proposition ── */
+/* ─────────────────────────────────────────────────────────── 02 problem ── */
 
 /**
- * The strategic claim, and the first section after the film.
+ * The problem, in three states rather than three paragraphs.
  *
- * It no longer carries the descriptor or the primary action — both moved up
- * into the hero, which now lives inside the film. What is left is the thing
- * this section was always for: the positioning, stated once, to a visitor who
- * has already been told who the company is and what it does.
+ * Each state carries its own diagram, and the diagrams are the argument: one
+ * mark alone, then marks that do not meet, then marks that meet too many times.
+ * The copy says what the picture cannot, and stops.
  */
-export const PROPOSITION = {
-  eyebrow: "O princípio",
-  title: ["Sua igreja não precisa", "se adaptar à tecnologia."],
-  counter: "A tecnologia deve se adaptar à sua igreja.",
-  body: "Diagnosticamos, integramos e desenvolvemos soluções adaptadas à identidade, aos processos e à missão da sua igreja.",
-} as const;
-
-/* ─────────────────────────────────────────────────────────── 03 problem ── */
-
 export const PROBLEM = {
   eyebrow: "O problema",
   title: "A tecnologia não deveria ditar como sua igreja funciona.",
   lede: "Quando a ferramenta vira o limite, o problema raramente se resolve adicionando outra ferramenta.",
-  /**
-   * The fragments. Rendered as a set that starts misaligned and settles into a
-   * column as it is read — the section argues about disconnection, so the
-   * layout is the argument rather than a diagram of it.
-   */
-  fragments: [
-    "Uma planilha que virou sistema.",
-    "Formulários que ninguém consegue cruzar.",
-    "Três ferramentas guardando a mesma informação.",
-    "Um processo desenhado em volta do que o software permite.",
-    "Uma plataforma que entrega muito mais — ou muito menos — do que se precisa.",
+  states: [
+    {
+      id: "desconectado",
+      label: "Desconectado",
+      body: "Cada ferramenta resolve uma parte, e nenhuma conversa com a seguinte.",
+    },
+    {
+      id: "fragmentado",
+      label: "Fragmentado",
+      body: "A mesma informação passa a existir em três lugares, com três respostas.",
+    },
+    {
+      id: "complexo",
+      label: "Complexo",
+      body: "O processo passa a ser desenhado em volta do que o software permite.",
+    },
   ],
-  close: "Nada disso é falta de esforço. É falta de encaixe.",
 } as const;
 
-/* ────────────────────────────────────────────────────────── 04 approach ── */
+/* ────────────────────────────────────────────────────────── 03 approach ── */
 
 /**
- * The methodology, and the reason the word "consultoria" is not decoration.
- * Set on the dark ground: this is the part of the work that happens below the
- * surface, and the film spends its widest beat down there for the same reason.
+ * The method, and the reason the word "consultoria" is not decoration. Five
+ * stages, one visible at a time — the visitor advances through it rather than
+ * scanning it, which is closer to how the work itself goes.
  */
 export const APPROACH = {
   eyebrow: "A abordagem",
   title: "Antes de construir, entender.",
-  lede: "Uma solução digital forte não começa pela tecnologia. Começa por entender o que precisa crescer.",
   stages: [
     {
       index: "01",
       label: "Entender",
-      body: "A igreja, as pessoas, a missão, os processos, a metodologia e a tecnologia que já existe.",
+      body: "A igreja, as pessoas, a missão, os processos e a tecnologia que já existe.",
     },
     {
       index: "02",
@@ -148,223 +125,125 @@ export const APPROACH = {
     },
     {
       index: "03",
-      label: "Aconselhar",
-      body: "Avaliar os caminhos possíveis e recomendar a direção mais adequada.",
+      label: "Recomendar",
+      body: "Avaliar os caminhos possíveis e indicar a direção mais adequada.",
     },
     {
       index: "04",
-      label: "Construir",
-      body: "Construir apenas o que realmente precisa ser construído.",
+      label: "Implementar",
+      body: "Executar o que foi decidido — e apenas o que precisa ser feito.",
     },
     {
       index: "05",
       label: "Evoluir",
-      body: "Sustentar, manter, melhorar e adaptar a solução ao longo do tempo.",
+      body: "Sustentar, manter e adaptar a solução ao longo do tempo.",
     },
   ],
 } as const;
 
-/* ───────────────────────────────────────────────────────── 05 the paths ── */
+/* ───────────────────────────────────────────────────────── 04 the paths ── */
 
 /**
- * The differentiator. Four outcomes of one decision, not four services —
- * rendered as branches off a single stem, which is the same shape the film
- * shows underground.
+ * The decision, not the menu. Four answers to one question, and the question is
+ * set larger than the answers because it is the thing being sold.
  */
 export const PATHS = {
   eyebrow: "O caminho",
-  title: "Nem todo problema precisa de um software novo.",
-  lede: "Às vezes a resposta é comprar. Às vezes é integrar. Às vezes é adaptar. E às vezes precisa ser construído do zero.",
+  question: "O que a sua igreja realmente precisa?",
+  lede: "Nem todo problema precisa de um software novo. O diagnóstico é que diz qual destes quatro é o caminho.",
   options: [
     {
+      id: "comprar",
       label: "Comprar",
+      claim: "A solução certa já existe.",
       body: "Já existe algo bom o suficiente no mercado. O trabalho é escolher bem e implantar direito.",
     },
     {
+      id: "integrar",
       label: "Integrar",
-      body: "As ferramentas certas já estão na casa — só não conversam entre si.",
+      claim: "Os sistemas precisam conversar.",
+      body: "As ferramentas certas já estão na casa — só não trocam informação entre si.",
     },
     {
+      id: "adaptar",
       label: "Adaptar",
-      body: "O que existe chega perto. Falta ajustá-lo ao jeito da igreja.",
+      claim: "O que existe precisa caber.",
+      body: "A solução chega perto. Falta ajustá-la à realidade específica da igreja.",
     },
     {
+      id: "construir",
       label: "Construir",
+      claim: "Quando não existe, a gente constrói.",
       body: "Nada disponível sustenta o processo. Aí sim vale construir — e só o necessário.",
     },
   ],
-  close:
-    "Não temos um produto para defender. A recomendação é a que serve à igreja, inclusive quando ela não passa por nós.",
 } as const;
 
-/* ──────────────────────────────────────────────────────── 06 capability ── */
+/* ────────────────────────────────────────────────────── 05 capabilities ── */
 
 /**
- * The services, and deliberately downstream of the method. They are the
- * consequence of the approach, not the identity of the company, so they are set
- * as a hairline index rather than given a section of their own weight.
+ * Where the work happens, once the decision is made. Consequence of the method,
+ * never the identity of the company — which is why this is the shortest section
+ * on the page and the last one to speak before the close.
  */
 export const CAPABILITIES = {
   eyebrow: "O que fazemos",
   title: "As frentes de trabalho.",
-  lede: "Consequência do método, não o contrário. O diagnóstico é que diz qual delas se aplica.",
   items: [
     {
-      label: "Estratégia de tecnologia",
-      body: "Diagnóstico, avaliação do que já existe e direção estratégica.",
+      id: "estrategia",
+      label: "Estratégia",
+      claim: "Direção antes de execução.",
+      body: "Diagnóstico, avaliação do que já existe e recomendação técnica.",
     },
     {
-      label: "Integrações e automação",
-      body: "Conectar ferramentas em uso, sincronizar dados e reduzir trabalho manual.",
+      id: "integracao",
+      label: "Integração",
+      claim: "O que existe, conectado.",
+      body: "Ferramentas em uso passam a trocar dados, e o trabalho manual diminui.",
     },
     {
-      label: "Soluções digitais sob medida",
-      body: "Aplicações, portais, sistemas internos e experiências digitais — quando o que existe não dá conta.",
+      id: "sob-medida",
+      label: "Sob medida",
+      claim: "Construído para o processo real.",
+      body: "Aplicações, portais e sistemas internos, quando o que existe não dá conta.",
     },
     {
+      id: "ia",
       label: "IA em contexto",
-      body: "Assistentes, conteúdo, busca e análise sobre fontes definidas, com limites, metodologia, privacidade e revisão humana.",
+      claim: "Com fontes, limites e revisão.",
+      body: "Assistentes, busca e análise sobre fontes definidas, com governança e revisão humana.",
     },
     {
-      label: "Implementação e evolução",
-      body: "Implantação, manutenção, segurança, monitoramento, hospedagem, suporte e melhoria contínua.",
+      id: "evolucao",
+      label: "Evolução",
+      claim: "Depois da entrega.",
+      body: "Implantação, segurança, monitoramento, suporte e melhoria contínua.",
     },
   ],
 } as const;
 
-/* ─────────────────────────────────────────────────────────── 07 adapts ── */
-
-export const ADAPTS = {
-  eyebrow: "Personalização real",
-  title: "Cada igreja tem seu próprio jeito de fazer as coisas.",
-  counter: "Sua tecnologia deveria entender isso.",
-  lede: "Personalizar não é trocar cores, logo e textos. É o sistema aceitar o modo como o ministério já funciona.",
-  dimensions: [
-    "metodologia do ministério",
-    "contexto teológico",
-    "linguagem e terminologia",
-    "processos e fluxos de trabalho",
-    "estrutura ministerial",
-    "papéis e permissões",
-    "integrações",
-    "jornadas de uso",
-    "critérios e governança de IA",
-  ],
-  close: "A infraestrutura pode ser compartilhada. O contexto ministerial, não.",
-} as const;
-
-/* ────────────────────────────────────────────────────── 08 the problems ── */
+/* ─────────────────────────────────────────────────────── 06 philosophy ── */
 
 /**
- * Situations rather than services. Each is a sentence a church leader would
- * actually say, followed by the direction it points to — and none of them
- * promises that the direction is something we build.
+ * The one moment of difference, and the only place the central idea is stated
+ * outright. It is a swap: the question most suppliers start from, struck
+ * through, and the question this one starts from underneath it.
  */
-export const SITUATIONS = {
-  eyebrow: "Situações",
-  title: "Talvez você reconheça alguma destas.",
-  items: [
-    {
-      quote: "Nossas equipes fazem o mesmo trabalho em três sistemas diferentes.",
-      answer: "Costuma ser um problema de integração, não de plataforma nova.",
-    },
-    {
-      quote: "As ferramentas funcionam — mas não conversam entre si.",
-      answer: "Aqui o trabalho é conectar e sincronizar o que já está pago e em uso.",
-    },
-    {
-      quote: "Temos um processo ministerial que nenhuma plataforma existente sustenta.",
-      answer: "Este é um dos poucos casos em que construir do zero se justifica.",
-    },
-    {
-      quote: "Queremos usar IA sem perder o controle dos dados e do contexto teológico.",
-      answer: "Fontes definidas, limites claros, governança e revisão humana — antes do modelo.",
-    },
-    {
-      quote: "Não sabemos se devemos comprar, integrar, adaptar ou construir.",
-      answer: "Essa é exatamente a pergunta que o diagnóstico responde.",
-    },
-  ],
+export const PHILOSOPHY = {
+  eyebrow: "A diferença",
+  title: "Começamos pela igreja, não pela tecnologia.",
+  wrong: "Que software vamos construir?",
+  right: "Que problema estamos tentando resolver?",
+  body: "A infraestrutura pode ser compartilhada. O contexto ministerial, não. É por isso que a pergunta vem antes da ferramenta — e às vezes a resposta é não construir nada.",
 } as const;
 
-/* ──────────────────────────────────────────────────────────── 09 a case ── */
-
-/**
- * Built to hold a real record, holding none yet.
- *
- * The strategic document names the EBD project as a future case study, and
- * there are no EBD assets in this repository — no brief, no numbers, no
- * screenshots. So the structure is here and the content is honestly empty:
- * every field says what belongs in it. Filling them in is an edit to this
- * object, and the section is designed to take several of these.
- */
-export const CASES: Placeheld<{
-  eyebrow: string;
-  title: string;
-  lede: string;
-  entries: readonly {
-    name: string;
-    fields: readonly { label: string; body: string }[];
-  }[];
-}> = {
-  placeholder: true,
-  eyebrow: "Casos",
-  title: "O trabalho, registrado.",
-  lede: "Cada caso é publicado com o problema, o contexto e — principalmente — as decisões. Inclusive as de não construir.",
-  entries: [
-    {
-      name: "EBD",
-      fields: [
-        { label: "Problema", body: "A descrever a partir do material do projeto." },
-        { label: "Contexto", body: "A descrever a partir do material do projeto." },
-        { label: "Abordagem", body: "A descrever a partir do material do projeto." },
-        { label: "Tecnologia", body: "A descrever a partir do material do projeto." },
-        { label: "Decisões", body: "A descrever a partir do material do projeto." },
-        { label: "Resultado", body: "A registrar quando houver resultado verificado." },
-      ],
-    },
-  ],
-};
-
-/* ───────────────────────────────────────────────────── 10 responsibility ── */
-
-export const RESPONSIBILITY = {
-  eyebrow: "Tecnologia responsável",
-  title: "Nem todo pedido vira entrega.",
-  lede: "Quando algo é desnecessário, desproporcional, inseguro, antiético ou prejudicial, dizemos — e apresentamos alternativas. É para isso que se contrata um parceiro, e não um executor.",
-  principles: [
-    "Integridade",
-    "Simplicidade",
-    "Segurança",
-    "Transparência",
-    "Responsabilidade",
-    "Excelência",
-    "Inovação com propósito",
-    "Cuidado com as pessoas",
-  ],
-} as const;
-
-/* ──────────────────────────────────────────────────────── 11 diagnosis ── */
+/* ────────────────────────────────────────────────────── 07 the diagnosis ── */
 
 export const DIAGNOSIS = {
   eyebrow: "Próximo passo",
-  title: "Comece por um diagnóstico.",
-  lede: "Conte o que você está tentando resolver. A gente ajuda a entender o que deve vir depois.",
-  steps: [
-    { index: "01", body: "Você conta o que está acontecendo." },
-    { index: "02", body: "Entendemos o seu contexto." },
-    { index: "03", body: "Revisamos a necessidade." },
-    { index: "04", body: "Recomendamos a direção adequada." },
-    { index: "05", body: "Você decide o que vem depois." },
-  ],
-  note: "O diagnóstico é o começo de uma conversa. Não é a porta de entrada de um produto já decidido.",
-} as const;
-
-/* ─────────────────────────────────────────────────────────── 12 mission ── */
-
-export const MISSION = {
-  title: ["A tecnologia não é o destino."],
-  body: "É o que ajuda a missão a avançar.",
+  title: "Vamos encontrar o caminho certo.",
+  lede: "Conte o que você está tentando resolver. A gente ajuda a entender o que deve vir depois — inclusive quando isso não passa por nós.",
   slogan: BRAND.slogan,
 } as const;
 

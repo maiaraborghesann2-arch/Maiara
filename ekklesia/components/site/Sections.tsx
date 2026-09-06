@@ -2,126 +2,95 @@
 
 import {
   ACTIONS,
-  ADAPTS,
   APPROACH,
   CAPABILITIES,
-  CASES,
   DIAGNOSIS,
-  MISSION,
   PATHS,
+  PHILOSOPHY,
   PROBLEM,
-  PROPOSITION,
-  RESPONSIBILITY,
-  SITUATIONS,
 } from "@/lib/site/content";
+import { useActiveCard } from "@/lib/site/useActiveCard";
 
 /**
- * The site, after the film.
+ * The homepage, after the film. Six sections, and each carries exactly one idea.
  *
- * The order is the company's own method, and that is the point: the page
- * understands the problem, clarifies the situation, shows the possible paths,
- * and only then says what it can do. A visitor who reads it in order has been
- * taken through a diagnosis.
- *
- *   the proposition → the problem → the method → the four paths →
- *   the capabilities → what adaptation actually means → situations →
- *   the record → what we decline → the diagnosis → the mission
+ *   the problem → the method → the decision → the work → the difference → the
+ *   invitation
  *
  * Three rules hold it together.
  *
- * THE GROUND MOVES. Sand for the argument, soil for the two passages that
- * happen below the surface — the method and the refusals — and light for
- * everything that follows from them. Four changes across eleven sections, each
- * where the argument turns, none announced: they are gradients, not borders.
+ * THE GROUND IS A SET OF FIELDS, NOT A FADE. Cream, deep earth, cream, sand,
+ * green, cream — every change is a hard edge at a section boundary, because a
+ * gradient between two sections is an apology for the boundary rather than a
+ * design of it. The visitor should know they have entered a new section; the
+ * palette is what tells them, and spacing and composition do the rest.
  *
- * NO SECTION REPEATS ANOTHER'S SHAPE. A grid of cards eleven times would
- * flatten an argument that is not flat. So: a column, a settling list, a
- * numbered rail, a stem with four branches, a hairline index, a spread with
- * running terms, quoted situations, a record, a dark list, a numbered path, and
- * a held line. Exactly one `border-radius` exists in the stylesheet and it
- * belongs to a button.
+ * EVERY CARD SYSTEM HAS ITS OWN LOGIC. Three of them, and none is a grid of
+ * identical rounded rectangles: the problem is three states of one diagram, the
+ * method is a sequence with one stage open at a time, the paths are four
+ * answers to one question, and the capabilities are a rail that opens on
+ * demand. A card exists here to hold a piece of the information architecture —
+ * if it were only holding a box, it would be a paragraph.
  *
- * MOTION MEANS SOMETHING OR IT DOES NOT HAPPEN. `data-reveal` sets one
- * attribute once per element and CSS does the rest. The only place motion
- * carries an argument is the problem section, where the fragments arrive
- * misaligned and settle — the section is about things not fitting together, so
- * the layout performs it instead of illustrating it.
+ * MOTION IS ELEVATION AND OPACITY, AND NOTHING ELSE. No parallax, no floating,
+ * no rotation. The film is the movement on this page; the content is where it
+ * settles.
  */
 
-/* ──────────────────────────────────────────────────── 02 the proposition ── */
+/* ─────────────────────────────────────────────────────────── 02 problem ── */
 
 /**
- * The strategic claim.
+ * Three states of the same trouble, each carrying its own mark.
  *
- * The film's stage veils to this exact ground before the sticky track releases,
- * so this section does not arrive — it is already there, underneath, and the
- * cinematic layer simply stops being in front of it.
- *
- * The claim and its answer are one sentence broken across two type sizes — the
- * negative large, the positive small and set in the functional sans directly
- * beneath it. Giving both lines the same weight would make it a slogan; the
- * asymmetry makes it an argument.
+ * The marks are the argument and the copy is the caption: one element alone,
+ * then elements that never meet, then elements that meet too many times. Drawn
+ * in SVG from the same hairline the rest of the page rules with, so they read
+ * as diagrams in the page's own hand rather than as illustrations dropped into
+ * it.
  */
-export function Proposition() {
+function ProblemMark({ state }: { state: string }) {
+  const line = { stroke: "currentColor", strokeWidth: 1, fill: "none" } as const;
   return (
-    <section className="proposition" id="conteudo" aria-labelledby="proposition-titulo">
-      <div className="proposition__column">
-        <p className="proposition__eyebrow" data-reveal>
-          <span className="rule" aria-hidden="true" />
-          {PROPOSITION.eyebrow}
-        </p>
-
-        {/* An `h2`: the page's `h1` is the headline set over the tree at the
-            end of the film. This is the strategic claim that follows it. */}
-        <h2 className="proposition__title" id="proposition-titulo">
-          {PROPOSITION.title.map((line, i) => (
-            /*
-             * `data-reveal` sits on the wrapper, never on the line inside it.
-             * The line hides by translating fully below the wrapper's clipped
-             * box, so an observer watching the line itself would see it as
-             * permanently clipped by an ancestor and never fire — it would hide
-             * itself out of its own trigger's reach.
-             */
-            <span className="mask" data-reveal key={line} style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
-              <span className="mask__line">{line}</span>
-            </span>
-          ))}
-        </h2>
-
-        <p className="proposition__counter" data-reveal style={{ "--d": "240ms" } as React.CSSProperties}>
-          {PROPOSITION.counter}
-        </p>
-
-        <p className="proposition__lede" data-reveal style={{ "--d": "320ms" } as React.CSSProperties}>
-          {PROPOSITION.body}
-        </p>
-
-        {/* The primary action lives in the hero now, inside the film. Repeating
-            it a screen later would just be two of the same button. */}
-        <div className="actions" data-reveal style={{ "--d": "400ms" } as React.CSSProperties}>
-          <a className="button button--quiet" href={ACTIONS.secondary.href}>
-            {ACTIONS.secondary.label}
-          </a>
-        </div>
-      </div>
-    </section>
+    <svg className="state__mark" viewBox="0 0 120 80" aria-hidden="true">
+      {state === "desconectado" ? (
+        <>
+          <circle cx="26" cy="40" r="9" {...line} />
+          <circle cx="60" cy="26" r="9" {...line} />
+          <circle cx="94" cy="52" r="9" {...line} />
+        </>
+      ) : state === "fragmentado" ? (
+        <>
+          <circle cx="26" cy="40" r="9" {...line} />
+          <circle cx="60" cy="26" r="9" {...line} />
+          <circle cx="94" cy="52" r="9" {...line} />
+          {/* Lines that set out toward each other and stop short. */}
+          <path d="M35 37 L48 31" {...line} strokeDasharray="4 5" />
+          <path d="M69 30 L84 46" {...line} strokeDasharray="4 5" />
+          <path d="M33 46 L82 56" {...line} strokeDasharray="4 5" />
+        </>
+      ) : (
+        <>
+          <circle cx="26" cy="40" r="9" {...line} />
+          <circle cx="60" cy="26" r="9" {...line} />
+          <circle cx="94" cy="52" r="9" {...line} />
+          <circle cx="60" cy="62" r="9" {...line} />
+          <path d="M35 37 L51 28" {...line} />
+          <path d="M69 30 L85 46" {...line} />
+          <path d="M33 45 L52 59" {...line} />
+          <path d="M69 60 L86 56" {...line} />
+          <path d="M60 35 L60 53" {...line} />
+          <path d="M34 44 L86 49" {...line} />
+        </>
+      )}
+    </svg>
   );
 }
 
-/* ─────────────────────────────────────────────────────────── 03 problem ── */
-
-/**
- * The fragments arrive out of line and settle.
- *
- * This is the one place on the page where motion carries the argument rather
- * than decorating it: the section is about tools that do not line up, so the
- * lines do not line up until they have been read. Each is offset by a different
- * amount and returns to the same left edge — the settling *is* the point being
- * made, which is why it is here and nowhere else.
- */
 export function Problem() {
+  const { active, cardProps } = useActiveCard(PROBLEM.states.length);
+
   return (
-    <section className="problem" id="problema" aria-labelledby="problem-titulo">
+    <section className="field field--cream problem" id="problema" aria-labelledby="problem-titulo">
       <div className="spread">
         <p className="eyebrow" data-reveal>
           {PROBLEM.eyebrow}
@@ -136,63 +105,20 @@ export function Problem() {
         </div>
       </div>
 
-      <ul className="fragments">
-        {PROBLEM.fragments.map((line, i) => (
-          <li
-            key={line}
-            data-reveal
-            style={
-              {
-                "--d": `${i * 110}ms`,
-                // Alternating, decreasing — so it reads as scatter rather than
-                // as a staircase, and lands flush.
-                "--off": `${(i % 2 === 0 ? 1 : -1) * (34 - i * 4)}px`,
-              } as React.CSSProperties
-            }
-          >
-            {line}
-          </li>
-        ))}
-      </ul>
-
-      <p className="problem__close" data-reveal>
-        {PROBLEM.close}
-      </p>
-    </section>
-  );
-}
-
-/* ────────────────────────────────────────────────────────── 04 approach ── */
-
-/**
- * The method, on the dark ground.
- *
- * Five stages down a single hairline rail with the index sitting on the rule
- * itself — a spine, not five cards. It is set below the surface for the same
- * reason the film spends its widest and quietest beat underground: this is the
- * part of the work nobody sees, and it is the part the company is selling.
- */
-export function Approach() {
-  return (
-    <section className="approach" id="abordagem" data-ink="light" aria-labelledby="approach-titulo">
-      <div className="approach__head">
-        <p className="eyebrow eyebrow--light" data-reveal>
-          {APPROACH.eyebrow}
-        </p>
-        <h2 className="display" id="approach-titulo" data-reveal>
-          {APPROACH.title}
-        </h2>
-        <p className="approach__lede" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
-          {APPROACH.lede}
-        </p>
-      </div>
-
-      <ol className="rail">
-        {APPROACH.stages.map((stage, i) => (
-          <li key={stage.index} data-reveal style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
-            <span className="rail__index">{stage.index}</span>
-            <h3 className="rail__label">{stage.label}</h3>
-            <p className="rail__body">{stage.body}</p>
+      <ol className="states">
+        {PROBLEM.states.map((state, i) => (
+          <li key={state.id} data-reveal style={{ "--d": `${i * 110}ms` } as React.CSSProperties}>
+            <button
+              type="button"
+              className="state"
+              data-on={active === i ? "true" : "false"}
+              aria-expanded={active === i}
+              {...cardProps(i)}
+            >
+              <ProblemMark state={state.id} />
+              <span className="state__label">{state.label}</span>
+              <span className="state__body">{state.body}</span>
+            </button>
           </li>
         ))}
       </ol>
@@ -200,53 +126,119 @@ export function Approach() {
   );
 }
 
-/* ───────────────────────────────────────────────────────── 05 the paths ── */
+/* ────────────────────────────────────────────────────────── 03 approach ── */
 
 /**
- * One stem, four branches.
+ * The method, on the deep earth, as a sequence with one stage open.
  *
- * The four outcomes share a rule across the top and each hangs from it by a
- * short descender, so they read as results of one decision rather than as four
- * things on a menu. Four boxes here would say "four services", which is the
- * opposite of the argument.
+ * A selection rather than a disclosure: "none of the five" is not a meaningful
+ * state for a process, so one is always open and the first is open on arrival.
+ * The five sit on a single rule, and the open one takes the room — which is the
+ * shape of the argument, since the work is sequential and not a menu.
+ */
+export function Approach() {
+  const { active, cardProps } = useActiveCard(APPROACH.stages.length, "select");
+
+  return (
+    <section
+      className="field field--earth approach"
+      id="abordagem"
+      data-ink="light"
+      aria-labelledby="approach-titulo"
+    >
+      <div className="spread">
+        <p className="eyebrow eyebrow--light" data-reveal>
+          {APPROACH.eyebrow}
+        </p>
+        <div className="spread__body">
+          <h2 className="display" id="approach-titulo" data-reveal>
+            {APPROACH.title}
+          </h2>
+        </div>
+      </div>
+
+      <ol className="stages" data-reveal>
+        {APPROACH.stages.map((stage, i) => (
+          <li key={stage.index} data-on={active === i ? "true" : "false"}>
+            <button type="button" className="stage" aria-current={active === i} {...cardProps(i)}>
+              <span className="stage__index">{stage.index}</span>
+              <span className="stage__label">{stage.label}</span>
+              <span className="stage__body">{stage.body}</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+/* ───────────────────────────────────────────────────────── 04 the paths ── */
+
+/**
+ * One question, four answers.
+ *
+ * The question is set larger than any of the answers, because the question is
+ * the thing being sold — a supplier that asks it is a different kind of
+ * supplier from one that arrives with an answer already chosen. Closed, each
+ * card shows only its name and its one-line claim; opening it gives the reason.
  */
 export function Paths() {
+  const { active, cardProps } = useActiveCard(PATHS.options.length);
+
   return (
-    <section className="paths" aria-labelledby="paths-titulo">
+    <section className="field field--cream paths" id="caminho" aria-labelledby="paths-question">
       <div className="paths__head">
         <p className="eyebrow" data-reveal>
           {PATHS.eyebrow}
         </p>
-        <h2 className="display display--wide" id="paths-titulo" data-reveal>
-          {PATHS.title}
+        <h2 className="paths__question" id="paths-question" data-reveal>
+          {PATHS.question}
         </h2>
         <p className="prose prose--lead" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
           {PATHS.lede}
         </p>
       </div>
 
-      <ol className="branches">
+      <ol className="paths__grid">
         {PATHS.options.map((option, i) => (
-          <li key={option.label} data-reveal style={{ "--d": `${i * 100}ms` } as React.CSSProperties}>
-            <span className="branches__stem" aria-hidden="true" />
-            <h3 className="branches__label">{option.label}</h3>
-            <p className="branches__body">{option.body}</p>
+          <li key={option.id} data-reveal style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
+            <button
+              type="button"
+              className="path"
+              data-on={active === i ? "true" : "false"}
+              aria-expanded={active === i}
+              {...cardProps(i)}
+            >
+              <span className="path__rule" aria-hidden="true" />
+              <span className="path__label">{option.label}</span>
+              <span className="path__claim">{option.claim}</span>
+              <span className="path__body">{option.body}</span>
+            </button>
           </li>
         ))}
       </ol>
-
-      <p className="paths__close" data-reveal>
-        {PATHS.close}
-      </p>
     </section>
   );
 }
 
-/* ────────────────────────────────────────────────────── 06 capabilities ── */
+/* ────────────────────────────────────────────────────── 05 capabilities ── */
 
+/**
+ * A rail that opens on demand.
+ *
+ * The shortest section on the page, and the flattest: these are the consequence
+ * of the method, not the identity of the company, so they get a rail of names
+ * rather than five boxes competing with the decision above them.
+ */
 export function Capabilities() {
+  const { active, cardProps } = useActiveCard(CAPABILITIES.items.length);
+
   return (
-    <section className="capabilities" id="o-que-fazemos" aria-labelledby="capabilities-titulo">
+    <section
+      className="field field--sand capabilities"
+      id="o-que-fazemos"
+      aria-labelledby="capabilities-titulo"
+    >
       <div className="spread">
         <p className="eyebrow" data-reveal>
           {CAPABILITIES.eyebrow}
@@ -255,208 +247,92 @@ export function Capabilities() {
           <h2 className="display" id="capabilities-titulo" data-reveal>
             {CAPABILITIES.title}
           </h2>
-          <p className="prose prose--lead" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
-            {CAPABILITIES.lede}
-          </p>
         </div>
       </div>
 
-      {/* A hairline index. These are downstream of the method and are set to
-          look it — five boxes would give them the weight of the argument. */}
-      <dl className="index">
+      <ol className="rail">
         {CAPABILITIES.items.map((item, i) => (
-          <div key={item.label} data-reveal style={{ "--d": `${i * 70}ms` } as React.CSSProperties}>
-            <dt>{item.label}</dt>
-            <dd>{item.body}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────── 07 adapts ── */
-
-/**
- * What personalisation actually means.
- *
- * The nine dimensions are set as running text separated by hairlines rather
- * than as nine chips or nine icons: they are a list of things a system has to
- * bend around, and a wall of tags would turn them into features.
- */
-export function Adapts() {
-  return (
-    <section className="adapts" aria-labelledby="adapts-titulo">
-      <div className="adapts__head">
-        <p className="eyebrow" data-reveal>
-          {ADAPTS.eyebrow}
-        </p>
-        <h2 className="display" id="adapts-titulo" data-reveal>
-          {ADAPTS.title}
-        </h2>
-        <p className="adapts__counter" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
-          {ADAPTS.counter}
-        </p>
-      </div>
-
-      <div className="adapts__body">
-        <p className="prose" data-reveal>
-          {ADAPTS.lede}
-        </p>
-        <ul className="terms" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
-          {ADAPTS.dimensions.map((term) => (
-            <li key={term}>{term}</li>
-          ))}
-        </ul>
-      </div>
-
-      <p className="adapts__close" data-reveal>
-        {ADAPTS.close}
-      </p>
-    </section>
-  );
-}
-
-/* ─────────────────────────────────────────────────────── 08 situations ── */
-
-/**
- * Sentences a church leader would actually say, each with the direction it
- * points to. Set as pull quotes with a quiet answer beneath — the recognition
- * has to land before the response means anything.
- */
-export function Situations() {
-  return (
-    <section className="situations" aria-labelledby="situations-titulo">
-      <div className="spread">
-        <p className="eyebrow" data-reveal>
-          {SITUATIONS.eyebrow}
-        </p>
-        <div className="spread__body">
-          <h2 className="display" id="situations-titulo" data-reveal>
-            {SITUATIONS.title}
-          </h2>
-        </div>
-      </div>
-
-      <ul className="situations__list">
-        {SITUATIONS.items.map((item, i) => (
-          <li key={item.quote} data-reveal style={{ "--d": `${i * 80}ms` } as React.CSSProperties}>
-            <blockquote>{item.quote}</blockquote>
-            <p className="situations__answer">{item.answer}</p>
+          <li key={item.id} data-reveal style={{ "--d": `${i * 70}ms` } as React.CSSProperties}>
+            <button
+              type="button"
+              className="capability"
+              data-on={active === i ? "true" : "false"}
+              aria-expanded={active === i}
+              {...cardProps(i)}
+            >
+              <span className="capability__label">{item.label}</span>
+              <span className="capability__claim">{item.claim}</span>
+              <span className="capability__body">{item.body}</span>
+            </button>
           </li>
         ))}
-      </ul>
+      </ol>
     </section>
   );
 }
 
-/* ───────────────────────────────────────────────────────────── 09 cases ── */
+/* ─────────────────────────────────────────────────────── 06 philosophy ── */
 
 /**
- * The record, built empty.
+ * The difference, as a swap rather than a paragraph.
  *
- * There are no EBD assets in this repository, so every field says what belongs
- * in it rather than inventing a result. The layout takes several entries — a
- * second one is another object in `CASES.entries`.
- */
-export function Cases() {
-  return (
-    <section className="cases" id="casos" aria-labelledby="cases-titulo">
-      <div className="spread">
-        <p className="eyebrow" data-reveal>
-          {CASES.eyebrow}
-        </p>
-        <div className="spread__body">
-          <h2 className="display" id="cases-titulo" data-reveal>
-            {CASES.title}
-          </h2>
-          <p className="prose prose--lead" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
-            {CASES.lede}
-          </p>
-        </div>
-      </div>
-
-      {CASES.entries.map((entry) => (
-        <article className="record" key={entry.name} data-reveal>
-          <h3 className="record__name">{entry.name}</h3>
-          <dl className="record__fields">
-            {entry.fields.map((field) => (
-              <div key={field.label}>
-                <dt>{field.label}</dt>
-                <dd>{field.body}</dd>
-              </div>
-            ))}
-          </dl>
-        </article>
-      ))}
-    </section>
-  );
-}
-
-/* ─────────────────────────────────────────────────── 10 responsibility ── */
-
-/**
- * The refusals, on the dark ground.
+ * The question most suppliers open with is struck through, and the one this
+ * company opens with is set beneath it. Two lines carry the whole idea; the
+ * sentence under them exists to say the part the swap cannot — that sometimes
+ * the honest answer is to build nothing.
  *
- * The headline is about what does not get built, because that is the claim a
- * church leadership actually needs to hear before trusting a supplier. The
- * eight principles sit under it as a quiet row — named, not explained, because
- * a paragraph each would turn a position into a brochure.
+ * The only green field on the page, and it is here because this is the one
+ * claim the company would want a visitor to remember.
  */
-export function Responsibility() {
+export function Philosophy() {
   return (
-    <section className="responsibility" data-ink="light" aria-labelledby="responsibility-titulo">
-      <div className="responsibility__column">
+    <section className="field field--green philosophy" data-ink="light" aria-labelledby="philosophy-titulo">
+      <div className="philosophy__column">
         <p className="eyebrow eyebrow--light" data-reveal>
-          {RESPONSIBILITY.eyebrow}
+          {PHILOSOPHY.eyebrow}
         </p>
-        <h2 className="display" id="responsibility-titulo" data-reveal>
-          {RESPONSIBILITY.title}
+
+        <h2 className="philosophy__title" id="philosophy-titulo" data-reveal>
+          {PHILOSOPHY.title}
         </h2>
-        <p className="responsibility__lede" data-reveal style={{ "--d": "140ms" } as React.CSSProperties}>
-          {RESPONSIBILITY.lede}
+
+        <div className="swap" data-reveal style={{ "--d": "160ms" } as React.CSSProperties}>
+          <p className="swap__wrong">
+            <s>{PHILOSOPHY.wrong}</s>
+          </p>
+          <p className="swap__right">{PHILOSOPHY.right}</p>
+        </div>
+
+        <p className="philosophy__body" data-reveal style={{ "--d": "280ms" } as React.CSSProperties}>
+          {PHILOSOPHY.body}
         </p>
       </div>
-
-      <ul className="principles" data-reveal style={{ "--d": "240ms" } as React.CSSProperties}>
-        {RESPONSIBILITY.principles.map((principle) => (
-          <li key={principle}>{principle}</li>
-        ))}
-      </ul>
     </section>
   );
 }
 
-/* ─────────────────────────────────────────────────────── 11 diagnosis ── */
+/* ─────────────────────────────────────────────────────── 07 the diagnosis ── */
 
+/**
+ * The close. One action, one line under it, and the slogan — which appears here
+ * and nowhere else, because it can only mean something to a visitor who has now
+ * been told what the company does.
+ */
 export function Diagnosis() {
   return (
-    <section className="diagnosis" id="diagnostico" aria-labelledby="diagnosis-titulo">
-      <div className="diagnosis__head">
+    <section className="field field--cream diagnosis" id="diagnostico" aria-labelledby="diagnosis-titulo">
+      <div className="diagnosis__column">
         <p className="eyebrow" data-reveal>
           {DIAGNOSIS.eyebrow}
         </p>
-        <h2 className="display display--wide" id="diagnosis-titulo" data-reveal>
+        <h2 className="diagnosis__title" id="diagnosis-titulo" data-reveal>
           {DIAGNOSIS.title}
         </h2>
         <p className="prose prose--lead" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
           {DIAGNOSIS.lede}
         </p>
-      </div>
 
-      <ol className="path">
-        {DIAGNOSIS.steps.map((step, i) => (
-          <li key={step.index} data-reveal style={{ "--d": `${i * 80}ms` } as React.CSSProperties}>
-            <span className="path__index" aria-hidden="true">
-              {step.index}
-            </span>
-            <p>{step.body}</p>
-          </li>
-        ))}
-      </ol>
-
-      <div className="diagnosis__foot" data-reveal>
-        <div className="actions">
+        <div className="actions" data-reveal style={{ "--d": "220ms" } as React.CSSProperties}>
           <a className="button button--solid" href={ACTIONS.primary.href}>
             {ACTIONS.primary.label}
           </a>
@@ -464,35 +340,11 @@ export function Diagnosis() {
             {ACTIONS.secondary.label}
           </a>
         </div>
-        <p className="diagnosis__note">{DIAGNOSIS.note}</p>
+
+        <p className="diagnosis__slogan" data-reveal style={{ "--d": "340ms" } as React.CSSProperties}>
+          {DIAGNOSIS.slogan}
+        </p>
       </div>
-    </section>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────── 12 mission ── */
-
-/**
- * The close. Back to the metaphor, and the only place the slogan appears —
- * after eleven sections have established what the company does, which is the
- * only condition under which a line like that means anything.
- */
-export function Mission() {
-  return (
-    <section className="mission" aria-labelledby="mission-titulo">
-      <h2 className="mission__title" id="mission-titulo">
-        {MISSION.title.map((line, i) => (
-          <span className="mask" data-reveal key={line} style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
-            <span className="mask__line">{line}</span>
-          </span>
-        ))}
-      </h2>
-      <p className="mission__body" data-reveal style={{ "--d": "160ms" } as React.CSSProperties}>
-        {MISSION.body}
-      </p>
-      <p className="mission__slogan" data-reveal style={{ "--d": "320ms" } as React.CSSProperties}>
-        {MISSION.slogan}
-      </p>
     </section>
   );
 }

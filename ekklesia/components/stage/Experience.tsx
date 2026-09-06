@@ -5,17 +5,12 @@ import { SmoothScroll } from "@/components/scroll/SmoothScroll";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import {
-  Adapts,
   Approach,
   Capabilities,
-  Cases,
   Diagnosis,
-  Mission,
   Paths,
+  Philosophy,
   Problem,
-  Proposition,
-  Responsibility,
-  Situations,
 } from "@/components/site/Sections";
 import { useReveal } from "@/lib/site/useReveal";
 
@@ -50,22 +45,19 @@ export function Experience() {
       <CinematicOpening />
 
       {/*
-        The order is the company's own method: understand the problem, clarify
-        the situation, show the possible paths, and only then say what we do.
-        A visitor who reads it in order has been walked through a diagnosis.
+        Six sections, one idea each: the problem, the method, the decision, the
+        work, the difference, the invitation. Anything that only restated an
+        idea already made was removed rather than rephrased — there is no About
+        here (it becomes its own page) and no case study, because the company
+        has not finished work it can show.
       */}
       <main>
-        <Proposition />
         <Problem />
         <Approach />
         <Paths />
         <Capabilities />
-        <Adapts />
-        <Situations />
-        <Cases />
-        <Responsibility />
+        <Philosophy />
         <Diagnosis />
-        <Mission />
       </main>
 
       <SiteFooter />
