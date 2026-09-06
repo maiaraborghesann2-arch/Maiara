@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Mark } from "@/components/brand/Mark";
-import { BRAND, NAV } from "@/lib/site/content";
+import { LanguageSwitch } from "@/components/site/LanguageSwitch";
+import { useCopy } from "@/lib/site/locale";
 
 /**
  * The header.
@@ -28,6 +29,7 @@ import { BRAND, NAV } from "@/lib/site/content";
  * to get right instead of two.
  */
 export function SiteHeader() {
+  const { brand, nav, ui } = useCopy();
   const [open, setOpen] = useState(false);
   const [light, setLight] = useState(false);
   const [veiled, setVeiled] = useState(false);
@@ -177,21 +179,24 @@ export function SiteHeader() {
       {/* Every keyboard visit starts five hundred viewport-heights above the
           content. This is the way past it. */}
       <a className="skip" href="#conteudo">
-        Ir para o conteúdo
+        {ui.skip}
       </a>
 
       <header className="site-header" data-light={light && !open ? "true" : "false"}
         data-veiled={veiled && !open ? "true" : "false"}
         data-hidden={hidden && !open ? "true" : "false"}>
-        <a className="site-header__brand" href="#inicio" aria-label={`${BRAND.name} ${BRAND.suffix} — início`}>
+        <a className="site-header__brand" href="#inicio" aria-label={`${brand.name} ${brand.suffix} — ${ui.home}`}>
           <Mark size={26} />
           <span className="site-header__word">
-            <strong>{BRAND.name}</strong>
-            <em>{BRAND.suffix}</em>
+            <strong>{brand.name}</strong>
+            <em>{brand.suffix}</em>
           </span>
         </a>
 
-        <button
+        <div className="site-header__controls">
+          <LanguageSwitch />
+
+          <button
           ref={toggle}
           type="button"
           className="site-header__menu"
@@ -199,12 +204,13 @@ export function SiteHeader() {
           aria-controls="menu-principal"
           onClick={() => setOpen((was) => !was)}
         >
-          <span className="site-header__menu-label">{open ? "Fechar" : "Menu"}</span>
+          <span className="site-header__menu-label">{open ? ui.close : ui.menu}</span>
           <span className="site-header__menu-icon" data-open={open} aria-hidden="true">
             <span />
             <span />
           </span>
-        </button>
+          </button>
+        </div>
       </header>
 
       <div
@@ -216,9 +222,9 @@ export function SiteHeader() {
         // which `aria-hidden` alone would not do.
         inert={!open}
       >
-        <nav className="menu__nav" aria-label="Navegação principal">
+        <nav className="menu__nav" aria-label={ui.nav}>
           <ul>
-            {NAV.map((item, i) => (
+            {nav.map((item, i) => (
               <li key={item.href} style={{ "--i": i } as React.CSSProperties}>
                 <a href={item.href} onClick={close}>
                   {item.label}
@@ -229,7 +235,7 @@ export function SiteHeader() {
         </nav>
         {/* The descriptor, not the slogan. Someone opening the menu may still
             not know what the company does; a slogan would not tell them. */}
-        <p className="menu__note">{BRAND.descriptor}</p>
+        <p className="menu__note">{brand.descriptor}</p>
       </div>
     </>
   );

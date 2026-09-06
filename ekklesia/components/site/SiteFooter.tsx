@@ -1,7 +1,7 @@
 "use client";
 
 import { Mark } from "@/components/brand/Mark";
-import { BRAND, FOOTER } from "@/lib/site/content";
+import { useCopy } from "@/lib/site/locale";
 
 /**
  * The close.
@@ -15,26 +15,28 @@ import { BRAND, FOOTER } from "@/lib/site/content";
  * to close the brand, not to offer eleven more places to go.
  */
 export function SiteFooter() {
+  const { brand, footer, nav } = useCopy();
+
   return (
     <footer className="footer" data-ink="light">
       <div className="footer__top">
         <div className="footer__brand">
           <Mark size={30} />
           <span className="site-header__word">
-            <strong>{BRAND.name}</strong>
-            <em>{BRAND.suffix}</em>
+            <strong>{brand.name}</strong>
+            <em>{brand.suffix}</em>
           </span>
         </div>
 
-        <p className="footer__note">{FOOTER.note}</p>
+        <p className="footer__note">{brand.descriptor}</p>
       </div>
 
       <div className="footer__columns">
-        {FOOTER.columns.map((column) => (
+        {footer.columns.map((column) => (
           <nav key={column.title} aria-label={column.title}>
             <h2 className="footer__heading">{column.title}</h2>
             <ul>
-              {column.links.map((link) => (
+              {(column.useNav ? nav : column.links).map((link) => (
                 <li key={link.label}>
                   <a href={link.href}>{link.label}</a>
                 </li>
@@ -44,7 +46,7 @@ export function SiteFooter() {
         ))}
       </div>
 
-      <p className="footer__legal">{FOOTER.legal}</p>
+      <p className="footer__legal">{footer.legal}</p>
     </footer>
   );
 }

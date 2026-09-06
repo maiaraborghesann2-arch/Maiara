@@ -18,9 +18,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Ekklesia Connect — Consultoria de tecnologia para igrejas",
+  title: "Ekklesia Connect — Technology consulting for churches",
   description:
-    "Consultoria e desenvolvimento de tecnologia sob medida para igrejas e ministérios. Diagnosticamos, integramos e desenvolvemos soluções adaptadas à identidade, aos processos e à missão da sua igreja.",
+    "Custom technology consulting and development for churches and ministries. We diagnose, integrate and build solutions shaped by the identity, processes and mission of your church.",
 };
 
 export const viewport: Viewport = {
@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${cormorant.variable} ${inter.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
       <head>
         {/*
           Reveals are switched on by an IntersectionObserver writing one

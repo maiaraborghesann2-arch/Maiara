@@ -21,7 +21,7 @@ import {
 } from "@/lib/cinematic/config";
 import { cinematicStore, subscribeCinematic } from "@/lib/cinematic/store";
 import { Mark } from "@/components/brand/Mark";
-import { ACTIONS, BRAND, CINEMATIC_HEADLINE } from "@/lib/site/content";
+import { useCopy } from "@/lib/site/locale";
 import { CinematicIntro } from "./CinematicIntro";
 import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
@@ -46,6 +46,7 @@ export function CinematicOpening() {
   const [entered, setEntered] = useState(false);
   const [debug, setDebug] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
+  const { brand, actions, headline } = useCopy();
 
   useEffect(() => {
     setDebug(new URLSearchParams(window.location.search).has("debug"));
@@ -369,8 +370,8 @@ export function CinematicOpening() {
           <p className="hero__mark" data-hero="0">
             <Mark size={30} />
             <span className="hero__wordmark">
-              <strong>{BRAND.name}</strong>
-              <em>{BRAND.suffix}</em>
+              <strong>{brand.name}</strong>
+              <em>{brand.suffix}</em>
             </span>
           </p>
 
@@ -382,7 +383,7 @@ export function CinematicOpening() {
             eye while leaving it plainly in the accessibility tree.
           */}
           <h1 className="hero__title">
-            {CINEMATIC_HEADLINE.lines.map((line, i) => (
+            {headline.map((line, i) => (
               <span className="hero__mask" key={line} data-hero={i + 1}>
                 <span className="hero__line">{line}</span>
               </span>
@@ -390,12 +391,12 @@ export function CinematicOpening() {
           </h1>
 
           <p className="hero__lede" data-hero="3">
-            {BRAND.descriptor}
+            {brand.descriptor}
           </p>
 
           <div className="hero__actions" data-hero="4" data-hero-actions>
-            <a className="button button--solid" href={ACTIONS.primary.href}>
-              {ACTIONS.primary.label}
+            <a className="button button--solid" href={actions.primary.href}>
+              {actions.primary.label}
             </a>
           </div>
         </div>

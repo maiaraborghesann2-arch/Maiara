@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  ACTIONS,
-  APPROACH,
-  CAPABILITIES,
-  DIAGNOSIS,
-  PATHS,
-  PHILOSOPHY,
-  PROBLEM,
-} from "@/lib/site/content";
+import { SystemDiagram } from "@/components/site/SystemDiagram";
+import { useCopy } from "@/lib/site/locale";
 import { useActiveCard } from "@/lib/site/useActiveCard";
 
 /**
@@ -40,73 +33,34 @@ import { useActiveCard } from "@/lib/site/useActiveCard";
 /* ─────────────────────────────────────────────────────────── 02 problem ── */
 
 /**
- * Three states of the same trouble, each carrying its own mark.
+ * Three states of the same trouble.
  *
- * The marks are the argument and the copy is the caption: one element alone,
- * then elements that never meet, then elements that meet too many times. Drawn
- * in SVG from the same hairline the rest of the page rules with, so they read
- * as diagrams in the page's own hand rather than as illustrations dropped into
- * it.
+ * The diagrams are in `SystemDiagram` and they are the argument — one set of
+ * nodes, drawn identically in all three, with only the relationships between
+ * them changing. The copy is their caption.
  */
-function ProblemMark({ state }: { state: string }) {
-  const line = { stroke: "currentColor", strokeWidth: 1, fill: "none" } as const;
-  return (
-    <svg className="state__mark" viewBox="0 0 120 80" aria-hidden="true">
-      {state === "desconectado" ? (
-        <>
-          <circle cx="26" cy="40" r="9" {...line} />
-          <circle cx="60" cy="26" r="9" {...line} />
-          <circle cx="94" cy="52" r="9" {...line} />
-        </>
-      ) : state === "fragmentado" ? (
-        <>
-          <circle cx="26" cy="40" r="9" {...line} />
-          <circle cx="60" cy="26" r="9" {...line} />
-          <circle cx="94" cy="52" r="9" {...line} />
-          {/* Lines that set out toward each other and stop short. */}
-          <path d="M35 37 L48 31" {...line} strokeDasharray="4 5" />
-          <path d="M69 30 L84 46" {...line} strokeDasharray="4 5" />
-          <path d="M33 46 L82 56" {...line} strokeDasharray="4 5" />
-        </>
-      ) : (
-        <>
-          <circle cx="26" cy="40" r="9" {...line} />
-          <circle cx="60" cy="26" r="9" {...line} />
-          <circle cx="94" cy="52" r="9" {...line} />
-          <circle cx="60" cy="62" r="9" {...line} />
-          <path d="M35 37 L51 28" {...line} />
-          <path d="M69 30 L85 46" {...line} />
-          <path d="M33 45 L52 59" {...line} />
-          <path d="M69 60 L86 56" {...line} />
-          <path d="M60 35 L60 53" {...line} />
-          <path d="M34 44 L86 49" {...line} />
-        </>
-      )}
-    </svg>
-  );
-}
-
 export function Problem() {
-  const { active, cardProps } = useActiveCard(PROBLEM.states.length);
+  const { problem } = useCopy();
+  const { active, cardProps } = useActiveCard(problem.states.length);
 
   return (
     <section className="field field--cream problem" id="problema" aria-labelledby="problem-titulo">
       <div className="spread">
         <p className="eyebrow" data-reveal>
-          {PROBLEM.eyebrow}
+          {problem.eyebrow}
         </p>
         <div className="spread__body">
           <h2 className="display" id="problem-titulo" data-reveal>
-            {PROBLEM.title}
+            {problem.title}
           </h2>
           <p className="prose prose--lead" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
-            {PROBLEM.lede}
+            {problem.lede}
           </p>
         </div>
       </div>
 
       <ol className="states">
-        {PROBLEM.states.map((state, i) => (
+        {problem.states.map((state, i) => (
           <li key={state.id} data-reveal style={{ "--d": `${i * 110}ms` } as React.CSSProperties}>
             <button
               type="button"
@@ -115,7 +69,7 @@ export function Problem() {
               aria-expanded={active === i}
               {...cardProps(i)}
             >
-              <ProblemMark state={state.id} />
+              <SystemDiagram level={state.id} />
               <span className="state__label">{state.label}</span>
               <span className="state__body">{state.body}</span>
             </button>
@@ -137,7 +91,8 @@ export function Problem() {
  * shape of the argument, since the work is sequential and not a menu.
  */
 export function Approach() {
-  const { active, cardProps } = useActiveCard(APPROACH.stages.length, "select");
+  const { approach } = useCopy();
+  const { active, cardProps } = useActiveCard(approach.stages.length, "select");
 
   return (
     <section
@@ -148,17 +103,17 @@ export function Approach() {
     >
       <div className="spread">
         <p className="eyebrow eyebrow--light" data-reveal>
-          {APPROACH.eyebrow}
+          {approach.eyebrow}
         </p>
         <div className="spread__body">
           <h2 className="display" id="approach-titulo" data-reveal>
-            {APPROACH.title}
+            {approach.title}
           </h2>
         </div>
       </div>
 
       <ol className="stages" data-reveal>
-        {APPROACH.stages.map((stage, i) => (
+        {approach.stages.map((stage, i) => (
           <li key={stage.index} data-on={active === i ? "true" : "false"}>
             <button type="button" className="stage" aria-current={active === i} {...cardProps(i)}>
               <span className="stage__index">{stage.index}</span>
@@ -183,24 +138,25 @@ export function Approach() {
  * card shows only its name and its one-line claim; opening it gives the reason.
  */
 export function Paths() {
-  const { active, cardProps } = useActiveCard(PATHS.options.length);
+  const { paths } = useCopy();
+  const { active, cardProps } = useActiveCard(paths.options.length);
 
   return (
     <section className="field field--cream paths" id="caminho" aria-labelledby="paths-question">
       <div className="paths__head">
         <p className="eyebrow" data-reveal>
-          {PATHS.eyebrow}
+          {paths.eyebrow}
         </p>
         <h2 className="paths__question" id="paths-question" data-reveal>
-          {PATHS.question}
+          {paths.question}
         </h2>
         <p className="prose prose--lead" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
-          {PATHS.lede}
+          {paths.lede}
         </p>
       </div>
 
       <ol className="paths__grid">
-        {PATHS.options.map((option, i) => (
+        {paths.options.map((option, i) => (
           <li key={option.id} data-reveal style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
             <button
               type="button"
@@ -231,7 +187,8 @@ export function Paths() {
  * rather than five boxes competing with the decision above them.
  */
 export function Capabilities() {
-  const { active, cardProps } = useActiveCard(CAPABILITIES.items.length);
+  const { capabilities } = useCopy();
+  const { active, cardProps } = useActiveCard(capabilities.items.length);
 
   return (
     <section
@@ -241,17 +198,17 @@ export function Capabilities() {
     >
       <div className="spread">
         <p className="eyebrow" data-reveal>
-          {CAPABILITIES.eyebrow}
+          {capabilities.eyebrow}
         </p>
         <div className="spread__body">
           <h2 className="display" id="capabilities-titulo" data-reveal>
-            {CAPABILITIES.title}
+            {capabilities.title}
           </h2>
         </div>
       </div>
 
       <ol className="rail">
-        {CAPABILITIES.items.map((item, i) => (
+        {capabilities.items.map((item, i) => (
           <li key={item.id} data-reveal style={{ "--d": `${i * 70}ms` } as React.CSSProperties}>
             <button
               type="button"
@@ -285,26 +242,28 @@ export function Capabilities() {
  * claim the company would want a visitor to remember.
  */
 export function Philosophy() {
+  const { philosophy } = useCopy();
+
   return (
     <section className="field field--green philosophy" data-ink="light" aria-labelledby="philosophy-titulo">
       <div className="philosophy__column">
         <p className="eyebrow eyebrow--light" data-reveal>
-          {PHILOSOPHY.eyebrow}
+          {philosophy.eyebrow}
         </p>
 
         <h2 className="philosophy__title" id="philosophy-titulo" data-reveal>
-          {PHILOSOPHY.title}
+          {philosophy.title}
         </h2>
 
         <div className="swap" data-reveal style={{ "--d": "160ms" } as React.CSSProperties}>
           <p className="swap__wrong">
-            <s>{PHILOSOPHY.wrong}</s>
+            <s>{philosophy.wrong}</s>
           </p>
-          <p className="swap__right">{PHILOSOPHY.right}</p>
+          <p className="swap__right">{philosophy.right}</p>
         </div>
 
         <p className="philosophy__body" data-reveal style={{ "--d": "280ms" } as React.CSSProperties}>
-          {PHILOSOPHY.body}
+          {philosophy.body}
         </p>
       </div>
     </section>
@@ -319,30 +278,32 @@ export function Philosophy() {
  * been told what the company does.
  */
 export function Diagnosis() {
+  const { diagnosis, actions, brand } = useCopy();
+
   return (
     <section className="field field--cream diagnosis" id="diagnostico" aria-labelledby="diagnosis-titulo">
       <div className="diagnosis__column">
         <p className="eyebrow" data-reveal>
-          {DIAGNOSIS.eyebrow}
+          {diagnosis.eyebrow}
         </p>
         <h2 className="diagnosis__title" id="diagnosis-titulo" data-reveal>
-          {DIAGNOSIS.title}
+          {diagnosis.title}
         </h2>
         <p className="prose prose--lead" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
-          {DIAGNOSIS.lede}
+          {diagnosis.lede}
         </p>
 
         <div className="actions" data-reveal style={{ "--d": "220ms" } as React.CSSProperties}>
-          <a className="button button--solid" href={ACTIONS.primary.href}>
-            {ACTIONS.primary.label}
+          <a className="button button--solid" href={actions.primary.href}>
+            {actions.primary.label}
           </a>
-          <a className="button button--quiet" href={ACTIONS.secondary.href}>
-            {ACTIONS.secondary.label}
+          <a className="button button--quiet" href={actions.secondary.href}>
+            {actions.secondary.label}
           </a>
         </div>
 
         <p className="diagnosis__slogan" data-reveal style={{ "--d": "340ms" } as React.CSSProperties}>
-          {DIAGNOSIS.slogan}
+          {brand.slogan}
         </p>
       </div>
     </section>

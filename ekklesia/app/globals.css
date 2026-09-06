@@ -966,17 +966,117 @@ main > section[id] {
   transform: translateY(-3px);
 }
 
-.state__mark {
+/*
+ * The system diagram.
+ *
+ * One vocabulary across the three states: a ring is a system, the dot inside it
+ * is what it holds, and a ghost ring behind one is the same contents existing
+ * twice. Everything strokes `currentColor` at fractional widths, so the whole
+ * mark takes the ink of the card it sits in and stays in the hairline the rest
+ * of the page rules with.
+ */
+.sd {
   width: 100%;
-  max-width: 11rem;
+  max-width: 15.5rem;
   height: auto;
-  margin-bottom: 0.5rem;
-  color: var(--ink-faint);
-  transition: color 0.4s var(--ease-out);
+  margin-bottom: 0.7rem;
+  color: var(--ink-soft);
+  overflow: visible;
+  transition: color 0.45s var(--ease-out);
 }
 
-.state[data-on="true"] .state__mark {
+.state[data-on="true"] .sd {
   color: var(--clay-ink);
+}
+
+.sd__node circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+/* The contents of a system, and the only filled mark in the language. */
+.sd__core {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* The duplicate. Lighter than the system it copies, because it is a copy. */
+.sd__ghost {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.7;
+  stroke-dasharray: 2.5 3;
+  opacity: 0.42;
+}
+
+.sd__link {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+}
+
+/* Two weights, so a tangle can still have a hierarchy. */
+.sd__link--soft { stroke-width: 0.6; opacity: 0.42; }
+.sd__link--firm { stroke-width: 0.9; opacity: 0.8; }
+
+/* Links that set out and do not resolve. */
+.sd__link--dashed { stroke-dasharray: 2.5 3.5; opacity: 0.55; }
+
+/*
+ * The reveal: the system becoming visible.
+ *
+ * `pathLength="1"` normalises every line to a unit length, so one dash value
+ * draws any of them and the stagger is `--o` — the order the connection is made
+ * in — rather than a measurement per path. The nodes are always present; only
+ * the relationships are drawn, which is the right reading, because the systems
+ * existed before anyone connected them.
+ */
+/*
+ * A solid link draws itself: `pathLength` normalised it to 1, so one dash the
+ * length of the whole path, pulled back by its own length, is a line that has
+ * not been drawn yet.
+ *
+ * Scoped with `:not()` rather than left to source order. A dashed link needs
+ * its dash array for the dashes, and an earlier version had this rule
+ * overwriting it further down the file — the "tentative" links rendered as
+ * solid ones, which is the opposite of what that state is claiming.
+ */
+.sd__link:not(.sd__link--dashed) {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.62s var(--ease-out) calc(var(--o, 0) * 70ms);
+}
+
+/* So the dashed ones fade in instead, carrying the same stagger. */
+.sd__link--dashed {
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out) calc(var(--o, 0) * 90ms);
+}
+
+.sd__ghost {
+  opacity: 0;
+  transition: opacity 0.55s var(--ease-out) 60ms;
+}
+
+.state[data-on="true"] .sd__link:not(.sd__link--dashed) { stroke-dashoffset: 0; }
+.state[data-on="true"] .sd__link--dashed { opacity: 0.55; }
+.state[data-on="true"] .sd__ghost { opacity: 0.42; }
+
+/*
+ * At rest the diagram is not blank — the relationships are simply quiet. A card
+ * nobody has pointed at still has to say what it is.
+ */
+.state:not([data-on="true"]) .sd__link:not(.sd__link--dashed) { stroke-dashoffset: 0; }
+.state:not([data-on="true"]) .sd__link--dashed { opacity: 0.34; }
+.state:not([data-on="true"]) .sd__ghost { opacity: 0.26; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sd,
+  .sd__link,
+  .sd__ghost {
+    transition: none;
+  }
 }
 
 .state__label {
@@ -1660,6 +1760,65 @@ html[data-hero-brand="on"] .site-header__brand {
 .site-header__word em,
 .site-header__menu-label {
   transition: color 0.28s var(--ease-out);
+}
+
+/*
+ * The controls at the right of the header: the language, then the menu.
+ */
+.site-header__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.9rem, 2vw, 1.6rem);
+  pointer-events: auto;
+}
+
+/*
+ * EN / PT. Two buttons and a hairline — not a dropdown, because a dropdown for
+ * two options costs a click to discover there were only two. It borrows the
+ * menu control's type so it reads as navigation rather than as a widget.
+ */
+.lang {
+  display: inline-flex;
+  align-items: center;
+}
+
+.lang__slot {
+  display: inline-flex;
+  align-items: center;
+}
+
+.lang__sep {
+  width: 1px;
+  height: 0.62rem;
+  margin: 0 0.5rem;
+  background: currentColor;
+  opacity: 0.32;
+}
+
+.lang__option {
+  padding: 0.35rem 0;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  color: inherit;
+  font-family: var(--font-ui);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.3s var(--ease-out);
+}
+
+.lang__option:hover {
+  opacity: 0.82;
+}
+
+/* The active language is marked, not merely coloured — `aria-current` is what
+   carries it to a screen reader, and the same attribute drives the styling so
+   the two can never disagree. */
+.lang__option[aria-current="true"] {
+  opacity: 1;
 }
 
 /*

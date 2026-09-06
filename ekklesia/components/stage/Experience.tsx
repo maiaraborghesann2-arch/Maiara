@@ -12,6 +12,7 @@ import {
   Philosophy,
   Problem,
 } from "@/components/site/Sections";
+import { LocaleProvider } from "@/lib/site/locale";
 import { useReveal } from "@/lib/site/useReveal";
 
 /**
@@ -38,7 +39,15 @@ export function Experience() {
   useReveal();
 
   return (
-    <SmoothScroll>
+    /*
+     * The language is state, not a route. Switching re-renders this tree with
+     * different strings and touches nothing else — the `<video>` keeps its
+     * identity, the scroll position is never written, and the film does not
+     * restart. A `/en` and `/pt` pair would have navigated, which is the one
+     * thing that must not happen inside a scroll-driven opening.
+     */
+    <LocaleProvider>
+      <SmoothScroll>
       <SiteHeader />
 
       <div id="inicio" />
@@ -61,6 +70,7 @@ export function Experience() {
       </main>
 
       <SiteFooter />
-    </SmoothScroll>
+      </SmoothScroll>
+    </LocaleProvider>
   );
 }
